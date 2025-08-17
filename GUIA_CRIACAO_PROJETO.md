@@ -49,7 +49,7 @@ Vamos criar um **sistema completo de pedidos online** com:
 - **Frontend**: Next.js 15.1.6 + React 19 + TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui
 - **Backend**: Next.js Server Actions
-- **Database**: PostgreSQL + Prisma ORM
+- **Database**: PostgreSQL (Neon) + Prisma ORM
 - **Payments**: Stripe + Webhooks
 - **Forms**: React Hook Form + Zod
 
@@ -59,12 +59,12 @@ Vamos criar um **sistema completo de pedidos online** com:
 
 ### 📦 **Software Necessário:**
 
-| Software       | Versão Mínima | Download                                               |
-| -------------- | ------------- | ------------------------------------------------------ |
-| **Node.js**    | 18.0+         | [nodejs.org](https://nodejs.org/)                      |
-| **npm**        | 9.0+          | Incluído com Node.js                                   |
-| **PostgreSQL** | 14.0+         | [postgresql.org](https://www.postgresql.org/download/) |
-| **Git**        | 2.30+         | [git-scm.com](https://git-scm.com/)                    |
+| Software       | Versão Mínima | Download                                                                                          |
+| -------------- | ------------- | ------------------------------------------------------------------------------------------------- |
+| **Node.js**    | 18.0+         | [nodejs.org](https://nodejs.org/)                                                                 |
+| **npm**        | 9.0+          | Incluído com Node.js                                                                              |
+| **PostgreSQL** | 14.0+         | [postgresql.org](https://www.postgresql.org/download/) ou [Neon](https://neon.tech) (recomendado) |
+| **Git**        | 2.30+         | [git-scm.com](https://git-scm.com/)                                                               |
 
 ### 🔍 **Verificar Instalações:**
 
@@ -90,6 +90,7 @@ git --version
 
 - 🔥 **Conta no Stripe** (para pagamentos): [stripe.com](https://stripe.com)
 - 🐙 **Conta no GitHub** (para versionamento): [github.com](https://github.com)
+- 🌐 **Conta no Neon** (banco na nuvem - recomendado): [neon.tech](https://neon.tech)
 
 ---
 
@@ -379,7 +380,7 @@ body {
     @apply border-border;
   }
   body {
-    @apply h-full bg-background text-foreground;
+    @apply bg-background text-foreground h-full;
   }
 
   html {
@@ -448,6 +449,200 @@ GRANT ALL PRIVILEGES ON DATABASE meu_sistema_pedidos TO sistema_user;
 # Sair do psql
 \q
 ```
+
+### **Alternativa: 🌐 Criar Banco de Dados no Neon (Recomendado)**
+
+O **Neon** é uma plataforma moderna de PostgreSQL na nuvem, perfeita para desenvolvimento e produção. Oferece:
+
+- ✅ **PostgreSQL serverless** com auto-scaling
+- ✅ **Tier gratuito generoso** (512MB de armazenamento)
+- ✅ **Branching de banco** para diferentes ambientes
+- ✅ **Backup automático** e alta disponibilidade
+- ✅ **Interface moderna** e fácil de usar
+
+#### **📋 Passo a Passo: Configuração no Neon**
+
+**1. 🔐 Criar Conta no Neon**
+
+1. Acesse [neon.tech](https://neon.tech)
+2. Clique em **"Sign Up"**
+3. Faça login com:
+   - GitHub (recomendado)
+   - Google
+   - Email
+
+**2. 🗄️ Criar Novo Projeto**
+
+1. No dashboard, clique em **"Create Project"**
+2. Configure o projeto:
+   ```
+   Project Name: meu-sistema-pedidos
+   Database Name: main (padrão)
+   PostgreSQL Version: 16 (mais recente)
+   Region: US East (Ohio) - us-east-2 (mais próximo do Brasil)
+   ```
+3. Clique em **"Create Project"**
+
+**3. 📋 Obter String de Conexão**
+
+Após criar o projeto, você verá a tela com as informações de conexão:
+
+```bash
+# Exemplo da string de conexão (será diferente para você)
+postgresql://username:password@ep-cool-darkness-123456.us-east-2.aws.neon.tech/main?sslmode=require
+```
+
+**4. 🔧 Configurar Variáveis de Ambiente**
+
+Atualize seu arquivo `.env.local`:
+
+```env
+# ===================================
+# 🌐 NEON DATABASE CONFIGURATION
+# ===================================
+# Substitua pela sua string de conexão do Neon
+DATABASE_URL="postgresql://username:password@ep-cool-darkness-123456.us-east-2.aws.neon.tech/main?sslmode=require"
+
+# Para desenvolvimento local com pooling (opcional, mas recomendado)
+DIRECT_URL="postgresql://username:password@ep-cool-darkness-123456.us-east-2.aws.neon.tech/main?sslmode=require"
+```
+
+**5. 🔄 Atualizar Schema Prisma para Neon**
+
+Atualize o `prisma/schema.prisma` para otimizar para Neon:
+
+```prisma
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ... resto do schema permanece igual
+```
+
+**6. 🚀 Executar Migrations no Neon**
+
+```bash
+# Gerar cliente Prisma
+npx prisma generate
+
+# Aplicar migrations no Neon
+npx prisma migrate dev --name initial
+
+# Popular banco com dados de exemplo
+npx prisma db seed
+
+# Verificar se funcionou (abrirá Prisma Studio)
+npx prisma studio
+```
+
+**7. ✅ Verificar Conexão**
+
+```bash
+# Testar conexão com o banco
+npx prisma db pull
+
+# Deve mostrar: "✔ Introspected 5 models and wrote them into prisma/schema.prisma"
+```
+
+#### **🎯 Vantagens do Neon vs PostgreSQL Local**
+
+| Recurso            | PostgreSQL Local       | Neon                   |
+| ------------------ | ---------------------- | ---------------------- |
+| **Setup**          | Instalação complexa    | Sem instalação         |
+| **Manutenção**     | Manual                 | Automática             |
+| **Backup**         | Manual                 | Automático             |
+| **Escalabilidade** | Limitada               | Auto-scaling           |
+| **Colaboração**    | Difícil                | Fácil compartilhamento |
+| **Produção**       | Precisa migrar         | Pronto para produção   |
+| **Custo**          | Infraestrutura própria | Tier gratuito          |
+
+#### **🌟 Recursos Avançados do Neon**
+
+**1. 🌿 Database Branching**
+
+```bash
+# Criar branch para desenvolvimento
+neon branches create --name development
+
+# Criar branch para testing
+neon branches create --name testing
+```
+
+**2. 📊 Monitoramento**
+
+- Dashboard com métricas em tempo real
+- Logs de consultas
+- Alertas de performance
+
+**3. 🔄 Connection Pooling**
+
+- Pooling automático para otimizar conexões
+- Reduz latência e melhora performance
+
+**4. 🚀 Deploy Automático**
+
+```bash
+# Configurar para produção
+DATABASE_URL="sua_string_de_producao_neon"
+```
+
+#### **💡 Dicas Importantes para Neon**
+
+**✅ Boas Práticas:**
+
+- Use connection pooling em produção
+- Configure `DIRECT_URL` para migrations
+- Monitore uso no dashboard
+- Configure alertas de limite
+
+**⚠️ Limitações do Tier Gratuito:**
+
+- 512MB de armazenamento
+- 1 projeto ativo
+- 10 branches por projeto
+- Hibernação após inatividade
+
+**🔧 Configuração de Produção:**
+
+```env
+# Produção com Neon
+DATABASE_URL="postgresql://user:pass@ep-prod-123.us-east-2.aws.neon.tech/main?sslmode=require&pgbouncer=true"
+DIRECT_URL="postgresql://user:pass@ep-prod-123.us-east-2.aws.neon.tech/main?sslmode=require"
+```
+
+#### **🆘 Troubleshooting Neon**
+
+**Problema: Conexão falha**
+
+```bash
+# Verificar se a URL está correta
+echo $DATABASE_URL
+
+# Testar conexão direta
+npx prisma db pull
+```
+
+**Problema: Migrations lentas**
+
+```bash
+# Usar DIRECT_URL para migrations
+npx prisma migrate dev --name nome_da_migration
+```
+
+**Problema: Hibernação do banco**
+
+- O banco hiberna após inatividade no tier gratuito
+- Primeira conexão pode demorar alguns segundos
+- Para produção, considere plano pago
 
 ### **Passo 2: 🔧 prisma/schema.prisma**
 
@@ -766,7 +961,14 @@ Adicione no arquivo `.env.local`:
 # ===================================
 # 🗄️ CONFIGURAÇÃO DO BANCO DE DADOS
 # ===================================
-DATABASE_URL="postgresql://sistema_user:senha_super_segura@localhost:5432/meu_sistema_pedidos"
+
+# OPÇÃO 1: PostgreSQL Local
+# DATABASE_URL="postgresql://sistema_user:senha_super_segura@localhost:5432/meu_sistema_pedidos"
+
+# OPÇÃO 2: Neon Database (Recomendado)
+# Substitua pela sua string de conexão do Neon
+DATABASE_URL="postgresql://username:password@ep-cool-darkness-123456.us-east-2.aws.neon.tech/main?sslmode=require"
+DIRECT_URL="postgresql://username:password@ep-cool-darkness-123456.us-east-2.aws.neon.tech/main?sslmode=require"
 
 # ===================================
 # 💳 CONFIGURAÇÃO DO STRIPE
@@ -1075,7 +1277,7 @@ git commit -m "⚙️ Configuração completa do projeto
 ### 🎯 **O que você já tem funcionando:**
 
 - ✅ **Projeto Next.js** configurado com TypeScript
-- ✅ **Banco de dados PostgreSQL** com Prisma
+- ✅ **Banco de dados PostgreSQL (Neon)** com Prisma
 - ✅ **Tailwind CSS** com shadcn/ui
 - ✅ **Stripe** configurado para pagamentos
 - ✅ **Estrutura de pastas** organizada
@@ -1125,6 +1327,31 @@ npx prisma migrate reset
 
 # Build para produção
 npm run build
+```
+
+### 🌐 **Comandos específicos do Neon:**
+
+```bash
+# Instalar Neon CLI (opcional)
+npm install -g neon
+
+# Ver projetos
+neon projects list
+
+# Ver branches do banco
+neon branches list
+
+# Criar nova branch
+neon branches create --name feature-branch
+
+# Ver informações de conexão
+neon connection-string
+
+# Monitorar uso
+neon usage
+
+# Ver logs do banco
+neon logs
 ```
 
 ### 🎉 **Parabéns!**
