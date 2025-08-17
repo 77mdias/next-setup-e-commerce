@@ -57,18 +57,12 @@ const main = async () => {
   const store = await prismaClient.store.create({
     data: {
       ownerId: adminUser.id,
-      name: "TechStore - Eletrônicos e Periféricos",
-      slug: "techstore",
+      name: "NeXT Store - Eletrônicos e Periféricos",
+      slug: "nextstore",
       description:
         "Sua loja de confiança para eletrônicos, periféricos e componentes de computador. Produtos originais com garantia e melhor preço.",
-      logoUrl:
-        "https://via.placeholder.com/200x100/1f2937/ffffff?text=TechStore",
-      bannerUrl:
-        "https://via.placeholder.com/1200x400/3b82f6/ffffff?text=TechStore+Banner",
-      phone: "(11) 3000-0000",
-      email: "contato@techstore.com",
-      cnpj: "12.345.678/0001-90",
-      website: "https://techstore.com.br",
+      phone: "(18) 98812-5925",
+      email: "jean.77mdiasdev@gmail.com",
       shippingFee: 15.0,
       freeShipping: 199.0,
       processingTime: 2,
@@ -89,7 +83,8 @@ const main = async () => {
       data: {
         name: "Intel",
         slug: "intel",
-        logoUrl: "https://via.placeholder.com/150x75/0071c5/ffffff?text=Intel",
+        logoUrl:
+          "https://upload.wikimedia.org/wikipedia/commons/7/7d/Intel_logo_%282006-2020%29.svg",
         website: "https://intel.com.br",
       },
     }),
@@ -97,7 +92,8 @@ const main = async () => {
       data: {
         name: "AMD",
         slug: "amd",
-        logoUrl: "https://via.placeholder.com/150x75/ed1c24/ffffff?text=AMD",
+        logoUrl:
+          "https://1000logos.net/wp-content/uploads/2020/05/AMD-Logo.png",
         website: "https://amd.com",
       },
     }),
@@ -105,7 +101,8 @@ const main = async () => {
       data: {
         name: "NVIDIA",
         slug: "nvidia",
-        logoUrl: "https://via.placeholder.com/150x75/76b900/ffffff?text=NVIDIA",
+        logoUrl:
+          "https://upload.wikimedia.org/wikipedia/sco/thumb/2/21/Nvidia_logo.svg/1200px-Nvidia_logo.svg.png",
         website: "https://nvidia.com.br",
       },
     }),
@@ -115,7 +112,7 @@ const main = async () => {
         name: "Logitech",
         slug: "logitech",
         logoUrl:
-          "https://via.placeholder.com/150x75/00b8d4/ffffff?text=Logitech",
+          "https://logodownload.org/wp-content/uploads/2018/03/logitech-logo.png",
         website: "https://logitech.com.br",
       },
     }),
@@ -123,7 +120,8 @@ const main = async () => {
       data: {
         name: "Razer",
         slug: "razer",
-        logoUrl: "https://via.placeholder.com/150x75/00ff00/000000?text=Razer",
+        logoUrl:
+          "https://logos-world.net/wp-content/uploads/2020/11/Razer-Logo.png",
         website: "https://razer.com",
       },
     }),
@@ -132,7 +130,7 @@ const main = async () => {
         name: "Corsair",
         slug: "corsair",
         logoUrl:
-          "https://via.placeholder.com/150x75/ffcc00/000000?text=Corsair",
+          "https://cwsmgmt.corsair.com/press/CORSAIRLogo2020_stack_K.png",
         website: "https://corsair.com",
       },
     }),
@@ -141,7 +139,8 @@ const main = async () => {
       data: {
         name: "Apple",
         slug: "apple",
-        logoUrl: "https://via.placeholder.com/150x75/000000/ffffff?text=Apple",
+        logoUrl:
+          "https://logodownload.org/wp-content/uploads/2013/12/apple-logo-1-2.png",
         website: "https://apple.com.br",
       },
     }),
@@ -150,7 +149,7 @@ const main = async () => {
         name: "Samsung",
         slug: "samsung",
         logoUrl:
-          "https://via.placeholder.com/150x75/1428a0/ffffff?text=Samsung",
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIVrW3WGYFVE_Lv_xxU6JLMyg2bHKiY2vHUg&s",
         website: "https://samsung.com.br",
       },
     }),
@@ -159,7 +158,8 @@ const main = async () => {
       data: {
         name: "Dell",
         slug: "dell",
-        logoUrl: "https://via.placeholder.com/150x75/007db8/ffffff?text=Dell",
+        logoUrl:
+          "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Dell_Logo.svg/2048px-Dell_Logo.svg.png",
         website: "https://dell.com.br",
       },
     }),
@@ -167,7 +167,8 @@ const main = async () => {
       data: {
         name: "ASUS",
         slug: "asus",
-        logoUrl: "https://via.placeholder.com/150x75/000000/ffffff?text=ASUS",
+        logoUrl:
+          "https://cdn.freebiesupply.com/logos/large/2x/asus-6630-logo-png-transparent.png",
         website: "https://asus.com.br",
       },
     }),
@@ -198,7 +199,7 @@ const main = async () => {
       slug: "computadores",
       description: "Notebooks, desktops e workstations",
       imageUrl:
-        "https://via.placeholder.com/300x200/3b82f6/ffffff?text=Computadores",
+        "https://cdn.awsli.com.br/2500x2500/954/954868/produto/35666183/a490b9398a.jpg",
       iconUrl: "💻",
       sortOrder: 1,
     },
@@ -210,7 +211,7 @@ const main = async () => {
       slug: "componentes",
       description: "Processadores, placas de vídeo, memórias e mais",
       imageUrl:
-        "https://via.placeholder.com/300x200/10b981/ffffff?text=Componentes",
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREwki3338Vmb7Utw24SdYD3hiLWBkDNajXkA&s",
       iconUrl: "🔧",
       sortOrder: 2,
     },
@@ -222,7 +223,7 @@ const main = async () => {
       slug: "perifericos",
       description: "Mouse, teclado, headset, webcam",
       imageUrl:
-        "https://via.placeholder.com/300x200/f59e0b/ffffff?text=Periféricos",
+        "https://www.mielectro.es/blog/wp-content/uploads/2024/10/Mejores-perifericos-gaming.jpg",
       iconUrl: "🖱️",
       sortOrder: 3,
     },
@@ -234,7 +235,7 @@ const main = async () => {
       slug: "smartphones",
       description: "Celulares e acessórios",
       imageUrl:
-        "https://via.placeholder.com/300x200/ef4444/ffffff?text=Smartphones",
+        "https://m.media-amazon.com/images/I/61qJX973fRL._AC_SL1500_.jpg",
       iconUrl: "📱",
       sortOrder: 4,
     },
@@ -320,8 +321,8 @@ const main = async () => {
       price: 2199.99,
       originalPrice: 2499.99,
       images: [
-        "https://via.placeholder.com/600x600/0071c5/ffffff?text=Intel+i7-13700K",
-        "https://via.placeholder.com/600x600/0071c5/ffffff?text=Intel+Box",
+        "https://http2.mlstatic.com/D_NQ_NP_637849-MLA52678952836_122022-O-processador-intel-core-i7-13700k-bx8071513700k-lga1700.webp",
+        "https://images.kabum.com.br/produtos/fotos/386973/processador-intel-core-i7-13700k-5-4ghz-max-turbo-cache-30mb-16-nucleos-24-threads-lga-1700-video-integrado-bx8071513700k_1664287643_gg.jpg",
       ],
       specifications: {
         cores: 16,
@@ -362,8 +363,8 @@ const main = async () => {
       shortDesc: "AMD Ryzen 9 7900X - 12 núcleos, até 5.6GHz",
       price: 2899.99,
       images: [
-        "https://via.placeholder.com/600x600/ed1c24/ffffff?text=AMD+Ryzen+9+7900X",
-        "https://via.placeholder.com/600x600/ed1c24/ffffff?text=AMD+Box",
+        "https://cdn.dooca.store/27441/products/mwveebxdbfuparb4gi6vl3f9qpdmitmkfsem.jpg?v=1664493149&webp=0",
+        "https://images.kabum.com.br/produtos/fotos/378412/processador-amd-ryzen-9-7900x-5-6ghz-max-turbo-cache-76mb-am5-12-nucleos-video-integrado-100-100000589wof_1662134312_g.jpg",
       ],
       specifications: {
         cores: 12,
@@ -405,8 +406,8 @@ const main = async () => {
       price: 6999.99,
       originalPrice: 7499.99,
       images: [
-        "https://via.placeholder.com/600x600/76b900/ffffff?text=RTX+4080",
-        "https://via.placeholder.com/600x600/76b900/ffffff?text=RTX+Side+View",
+        "https://media.pichau.com.br/media/catalog/product/cache/2f958555330323e505eba7ce930bdf27/g/v/gv-n4080gaming-oc-16gd-g108.jpg",
+        "https://cdn.awsli.com.br/1882/1882647/produto/308693651/2-ja7exwn1fz.jpg",
       ],
       specifications: {
         gpu: "AD103",
@@ -454,9 +455,8 @@ const main = async () => {
       price: 8999.99,
       originalPrice: 9999.99,
       images: [
-        "https://via.placeholder.com/600x600/007db8/ffffff?text=Dell+XPS+13",
-        "https://via.placeholder.com/600x600/007db8/ffffff?text=XPS+13+Open",
-        "https://via.placeholder.com/600x600/007db8/ffffff?text=XPS+13+Side",
+        "https://i.zst.com.br/thumbs/12/8/e/-770570251.jpg",
+        "https://a-static.mlcdn.com.br/800x560/notebook-dell-9320-xps-13-plus-evo-i7-1360p-16gb-ram-1tb-pcie-tela-134-fhd-win-11-home/milshop264/65700bb44df411efa4ea4201ac18501b/e2e4b0a545015b57d5879a6fb2404eee.jpeg",
       ],
       specifications: {
         processor: "Intel Core i7-1260P",
@@ -501,8 +501,8 @@ const main = async () => {
       shortDesc: "ASUS ROG Strix G15 - Ryzen 7, RTX 3070 Ti",
       price: 7499.99,
       images: [
-        "https://via.placeholder.com/600x600/000000/ff0000?text=ASUS+ROG+Strix",
-        "https://via.placeholder.com/600x600/000000/ff0000?text=ROG+Gaming",
+        "https://dlcdnwebimgs.asus.com/gain/8B6818DE-C4A5-4399-B0A8-4392536AE07D",
+        "https://m.media-amazon.com/images/I/71dwsA3KsfL.jpg",
       ],
       specifications: {
         processor: "AMD Ryzen 7 6800H",
@@ -549,8 +549,8 @@ const main = async () => {
       price: 549.99,
       originalPrice: 649.99,
       images: [
-        "https://via.placeholder.com/600x600/00b8d4/ffffff?text=MX+Master+3S",
-        "https://via.placeholder.com/600x600/00b8d4/ffffff?text=MX+Side+View",
+        "https://www.kabum.com.br/_next/image?url=https%3A%2F%2Fimages6.kabum.com.br%2Fprodutos%2Ffotos%2F359636%2Fmouse-sem-fio-logitech-mx-master-3s-8000-dpi-bluetooth-usb-para-uso-em-qualquer-superficie-clique-silencioso-grafite-910-006561_1677181006_gg.jpg&w=750&q=75",
+        "https://images.kabum.com.br/produtos/fotos/sync_mirakl/403303/xlarge/Mouse-Logitech-Mx-Master-3s-Sem-Fio-8000-DPI-Bluetooth-USB-Para-Uso-Em-Qualquer-Superf-cie-Clique-Silencioso-Grafite-910-006561_1752190481.png",
       ],
       specifications: {
         sensor: "Darkfield High Precision",
@@ -592,8 +592,8 @@ const main = async () => {
       shortDesc: "Razer DeathAdder V3 - 30000 DPI, switches ópticos",
       price: 399.99,
       images: [
-        "https://via.placeholder.com/600x600/00ff00/000000?text=Razer+DeathAdder",
-        "https://via.placeholder.com/600x600/00ff00/000000?text=Gaming+Mouse",
+        "https://m.media-amazon.com/images/I/71fRKz9pUnL.jpg",
+        "https://images.kabum.com.br/produtos/fotos/715915/mouse-razer-deathadder-v3-30-000dpi-preto-rz0104640100_1744114351_gg.jpg",
       ],
       specifications: {
         sensor: "Focus Pro 30K",
@@ -637,8 +637,8 @@ const main = async () => {
       price: 1299.99,
       originalPrice: 1499.99,
       images: [
-        "https://via.placeholder.com/600x600/ffcc00/000000?text=Corsair+K95",
-        "https://via.placeholder.com/600x600/ffcc00/000000?text=RGB+Keyboard",
+        "https://images.kabum.com.br/produtos/fotos/112873/teclado-mecanico-gamer-corsair-k95-platinum-xt-rgb-switch-cherry-mx-speed-us-ch-9127414-na_1594401619_gg.jpg",
+        "https://http2.mlstatic.com/D_Q_NP_696629-MLA47888168469_102021-O.webp",
       ],
       specifications: {
         layout: "ABNT2 (Português BR)",
@@ -683,8 +683,8 @@ const main = async () => {
       shortDesc: "Corsair HS80 RGB - Wireless, 20h bateria",
       price: 899.99,
       images: [
-        "https://via.placeholder.com/600x600/ffcc00/000000?text=Corsair+HS80",
-        "https://via.placeholder.com/600x600/ffcc00/000000?text=Gaming+Headset",
+        "https://images.kabum.com.br/produtos/fotos/216705/headset-gamer-sem-fio-corsair-hs80-premium-rgb-surround-dolby-atmos-wireless-drivers-50mm-preto-ca-9011235-na_1636559754_gg.jpg",
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_gJI-stxLTRwU1V5-7lu0-mJ5hxi7TaEP6g&s",
       ],
       specifications: {
         drivers: "Custom tuned 50mm neodymium",
@@ -728,8 +728,8 @@ const main = async () => {
       shortDesc: "iPhone 15 Pro - A17 Pro, 48MP, USB-C",
       price: 8999.99,
       images: [
-        "https://via.placeholder.com/600x600/000000/ffffff?text=iPhone+15+Pro",
-        "https://via.placeholder.com/600x600/000000/ffffff?text=iPhone+Camera",
+        "https://horizonplay.fbitsstatic.net/img/p/apple-iphone-15-pro-128gb-5g-vitrine-tela-super-retina-xdr-display-6-1-titanio-azul-150340/336932-3.jpg?w=420&h=420&v=202501191817",
+        "https://m.media-amazon.com/images/I/51bNCrZFLjL._UF1000,1000_QL80_.jpg",
       ],
       specifications: {
         chip: "A17 Pro",
@@ -779,8 +779,8 @@ const main = async () => {
       shortDesc: 'Galaxy S24 Ultra - 200MP, S Pen, 6.8"',
       price: 7499.99,
       images: [
-        "https://via.placeholder.com/600x600/1428a0/ffffff?text=Galaxy+S24+Ultra",
-        "https://via.placeholder.com/600x600/1428a0/ffffff?text=S+Pen",
+        "https://samsungbrshop.vtexassets.com/arquivos/ids/249570/S24_1000x1000__0005_S24_ultra_titanio_cinza.jpg.jpg?v=638793894861300000",
+        "https://gazin-images.gazin.com.br/tsU0-87772jZjoIvGLBmlmFbfPA=/1920x/filters:format(webp):quality(75)/https://gazin-marketplace.s3.amazonaws.com/midias/imagens/2024/06/smartphone-samsung-galaxy-s24-ultra-5g-octa-core-256gb-12gb-camera-200mp-com-ia-122406211849.jpg",
       ],
       specifications: {
         processor: "Snapdragon 8 Gen 3 for Galaxy",

@@ -1,29 +1,34 @@
+import { db } from "@/lib/prisma";
 import Link from "next/link";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const store = await db.store.findFirst();
+
+  if (!store) {
+    return <div>Loja não encontrada</div>;
+  }
+
   return (
-    <div className="bg-background flex min-h-screen items-center justify-center">
-      <div className="space-y-6 text-center">
-        <h1 className="text-foreground text-4xl font-bold">
-          🍔 Meu Sistema de Pedidos
-        </h1>
-        <p className="text-muted-foreground text-xl">
-          Sistema moderno de pedidos para restaurantes
+    <div className="flex min-h-screen flex-col items-center justify-center bg-blue-500">
+      <div className="flex flex-col items-center justify-center space-y-6">
+        <h1 className="text-4xl font-bold text-gray-900">💻 NeXT Store</h1>
+        <p className="text-xl text-gray-600">
+          E-commerce moderno de eletrônicos e periféricos
         </p>
-        <div className="space-y-4">
-          <Link
-            href="/meu-restaurante"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-block rounded-lg px-8 py-3 font-medium transition-colors"
-          >
-            🚀 Acessar Restaurante
-          </Link>
-          <div className="text-muted-foreground text-sm">
-            <p>✅ Next.js 15.1.6 configurado</p>
-            <p>✅ TypeScript + Tailwind CSS</p>
-            <p>✅ Prisma + PostgreSQL</p>
-            <p>✅ Stripe para pagamentos</p>
-          </div>
-        </div>
+      </div>
+
+      <div className="mt-4 flex flex-col gap-4 p-4 text-center text-white">
+        <h1 className="text-2xl font-bold">
+          Sua nova loja online de forma rápida e fácil
+        </h1>
+        <p className="text-sm">
+          Acesse agora a loja criada com Next.js 15.1.6 e Prisma 5.1.1
+        </p>
+        <Link href={`/${store.slug}`}>
+          <button className="cursor-pointer rounded-md bg-white p-2 text-black transition-colors hover:bg-blue-600 hover:text-white">
+            Acessar loja
+          </button>
+        </Link>
       </div>
     </div>
   );
