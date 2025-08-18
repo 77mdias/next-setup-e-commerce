@@ -7,13 +7,26 @@ import { useParams, usePathname } from "next/navigation";
 export default function Menu() {
   const { slug } = useParams();
   const pathname = usePathname();
+
+  // Verificar se estamos em qualquer página da loja (navegação principal)
+  const isInStoreNavigation = () => {
+    const storeNavRoutes = [
+      `/${slug}`,
+      `/${slug}/categorias`,
+      `/${slug}/ofertas`,
+      `/${slug}/suporte`,
+      `/${slug}/menu`,
+    ];
+    return storeNavRoutes.includes(pathname);
+  };
+
   return (
     <menu className="fixed right-0 bottom-0 left-0 z-50 bg-[var(--foreground)]">
       <ul className="flex content-center items-center justify-center gap-x-2 text-white">
         <li className="flex items-center justify-center gap-3 px-8 py-3">
-          <Link href={`/${slug}`}>
+          <Link href={`/${slug}/`}>
             <House
-              className={`h-6 w-6 ${pathname === `/${slug}` ? "menu-item-active" : ""}`}
+              className={`h-6 w-6 ${isInStoreNavigation() ? "menu-item-active" : ""}`}
             />
           </Link>
         </li>
