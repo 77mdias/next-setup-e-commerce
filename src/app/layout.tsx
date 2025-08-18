@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.scss";
+import SessionProvider from "@/components/providers/SessionProvider";
 
 export const metadata: Metadata = {
-  title: "Meu Sistema de Pedidos",
-  description: "Sistema moderno de pedidos para restaurantes",
+  title: "My Store - E-commerce de Eletrônicos",
+  description: "Plataforma completa de e-commerce para eletrônicos",
 };
 
 export default function RootLayout({
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <SessionProvider>{children}</SessionProvider>
+      </body>
     </html>
   );
 }

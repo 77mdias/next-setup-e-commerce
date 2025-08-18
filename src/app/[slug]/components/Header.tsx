@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Store } from "@prisma/client";
+import AuthButton from "@/components/auth/AuthButton";
 
 interface HeaderProps {
   slug: string;
@@ -52,12 +53,15 @@ export default function Header({ slug, store }: HeaderProps) {
           </span>
         </p>
       </div>
-      {/* BOTÃO DE PROCURA / SEARCH BUTTON*/}
-      <Button className="text-white">
-        <Link href={`/${slug}/menu`}>
-          <Search />
-        </Link>
-      </Button>
+      {/* BOTÕES DE AÇÃO */}
+      <div className="flex items-center gap-2">
+        <Button className="text-white">
+          <Link href={`/${slug}/menu`}>
+            <Search />
+          </Link>
+        </Button>
+        <AuthButton slug={slug} />
+      </div>
     </header>
   );
 }
