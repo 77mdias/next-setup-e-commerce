@@ -16,6 +16,12 @@
     --text-button-primary: hsla(0, 0%, 100%, 1);
     --text-card-categorys-isActive: hsla(0, 0%, 100%, 1);
 
+    // MENU
+    --menu-background: hsla(0, 0%, 100%, 1);
+    --menu-bg-active: hsla(348, 100%, 64%, 1);
+    --menu-text-primary: hsla(0, 0%, 0%, 1);
+    --menu-text-secondary: hsla(0, 0%, 100%, 1);
+
     // CARDs
     --card-product: hsla(0, 0%, 15%, 1);
     --card-categorys: hsla(205, 16%, 27%, 1);
@@ -67,6 +73,10 @@
   .nav-item-inactive {
     background-color: var(--card-categorys) !important;
     color: var(--text-primary) !important;
+  }
+
+  .menu-item-active {
+    color: var(--menu-bg-active) !important;
   }
 
   /* Garantir que funcione em todos os dispositivos */
