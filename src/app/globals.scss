@@ -57,4 +57,26 @@
   body {
     height: 100%;
   }
+
+  /* Estilos específicos para navegação */
+  .nav-item-active {
+    background-color: var(--card-categorys-isActive) !important;
+    color: var(--text-card-categorys-isActive) !important;
+  }
+
+  .nav-item-inactive {
+    background-color: var(--card-categorys) !important;
+    color: var(--text-primary) !important;
+  }
+
+  /* Garantir que funcione em todos os dispositivos */
+  @media (max-width: 768px) {
+    .nav-item-active {
+      background-color: var(--card-categorys-isActive) !important;
+    }
+
+    .nav-item-inactive {
+      background-color: var(--card-categorys) !important;
+    }
+  }
 }
