@@ -5,10 +5,10 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { storeSlug: string } },
+  { params }: { params: Promise<{ storeSlug: string }> },
 ) {
   try {
-    const { storeSlug } = params;
+    const { storeSlug } = await params;
 
     // Buscar a loja pelo slug
     const store = await prisma.store.findUnique({
@@ -66,10 +66,10 @@ export async function GET(
 // Atualizar imagens de um produto específico
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { storeSlug: string } },
+  { params }: { params: Promise<{ storeSlug: string }> },
 ) {
   try {
-    const { storeSlug } = params;
+    const { storeSlug } = await params;
     const { productId, processedImages } = await request.json();
 
     if (!productId || !processedImages || !Array.isArray(processedImages)) {
