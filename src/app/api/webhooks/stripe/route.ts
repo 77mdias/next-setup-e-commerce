@@ -4,8 +4,25 @@ import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
+  // Verificar se as variáveis de ambiente estão configuradas
+  if (!process.env.STRIPE_WEBHOOK_SECRET_KEY) {
+    console.error("STRIPE_WEBHOOK_SECRET_KEY não está configurada");
+    return NextResponse.json(
+      { error: "Webhook secret not configured" },
+      { status: 500 },
+    );
+  }
+
   const body = await request.text();
-  const signature = request.headers.get("stripe-signature")!;
+  const signature = request.headers.get("stripe-signature");
+
+  if (!signature) {
+    console.error("Stripe signature não encontrada nos headers");
+    return NextResponse.json(
+      { error: "Missing stripe signature" },
+      { status: 400 },
+    );
+  }
 
   let event: Stripe.Event;
 
@@ -13,7 +30,7 @@ export async function POST(request: NextRequest) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET_KEY!,
+      process.env.STRIPE_WEBHOOK_SECRET_KEY,
     );
   } catch (error) {
     console.error("Webhook signature verification failed:", error);
