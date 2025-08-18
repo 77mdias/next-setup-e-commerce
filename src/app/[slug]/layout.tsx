@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
+import Nav from "./components/Nav";
 
 const prisma = new PrismaClient();
 
@@ -27,9 +28,12 @@ export default async function Layout({
   }
 
   return (
-    <div>
+    <div className="bg-background bg-[var(--all-black)]">
       <Header slug={slug} store={store} />
-      <ScrollArea className="h-[calc(100vh-6.12rem)]">{children}</ScrollArea>
+      <ScrollArea className="h-[calc(100vh-6.12rem)]">
+        <Nav />
+        {children}
+      </ScrollArea>
       <Footer />
     </div>
   );

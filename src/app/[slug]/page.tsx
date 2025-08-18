@@ -41,19 +41,7 @@ export default async function StorePage({ params }: StorePageProps) {
   }
 
   return (
-    <div className="bg-background min-h-screen w-screen bg-[var(--all-black)]">
-      {/* 
-      <section className="relative h-64 overflow-hidden">
-        <Image
-          src={"/banner.png"}
-          alt={`Banner ${store.name}`}
-          className="h-full w-full object-cover"
-          width={100}
-          height={100}
-        />
-        <div className="absolute inset-0 bg-black/20" />
-      </section>
-      */}
+    <div className="min-h-screen w-screen">
       {/* Produtos em Destaque */}
       <HighlightedProducst slug={slug} store={store} />
 
