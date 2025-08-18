@@ -362,6 +362,7 @@ const main = async () => {
         "Processador AMD Ryzen 9 7900X com 12 núcleos e 24 threads. Arquitetura Zen 4 com frequência base de 4.7GHz e boost de até 5.6GHz. Perfeito para gaming e criação de conteúdo.",
       shortDesc: "AMD Ryzen 9 7900X - 12 núcleos, até 5.6GHz",
       price: 2899.99,
+      originalPrice: 3199.99,
       images: [
         "https://cdn.dooca.store/27441/products/mwveebxdbfuparb4gi6vl3f9qpdmitmkfsem.jpg?v=1664493149&webp=0",
         "https://images.kabum.com.br/produtos/fotos/378412/processador-amd-ryzen-9-7900x-5-6ghz-max-turbo-cache-76mb-am5-12-nucleos-video-integrado-100-100000589wof_1662134312_g.jpg",
@@ -500,6 +501,7 @@ const main = async () => {
         'Notebook gamer ASUS ROG Strix G15 com AMD Ryzen 7 6800H, RTX 3070 Ti, 16GB RAM, SSD 1TB, tela 15.6" 300Hz. Perfeito para gaming competitivo.',
       shortDesc: "ASUS ROG Strix G15 - Ryzen 7, RTX 3070 Ti",
       price: 7499.99,
+      originalPrice: 8499.99,
       images: [
         "https://dlcdnwebimgs.asus.com/gain/8B6818DE-C4A5-4399-B0A8-4392536AE07D",
         "https://m.media-amazon.com/images/I/71dwsA3KsfL.jpg",
@@ -591,6 +593,7 @@ const main = async () => {
         "Mouse gamer Razer DeathAdder V3 com sensor Focus Pro 30K, switches ópticos Razer, design ergonômico. Perfeito para gaming competitivo.",
       shortDesc: "Razer DeathAdder V3 - 30000 DPI, switches ópticos",
       price: 399.99,
+      originalPrice: 499.99,
       images: [
         "https://m.media-amazon.com/images/I/71fRKz9pUnL.jpg",
         "https://images.kabum.com.br/produtos/fotos/715915/mouse-razer-deathadder-v3-30-000dpi-preto-rz0104640100_1744114351_gg.jpg",
@@ -682,6 +685,7 @@ const main = async () => {
         "Headset gamer wireless Corsair HS80 RGB com drivers de 50mm, cancelamento de ruído, bateria de 20 horas e RGB customizável.",
       shortDesc: "Corsair HS80 RGB - Wireless, 20h bateria",
       price: 899.99,
+      originalPrice: 999.99,
       images: [
         "https://images.kabum.com.br/produtos/fotos/216705/headset-gamer-sem-fio-corsair-hs80-premium-rgb-surround-dolby-atmos-wireless-drivers-50mm-preto-ca-9011235-na_1636559754_gg.jpg",
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_gJI-stxLTRwU1V5-7lu0-mJ5hxi7TaEP6g&s",
@@ -727,6 +731,7 @@ const main = async () => {
         'iPhone 15 Pro com chip A17 Pro, câmera tripla de 48MP, tela Super Retina XDR de 6.1", USB-C e construção em titânio. O smartphone mais avançado da Apple.',
       shortDesc: "iPhone 15 Pro - A17 Pro, 48MP, USB-C",
       price: 8999.99,
+      originalPrice: 9999.99,
       images: [
         "https://horizonplay.fbitsstatic.net/img/p/apple-iphone-15-pro-128gb-5g-vitrine-tela-super-retina-xdr-display-6-1-titanio-azul-150340/336932-3.jpg?w=420&h=420&v=202501191817",
         "https://m.media-amazon.com/images/I/51bNCrZFLjL._UF1000,1000_QL80_.jpg",
@@ -778,6 +783,7 @@ const main = async () => {
         'Samsung Galaxy S24 Ultra com Snapdragon 8 Gen 3, câmera de 200MP, S Pen integrada, tela Dynamic AMOLED 2X de 6.8" e bateria de 5000mAh.',
       shortDesc: 'Galaxy S24 Ultra - 200MP, S Pen, 6.8"',
       price: 7499.99,
+      originalPrice: 8499.99,
       images: [
         "https://samsungbrshop.vtexassets.com/arquivos/ids/249570/S24_1000x1000__0005_S24_ultra_titanio_cinza.jpg.jpg?v=638793894861300000",
         "https://gazin-images.gazin.com.br/tsU0-87772jZjoIvGLBmlmFbfPA=/1920x/filters:format(webp):quality(75)/https://gazin-marketplace.s3.amazonaws.com/midias/imagens/2024/06/smartphone-samsung-galaxy-s24-ultra-5g-octa-core-256gb-12gb-camera-200mp-com-ia-122406211849.jpg",

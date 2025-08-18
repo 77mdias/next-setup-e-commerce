@@ -1,9 +1,8 @@
 {
   "tailwindCSS.includeLanguages": {
-    "typescript": "typescript",
-    "javascript": "javascript",
-    "typescriptreact": "typescriptreact",
-    "javascriptreact": "javascriptreact"
+    "typescript": "javascript",
+    "typescriptreact": "javascript",
+    "javascript": "javascript"
   },
   "tailwindCSS.experimental.classRegex": [
     [
@@ -13,15 +12,40 @@
     [
       "cx\\(([^)]*)\\)",
       "(?:'|\"|`)([^']*)(?:'|\"|`)"
+    ],
+    [
+      "clsx\\(([^)]*)\\)",
+      "(?:'|\"|`)([^']*)(?:'|\"|`)"
+    ],
+    [
+      "cn\\(([^)]*)\\)",
+      "(?:'|\"|`)([^']*)(?:'|\"|`)"
+    ],
+    [
+      "className\\s*=\\s*[\"'`]([^\"'`]*)[\"'`]",
+      "([a-zA-Z0-9\\-:]+)"
     ]
   ],
-  "css.validate": false,
-  "less.validate": false,
-  "scss.validate": false,
+  "tailwindCSS.classAttributes": [
+    "class",
+    "className",
+    "ngClass",
+    ".*[cC]lass.*"
+  ],
+  "tailwindCSS.validate": true,
+  "tailwindCSS.lint.cssConflict": "warning",
+  "tailwindCSS.lint.invalidApply": "error",
+  "tailwindCSS.lint.invalidConfigPath": "error",
+  "tailwindCSS.lint.invalidScreen": "error",
+  "tailwindCSS.lint.invalidTailwindDirective": "error",
+  "tailwindCSS.lint.invalidVariant": "error",
+  "tailwindCSS.lint.recommendedVariantOrder": "warning",
   "editor.quickSuggestions": {
-    "strings": true
+    "strings": "on"
   },
-  "tailwindCSS.emmetCompletions": true,
-  "editor.inlineSuggest.enabled": true,
-  "typescript.preferences.includePackageJsonAutoImports": "on"
+  "editor.autoClosingQuotes": "always",
+  "typescript.preferences.quoteStyle": "double",
+  "javascript.preferences.quoteStyle": "double",
+  "css.validate": false,
+  "scss.validate": false
 }
