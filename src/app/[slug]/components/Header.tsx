@@ -14,7 +14,7 @@ interface HeaderProps {
 export default function Header({ slug, store }: HeaderProps) {
   return (
     <header className={`bg-[var(--background)]`}>
-      <div className="container flex w-full flex-shrink-0 flex-row items-center justify-between px-4 py-2">
+      <div className="flex w-full flex-shrink-0 flex-row items-center justify-between px-4 py-2">
         {/* LOGO DA LOJA */}
         <div className="flex items-center gap-1">
           <Image

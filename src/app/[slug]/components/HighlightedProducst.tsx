@@ -24,12 +24,15 @@ const HighlightedProducst = ({
   // Carregar wishlist inicial do usuário
   useEffect(() => {
     const loadWishlist = async () => {
+      // Se o usuário não estiver autenticado, não carrega a wishlist
       if (!isAuthenticated) return;
 
       try {
+        // Carregar wishlist do usuário
         const response = await fetch("/api/wishlist");
         if (response.ok) {
           const data = await response.json();
+          // Atualizar o estado visual com os IDs dos produtos na wishlist
           const productIds = new Set<string>(
             data.wishlist.map((item: any) => item.productId as string),
           );
@@ -40,9 +43,11 @@ const HighlightedProducst = ({
       }
     };
 
+    // Carregar wishlist do usuário
     loadWishlist();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, wishlistItems]);
 
+  // Adicionar produto ao carrinho
   const handleAddToCart = async (product: Product) => {
     if (!isAuthenticated) {
       router.push(`/auth/signin?callbackUrl=/${slug}`);
@@ -69,6 +74,7 @@ const HighlightedProducst = ({
     }
   };
 
+  // Adicionar produto à wishlist
   const handleAddToWishlist = async (product: Product) => {
     if (!isAuthenticated) {
       router.push(`/auth/signin?callbackUrl=/${slug}`);
@@ -76,6 +82,7 @@ const HighlightedProducst = ({
     }
 
     setLoadingWishlist(product.id);
+    // CHAMAR API DO WISHLIST
     try {
       const response = await fetch("/api/wishlist", {
         method: "POST",
@@ -87,25 +94,31 @@ const HighlightedProducst = ({
         }),
       });
 
+      // Se a resposta não for ok, lança um erro
       if (!response.ok) {
         throw new Error("Erro ao adicionar à wishlist");
       }
 
+      // Se a resposta for ok, atualiza o estado visual
       const data = await response.json();
 
       // Atualizar o estado visual
       if (data.action === "added") {
+        // Adicionar o produto à wishlist
         setWishlistItems((prev) => new Set([...prev, product.id]));
       } else {
+        // Remover o produto da wishlist
         setWishlistItems((prev) => {
           const newSet = new Set(prev);
           newSet.delete(product.id);
           return newSet;
         });
       }
+      // Se ocorrer um erro, exibe uma mensagem de erro
     } catch (error) {
       console.error("Erro ao gerenciar wishlist:", error);
       alert("Erro ao gerenciar lista de favoritos");
+      // Finalmente, limpa o estado de loading
     } finally {
       setLoadingWishlist(null);
     }
