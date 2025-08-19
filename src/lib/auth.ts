@@ -1,40 +1,134 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { NextAuthOptions } from "next-auth";
+import GitHubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { db } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
+import { getServerSession } from "next-auth";
 
-export async function getSession() {
-  return await getServerSession(authOptions);
-}
+export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(db),
+  providers: [
+    // OAuth Providers
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID!,
+      clientSecret: process.env.GITHUB_SECRET!,
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    // Credentials Provider para login com email/senha
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
 
-export async function getCurrentUser() {
-  const session = await getSession();
+        const user = await db.user.findUnique({
+          where: {
+            email: credentials.email,
+          },
+        });
+
+        if (!user || !user.password) {
+          return null;
+        }
+
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.password,
+        );
+
+        if (!isPasswordValid) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          cpf: user.cpf,
+          image: (user as any).image || (user as any).avatar || null,
+          role: user.role,
+        };
+      },
+    }),
+  ],
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 dias
+    updateAge: 24 * 60 * 60, // Atualiza a cada 24h
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 dias
+  },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
+  callbacks: {
+    async jwt({ token, user, account }) {
+      if (user) {
+        token.role = user.role;
+        token.id = user.id;
+        token.cpf = (user as any).cpf || null;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as UserRole;
+        session.user.cpf = token.cpf as string;
+      }
+      return session;
+    },
+    async signIn({ user, account, profile }) {
+      // Permitir login OAuth sempre
+      if (account?.provider !== "credentials") {
+        return true;
+      }
+
+      // Para credentials, verificar se o usuário está ativo
+      const dbUser = await db.user.findUnique({
+        where: { email: user.email! },
+      });
+
+      return dbUser?.isActive ?? false;
+    },
+  },
+  pages: {
+    signIn: "/auth/signin",
+    error: "/auth/error",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};
+
+// Helpers para server-side
+export const getCurrentUser = async () => {
+  const session = await getServerSession(authOptions);
   return session?.user;
-}
+};
 
-export async function requireAuth() {
-  const session = await getSession();
-  if (!session?.user) {
-    throw new Error("Authentication required");
-  }
-  return session.user;
-}
-
-export async function requireRole(role: UserRole) {
-  const user = await requireAuth();
-  if (user.role !== role) {
-    throw new Error(`Role ${role} required`);
+export const requireAuth = async () => {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("Unauthorized");
   }
   return user;
-}
-
-export async function requireAdmin() {
-  return await requireRole(UserRole.ADMIN);
-}
-
-export async function requireSeller() {
-  const user = await requireAuth();
-  if (user.role !== UserRole.ADMIN && user.role !== UserRole.SELLER) {
-    throw new Error("Seller or Admin role required");
-  }
-  return user;
-}
+};
