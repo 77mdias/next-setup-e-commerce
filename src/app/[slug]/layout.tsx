@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Nav from "./components/Nav";
+import styles from "./scss/page.module.scss";
 
 const prisma = new PrismaClient();
 
