@@ -24,8 +24,11 @@ const HighlightedProducst = ({
   // Carregar wishlist inicial do usuário
   useEffect(() => {
     const loadWishlist = async () => {
-      // Se o usuário não estiver autenticado, não carrega a wishlist
-      if (!isAuthenticated) return;
+      // Se o usuário não estiver autenticado, limpa a wishlist e não carrega
+      if (!isAuthenticated) {
+        setWishlistItems(new Set());
+        return;
+      }
 
       try {
         // Carregar wishlist do usuário
@@ -45,7 +48,7 @@ const HighlightedProducst = ({
 
     // Carregar wishlist do usuário
     loadWishlist();
-  }, [isAuthenticated, wishlistItems]);
+  }, [isAuthenticated]); // ✅ REMOVIDO wishlistItems da dependência
 
   // Adicionar produto ao carrinho
   const handleAddToCart = async (product: Product) => {

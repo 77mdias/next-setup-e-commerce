@@ -8,11 +8,6 @@ import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
 import { getServerSession } from "next-auth";
 
-// Debug para ver qual URL está sendo usada
-console.log("🔍 NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
-console.log("🔍 NODE_ENV:", process.env.NODE_ENV);
-console.log("🔍 GITHUB_ID:", process.env.GITHUB_ID);
-
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
   providers: [
@@ -117,23 +112,18 @@ export const authOptions: NextAuthOptions = {
       return dbUser?.isActive ?? false;
     },
     async redirect({ url, baseUrl }) {
-      console.log("🔍 Redirect callback:", { url, baseUrl });
-
       // Se a URL é relativa, adiciona o baseUrl
       if (url.startsWith("/")) {
         const redirectUrl = `${baseUrl}${url}`;
-        console.log("🔍 Redirecting to:", redirectUrl);
         return redirectUrl;
       }
 
       // Se a URL é do mesmo domínio, permite
       if (url.startsWith(baseUrl)) {
-        console.log("🔍 Same domain redirect:", url);
         return url;
       }
 
       // Se não, volta para o baseUrl
-      console.log("🔍 Default redirect to baseUrl:", baseUrl);
       return baseUrl;
     },
   },
