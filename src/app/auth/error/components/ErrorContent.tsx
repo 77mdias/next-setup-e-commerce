@@ -13,7 +13,7 @@ const errors = {
   EmailCreateAccount: "Tente fazer login com uma conta diferente.",
   Callback: "Tente fazer login com uma conta diferente.",
   OAuthAccountNotLinked:
-    "Para confirmar sua identidade, faça login com a mesma conta que você usou originalmente.",
+    "Este email já está cadastrado com senha. Para usar login com GitHub, você precisa: 1) Fazer login com email/senha primeiro, ou 2) Usar uma conta GitHub diferente.",
   EmailSignin: "Verifique seu endereço de email.",
   CredentialsSignin:
     "Falha no login. Verifique se os detalhes que você forneceu estão corretos.",
