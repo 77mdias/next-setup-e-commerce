@@ -3,10 +3,13 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
+import { useParams } from "next/navigation";
 import { User, Mail, Shield, Calendar } from "lucide-react";
 
 export default function PerfilPage() {
   const { user, isLoading, isAuthenticated } = useAuth();
+  const params = useParams();
+  const slug = params.slug as string;
 
   if (isLoading) {
     return (
@@ -104,7 +107,12 @@ export default function PerfilPage() {
             </Button>
 
             <Button
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={() => {
+                signOut({
+                  callbackUrl: `/${slug}`,
+                  redirect: true,
+                });
+              }}
               className="w-full bg-red-600 text-white hover:bg-red-700"
             >
               Sair da Conta

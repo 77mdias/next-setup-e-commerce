@@ -111,10 +111,18 @@ export const authOptions: NextAuthOptions = {
 
       return dbUser?.isActive ?? false;
     },
+    async redirect({ url, baseUrl }) {
+      // Permitir redirecionamentos para URLs do mesmo domínio
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Permitir redirecionamentos para o baseUrl
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
   },
   pages: {
     signIn: "/auth/signin",
     error: "/auth/error",
+    signOut: "/auth/signin", // Redirecionar para login após logout
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

@@ -14,6 +14,7 @@ export default function AuthButton({ slug }: { slug: string }) {
     return <div className="h-6 w-6 animate-pulse rounded bg-gray-600"></div>;
   }
 
+  // Se o usuário estiver autenticado e tiver um usuário, exibe o botão de perfil e o botão de logout
   if (isAuthenticated && user) {
     return (
       <div className="flex items-center gap-2">
@@ -28,7 +29,12 @@ export default function AuthButton({ slug }: { slug: string }) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={() => {
+            signOut({
+              callbackUrl: `/${slug}`,
+              redirect: true,
+            });
+          }}
           className="cursor-pointer p-2 text-white hover:bg-gray-700"
         >
           <LogOut className="h-5 w-5" />
@@ -37,6 +43,7 @@ export default function AuthButton({ slug }: { slug: string }) {
     );
   }
 
+  // Se o usuário não estiver autenticado, exibe o botão de login
   return (
     <Button
       variant="ghost"

@@ -3,6 +3,46 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
 
+// Função para validar senha com requisitos de segurança
+function validatePassword(password: string): {
+  isValid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+
+  // Mínimo 8 caracteres
+  if (password.length < 8) {
+    errors.push("A senha deve ter pelo menos 8 caracteres");
+  }
+
+  // Pelo menos uma letra maiúscula
+  if (!/[A-Z]/.test(password)) {
+    errors.push("A senha deve conter pelo menos uma letra maiúscula (A-Z)");
+  }
+
+  // Pelo menos uma letra minúscula
+  if (!/[a-z]/.test(password)) {
+    errors.push("A senha deve conter pelo menos uma letra minúscula (a-z)");
+  }
+
+  // Pelo menos um número
+  if (!/\d/.test(password)) {
+    errors.push("A senha deve conter pelo menos um número (0-9)");
+  }
+
+  // Pelo menos um caractere especial
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    errors.push(
+      "A senha deve conter pelo menos um caractere especial (!@#$%^&*()_+-=[]{}|;':\",./<>?)",
+    );
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { name, email, password, cpf } = await request.json();
@@ -14,9 +54,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (password.length < 6) {
+    // Validação de senha robusta
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
       return NextResponse.json(
-        { message: "A senha deve ter pelo menos 6 caracteres" },
+        {
+          message: "Senha não atende aos requisitos de segurança",
+          details: passwordValidation.errors,
+        },
         { status: 400 },
       );
     }
@@ -31,6 +76,20 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { message: "Usuário já existe com este email" },
+        { status: 400 },
+      );
+    }
+
+    // Verificar se o CPF já existe
+    const existingCpf = await db.user.findUnique({
+      where: {
+        cpf,
+      },
+    });
+
+    if (existingCpf) {
+      return NextResponse.json(
+        { message: "Usuário já existe com este CPF" },
         { status: 400 },
       );
     }
