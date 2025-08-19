@@ -1,3 +1,5 @@
+"use client";
+
 import { formatCurrency } from "@/helpers/format-currency";
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart } from "lucide-react";
@@ -5,6 +7,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Store, Product } from "@prisma/client";
 import styles from "../scss/page.module.scss";
+import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const HighlightedProducst = ({
   slug,
@@ -13,6 +18,73 @@ const HighlightedProducst = ({
   slug: string;
   store: Store & { products: Product[] };
 }) => {
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
+  const [loadingCart, setLoadingCart] = useState<string | null>(null);
+  const [loadingWishlist, setLoadingWishlist] = useState<string | null>(null);
+
+  const handleAddToCart = async (product: Product) => {
+    if (!isAuthenticated) {
+      router.push(`/auth/signin?callbackUrl=/${slug}`);
+      return;
+    }
+
+    setLoadingCart(product.id);
+    try {
+      // Aqui você pode implementar a lógica do carrinho
+      // Por enquanto, vamos simular um delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // TODO: Implementar API do carrinho
+      console.log("Produto adicionado ao carrinho:", product.name);
+
+      // Feedback visual ou toast notification aqui
+      alert(`${product.name} foi adicionado ao carrinho!`);
+    } catch (error) {
+      console.error("Erro ao adicionar ao carrinho:", error);
+      alert("Erro ao adicionar produto ao carrinho");
+    } finally {
+      setLoadingCart(null);
+    }
+  };
+
+  const handleAddToWishlist = async (product: Product) => {
+    if (!isAuthenticated) {
+      router.push(`/auth/signin?callbackUrl=/${slug}`);
+      return;
+    }
+
+    setLoadingWishlist(product.id);
+    try {
+      const response = await fetch("/api/wishlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: product.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao adicionar à wishlist");
+      }
+
+      const data = await response.json();
+
+      if (data.action === "added") {
+        alert(`${product.name} foi adicionado aos favoritos!`);
+      } else {
+        alert(`${product.name} foi removido dos favoritos!`);
+      }
+    } catch (error) {
+      console.error("Erro ao gerenciar wishlist:", error);
+      alert("Erro ao gerenciar lista de favoritos");
+    } finally {
+      setLoadingWishlist(null);
+    }
+  };
+
   return (
     <section className="container mx-auto px-4 py-8 text-white">
       <div className="mb-3 flex items-center justify-between">
@@ -63,11 +135,19 @@ const HighlightedProducst = ({
               {/* BOTÕES DE AÇÃO*/}
               <div className="flex justify-between">
                 <div className="flex gap-2">
-                  <Button>
-                    <Heart />
+                  <Button
+                    onClick={() => handleAddToWishlist(product)}
+                    disabled={loadingWishlist === product.id}
+                    className="p-2"
+                  >
+                    {loadingWishlist === product.id ? "..." : <Heart />}
                   </Button>
-                  <Button>
-                    <ShoppingCart />
+                  <Button
+                    onClick={() => handleAddToCart(product)}
+                    disabled={loadingCart === product.id}
+                    className="p-2"
+                  >
+                    {loadingCart === product.id ? "..." : <ShoppingCart />}
                   </Button>
                 </div>
 

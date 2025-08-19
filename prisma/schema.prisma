@@ -30,6 +30,7 @@ model User {
   reviews        Review[]
   stockMovements StockMovement[]
   stores         Store[]
+  wishlist       Wishlist[]
   
   // NextAuth relacionamentos
   accounts       Account[]
@@ -173,6 +174,7 @@ model Product {
   category       Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   store          Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
   reviews        Review[]
+  wishlist       Wishlist[]
 
   @@map("products")
 }
@@ -438,4 +440,24 @@ enum PaymentStatus {
 enum CouponType {
   PERCENTAGE
   FIXED
+}
+
+// ===================================
+// 💖 MÓDULO DE WISHLIST/FAVORITOS
+// ===================================
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Índice único para evitar duplicatas
+  @@unique([userId, productId])
+  @@map("wishlists")
 }
