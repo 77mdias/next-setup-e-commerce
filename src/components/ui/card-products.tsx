@@ -14,6 +14,9 @@ const CardProducts = ({
   handleAddToCart,
   loadingCart,
   slug,
+  buttonCardProduct,
+  buttonCardProductName,
+  displayButtonCart,
 }: {
   product: Product;
   wishlistItems: Set<string>;
@@ -22,6 +25,9 @@ const CardProducts = ({
   handleAddToCart: (product: Product) => void;
   loadingCart: string | null;
   slug: string;
+  buttonCardProduct: (product: Product) => void;
+  buttonCardProductName: string;
+  displayButtonCart: string;
 }) => {
   return (
     <article className="group relative overflow-hidden rounded-xl p-4 transition-all duration-300 hover:scale-[1.02]">
@@ -117,7 +123,7 @@ const CardProducts = ({
             <Button
               onClick={() => handleAddToCart(product)}
               disabled={loadingCart === product.id}
-              className="flex h-10 w-10 items-center justify-center rounded-full p-0"
+              className={`${displayButtonCart} h-10 w-10 items-center justify-center rounded-full p-0`}
               variant="outline"
               aria-label="Adicionar ao carrinho"
             >
@@ -131,13 +137,11 @@ const CardProducts = ({
 
           {/* Botão Ver Produto */}
           <Button
-            asChild
+            onClick={() => buttonCardProduct(product)}
             className="flex-1 bg-[var(--button-primary)] text-white hover:bg-[var(--text-price-secondary)] md:min-w-[100px] md:flex-none"
           >
-            <Link href={`/${slug}/product/${product.id}`}>
-              <span className="hidden md:inline">Ver Produto</span>
-              <span className="md:hidden">Ver</span>
-            </Link>
+            <span className="hidden md:inline">{buttonCardProductName}</span>
+            <span className="md:hidden">{buttonCardProductName}</span>
           </Button>
         </div>
 

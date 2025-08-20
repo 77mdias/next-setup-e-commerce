@@ -1,13 +1,10 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Heart, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { Store, Product } from "@prisma/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import CardProducts from "@/components/ui/card-products";
-import { useCart } from "../context/cart";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useAddToCart } from "@/hooks/useAddToCart";
+import { useRouter } from "next/navigation";
 
 const HighlightedProducst = ({
   slug,
@@ -16,114 +13,13 @@ const HighlightedProducst = ({
   slug: string;
   store: Store & { products: Product[] };
 }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { wishlistItems, loadingWishlist, handleAddToWishlist } =
+    useWishlist(slug);
+  const { loadingCart, handleAddToCart } = useAddToCart(slug);
   const router = useRouter();
-  const [loadingCart, setLoadingCart] = useState<string | null>(null);
-  const [loadingWishlist, setLoadingWishlist] = useState<string | null>(null);
-  const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
-  const { addProductToCart } = useCart();
 
-  // Carregar wishlist inicial do usuário
-  useEffect(() => {
-    const loadWishlist = async () => {
-      // Se o usuário não estiver autenticado, limpa a wishlist e não carrega
-      if (!isAuthenticated) {
-        setWishlistItems(new Set());
-        return;
-      }
-
-      try {
-        // Carregar wishlist do usuário
-        const response = await fetch("/api/wishlist");
-        if (response.ok) {
-          const data = await response.json();
-          // Atualizar o estado visual com os IDs dos produtos na wishlist
-          const productIds = new Set<string>(
-            data.wishlist.map((item: any) => item.productId as string),
-          );
-          setWishlistItems(productIds);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar wishlist:", error);
-      }
-    };
-
-    // Carregar wishlist do usuário
-    loadWishlist();
-  }, [isAuthenticated]); // ✅ REMOVIDO wishlistItems da dependência
-
-  // Adicionar produto ao carrinho
-  const handleAddToCart = async (product: Product) => {
-    if (!isAuthenticated) {
-      router.push(`/auth/signin?callbackUrl=/${slug}`);
-      return;
-    }
-
-    setLoadingCart(product.id);
-    try {
-      await addProductToCart({
-        ...product,
-        images: product.images,
-        quantity: 1,
-      });
-      // Redirecionar para o carrinho ao invés de mostrar alert
-      router.push(`/${slug}/carrinho`);
-    } catch (error) {
-      console.error("Erro ao adicionar ao carrinho:", error);
-      alert("Erro ao adicionar produto ao carrinho");
-    } finally {
-      setLoadingCart(null);
-    }
-  };
-
-  // Adicionar produto à wishlist
-  const handleAddToWishlist = async (product: Product) => {
-    if (!isAuthenticated) {
-      router.push(`/auth/signin?callbackUrl=/${slug}`);
-      return;
-    }
-
-    setLoadingWishlist(product.id);
-    // CHAMAR API DO WISHLIST
-    try {
-      const response = await fetch("/api/wishlist", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          productId: product.id,
-        }),
-      });
-
-      // Se a resposta não for ok, lança um erro
-      if (!response.ok) {
-        throw new Error("Erro ao adicionar à wishlist");
-      }
-
-      // Se a resposta for ok, atualiza o estado visual
-      const data = await response.json();
-
-      // Atualizar o estado visual
-      if (data.action === "added") {
-        // Adicionar o produto à wishlist
-        setWishlistItems((prev) => new Set([...prev, product.id]));
-      } else {
-        // Remover o produto da wishlist
-        setWishlistItems((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(product.id);
-          return newSet;
-        });
-      }
-      // Se ocorrer um erro, exibe uma mensagem de erro
-    } catch (error) {
-      console.error("Erro ao gerenciar wishlist:", error);
-      alert("Erro ao gerenciar lista de favoritos");
-      // Finalmente, limpa o estado de loading
-    } finally {
-      setLoadingWishlist(null);
-    }
+  const buttonCardProduct = (product: Product) => {
+    router.push(`/${slug}/product/${product.id}`);
   };
 
   return (
@@ -153,6 +49,9 @@ const HighlightedProducst = ({
                 handleAddToCart={handleAddToCart}
                 loadingCart={loadingCart}
                 slug={slug}
+                buttonCardProduct={() => buttonCardProduct(product)}
+                buttonCardProductName="Ver"
+                displayButtonCart="flex"
               />
             </div>
           ))}

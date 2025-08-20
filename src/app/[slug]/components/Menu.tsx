@@ -10,14 +10,23 @@ export default function Menu() {
 
   // Verificar se estamos em qualquer página da loja (navegação principal)
   const isInStoreNavigation = () => {
+    // Verificar se estamos na página inicial da loja
+    if (pathname === `/${slug}`) return true;
+
+    // Verificar se estamos em páginas específicas da loja
     const storeNavRoutes = [
-      `/${slug}`,
       `/${slug}/categorias`,
       `/${slug}/ofertas`,
       `/${slug}/suporte`,
       `/${slug}/menu`,
     ];
-    return storeNavRoutes.includes(pathname);
+
+    if (storeNavRoutes.includes(pathname)) return true;
+
+    // Verificar se estamos em uma página de produto (começa com /${slug}/product/)
+    if (pathname.startsWith(`/${slug}/product/`)) return true;
+
+    return false;
   };
 
   return (

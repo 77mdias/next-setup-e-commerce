@@ -3,34 +3,30 @@
 import CardProducts from "@/components/ui/card-products";
 import { useAuth } from "@/hooks/useAuth";
 import { Heart } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useCart } from "../context/cart";
-import { Product } from "@prisma/client";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useAddToCart } from "@/hooks/useAddToCart";
 
 export default function WishlistPage() {
   const { user, isLoading, isAuthenticated } = useAuth();
-  const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
   const [wishlistData, setWishlistData] = useState<any[]>([]);
-  const { slug } = useParams();
-  const { addProductToCart } = useCart();
-  const router = useRouter();
-  const [loadingCart, setLoadingCart] = useState<string | null>(null);
-  const { products } = useCart();
+  const params = useParams();
+  const slug = params.slug as string;
 
-  // Carregar wishlist inicial do usuário
+  const { wishlistItems, loadingWishlist, handleAddToWishlist } =
+    useWishlist(slug);
+  const { loadingCart, handleAddToCart } = useAddToCart(slug);
+
+  // Carregar dados da wishlist
   useEffect(() => {
-    const loadWishlist = async () => {
+    const loadWishlistData = async () => {
       if (!isAuthenticated) return;
 
       try {
         const response = await fetch("/api/wishlist");
         if (response.ok) {
           const data = await response.json();
-          const productIds = new Set<string>(
-            data.wishlist.map((item: any) => item.productId as string),
-          );
-          setWishlistItems(productIds);
           setWishlistData(data.wishlist);
         }
       } catch (error) {
@@ -38,32 +34,8 @@ export default function WishlistPage() {
       }
     };
 
-    loadWishlist();
+    loadWishlistData();
   }, [isAuthenticated]);
-
-  // Adicionar produto ao carrinho
-  const handleAddToCart = async (product: Product) => {
-    if (!isAuthenticated) {
-      router.push(`/auth/signin?callbackUrl=/${slug}`);
-      return;
-    }
-
-    setLoadingCart(product.id);
-    try {
-      await addProductToCart({
-        ...product,
-        images: product.images,
-        quantity: 1,
-      });
-      // Redirecionar para o carrinho ao invés de mostrar alert
-      router.push(`/${slug}/carrinho`);
-    } catch (error) {
-      console.error("Erro ao adicionar ao carrinho:", error);
-      alert("Erro ao adicionar produto ao carrinho");
-    } finally {
-      setLoadingCart(null);
-    }
-  };
 
   // Loading state
   if (isLoading) {
