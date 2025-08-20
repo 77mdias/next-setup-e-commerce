@@ -31,6 +31,7 @@ model User {
   stockMovements StockMovement[]
   stores         Store[]
   wishlist       Wishlist[]
+  cart           Cart[]
   
   // NextAuth relacionamentos
   accounts       Account[]
@@ -175,6 +176,7 @@ model Product {
   store          Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
   reviews        Review[]
   wishlist       Wishlist[]
+  cart           Cart[]
 
   @@map("products")
 }
@@ -460,4 +462,25 @@ model Wishlist {
   // Índice único para evitar duplicatas
   @@unique([userId, productId])
   @@map("wishlists")
+}
+
+// ===================================
+// 🛒 MÓDULO DE CARRINHO
+// ===================================
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Índice único para evitar duplicatas do mesmo produto
+  @@unique([userId, productId])
+  @@map("carts")
 }

@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import CardProducts from "@/components/ui/card-products";
+import { useCart } from "../context/cart";
 
 const HighlightedProducst = ({
   slug,
@@ -20,6 +21,7 @@ const HighlightedProducst = ({
   const [loadingCart, setLoadingCart] = useState<string | null>(null);
   const [loadingWishlist, setLoadingWishlist] = useState<string | null>(null);
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
+  const { addProductToCart } = useCart();
 
   // Carregar wishlist inicial do usuário
   useEffect(() => {
@@ -59,16 +61,13 @@ const HighlightedProducst = ({
 
     setLoadingCart(product.id);
     try {
-      // Aqui você pode implementar a lógica do carrinho
-      // Por enquanto, vamos simular um delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // TODO: Implementar API do carrinho
-      console.log("Produto adicionado ao carrinho:", product.name);
-
-      // Feedback visual ou toast notification aqui
-
-      alert(`${product.name} foi adicionado ao carrinho!`);
+      await addProductToCart({
+        ...product,
+        images: product.images,
+        quantity: 1,
+      });
+      // Redirecionar para o carrinho ao invés de mostrar alert
+      router.push(`/${slug}/carrinho`);
     } catch (error) {
       console.error("Erro ao adicionar ao carrinho:", error);
       alert("Erro ao adicionar produto ao carrinho");

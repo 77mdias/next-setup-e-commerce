@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Nav from "./components/Nav";
+import { CartProvider } from "./context/cart";
 
 const prisma = new PrismaClient();
 
@@ -32,7 +33,7 @@ export default async function Layout({
       <Header slug={slug} store={store} />
       <ScrollArea className="h-[calc(100vh-6.12rem)]">
         <Nav />
-        {children}
+        <CartProvider>{children}</CartProvider>
       </ScrollArea>
       <Menu />
     </div>

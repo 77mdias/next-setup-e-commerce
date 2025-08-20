@@ -3,14 +3,21 @@
 import CardProducts from "@/components/ui/card-products";
 import { useAuth } from "@/hooks/useAuth";
 import { Heart } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useCart } from "../context/cart";
+import { Product } from "@prisma/client";
 
 export default function WishlistPage() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
   const [wishlistData, setWishlistData] = useState<any[]>([]);
   const { slug } = useParams();
+  const { addProductToCart } = useCart();
+  const router = useRouter();
+  const [loadingCart, setLoadingCart] = useState<string | null>(null);
+  const { products } = useCart();
+
   // Carregar wishlist inicial do usuário
   useEffect(() => {
     const loadWishlist = async () => {
@@ -33,6 +40,30 @@ export default function WishlistPage() {
 
     loadWishlist();
   }, [isAuthenticated]);
+
+  // Adicionar produto ao carrinho
+  const handleAddToCart = async (product: Product) => {
+    if (!isAuthenticated) {
+      router.push(`/auth/signin?callbackUrl=/${slug}`);
+      return;
+    }
+
+    setLoadingCart(product.id);
+    try {
+      await addProductToCart({
+        ...product,
+        images: product.images,
+        quantity: 1,
+      });
+      // Redirecionar para o carrinho ao invés de mostrar alert
+      router.push(`/${slug}/carrinho`);
+    } catch (error) {
+      console.error("Erro ao adicionar ao carrinho:", error);
+      alert("Erro ao adicionar produto ao carrinho");
+    } finally {
+      setLoadingCart(null);
+    }
+  };
 
   // Loading state
   if (isLoading) {
@@ -100,8 +131,8 @@ export default function WishlistPage() {
                   wishlistItems={wishlistItems}
                   loadingWishlist={null}
                   handleAddToWishlist={() => {}}
-                  handleAddToCart={() => {}}
-                  loadingCart={null}
+                  handleAddToCart={handleAddToCart}
+                  loadingCart={loadingCart}
                   slug={slug as string}
                 />
               </div>
