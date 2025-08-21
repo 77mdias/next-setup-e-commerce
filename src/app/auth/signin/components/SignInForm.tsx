@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Github, Mail, Eye, EyeOff } from "lucide-react";
 import ButtonLogin from "./ButtonLogin";
+import { useNotification } from "@/components/ui/notification";
+import { Alert } from "@/components/ui/alert";
 
 export default function SignInForm() {
   const [email, setEmail] = useState("");
@@ -15,17 +17,36 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [oauthError, setOauthError] = useState<string | null>(null);
   const params = useParams();
   const searchParams = useSearchParams();
   const slug = params.slug as string;
   const router = useRouter();
+  const { showNotification, NotificationContainer } = useNotification();
   const callbackUrl =
     searchParams.get("callbackUrl") || (slug ? `/${slug}` : "/");
+
+  // Verificar se há erro na URL e mostrar alerta
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam === "OAuthAccountNotLinked") {
+      setOauthError("OAuthAccountNotLinked");
+      // Limpar a URL removendo o parâmetro de erro
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete("error");
+      router.replace(newUrl.pathname + newUrl.search);
+    }
+  }, [searchParams, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+
+    // Salvar email no localStorage para uso posterior
+    if (email) {
+      localStorage.setItem("lastAttemptedEmail", email);
+    }
 
     try {
       const result = await signIn("credentials", {
@@ -46,6 +67,10 @@ export default function SignInForm() {
     }
   };
 
+  const handleCloseOAuthError = () => {
+    setOauthError(null);
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--all-black)] px-4">
       <div className="w-full max-w-md space-y-8">
@@ -63,6 +88,28 @@ export default function SignInForm() {
             </Link>
           </p>
         </div>
+
+        {/* Alerta de erro OAuth */}
+        {oauthError === "OAuthAccountNotLinked" && (
+          <Alert
+            type="warning"
+            title="Email já cadastrado"
+            message="Este email já está cadastrado em nossa plataforma. Para sua segurança, você precisa fazer login usando o método original de cadastro."
+            onClose={handleCloseOAuthError}
+            actions={[
+              {
+                label: "Fazer login com senha",
+                onClick: () => setOauthError(null),
+                variant: "default",
+              },
+              {
+                label: "Criar nova conta",
+                onClick: () => router.push("/auth/signup"),
+                variant: "outline",
+              },
+            ]}
+          />
+        )}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
@@ -130,6 +177,8 @@ export default function SignInForm() {
           <ButtonLogin isLoading={isLoading} />
         </form>
       </div>
+
+      <NotificationContainer />
     </div>
   );
 }

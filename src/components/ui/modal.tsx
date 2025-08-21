@@ -36,12 +36,12 @@ const modalStyles = {
     messageColor: "text-red-700",
   },
   warning: {
-    bg: "bg-yellow-50",
-    border: "border-yellow-200",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
     icon: AlertCircle,
-    iconColor: "text-yellow-600",
-    titleColor: "text-yellow-900",
-    messageColor: "text-yellow-700",
+    iconColor: "text-amber-600",
+    titleColor: "text-amber-900",
+    messageColor: "text-amber-800",
   },
   info: {
     bg: "bg-blue-50",

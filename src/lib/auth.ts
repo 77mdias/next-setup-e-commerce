@@ -138,7 +138,12 @@ export const authOptions: NextAuthOptions = {
           );
 
           if (!hasProvider) {
-            throw new Error("OAuthAccountNotLinked");
+            // Retornar false para que o NextAuth redirecione para a página de erro
+            // O NextAuth automaticamente adicionará o erro na URL
+            console.log(
+              "Provider não vinculado, retornando false para redirecionar para erro",
+            );
+            return false;
           }
         }
 
@@ -182,7 +187,7 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/auth/signin",
-    error: "/auth/error",
+    error: "/auth/error", // Redirecionar para página de erro dedicada
     signOut: "/", // Redirecionar para home após logout
   },
   secret: process.env.NEXTAUTH_SECRET,
