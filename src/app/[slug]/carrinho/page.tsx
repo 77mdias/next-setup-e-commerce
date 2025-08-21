@@ -130,23 +130,28 @@ export default function CarrinhoPage() {
                     </div>
 
                     {/* Informações do produto */}
-                    <div className="min-w-0 flex-1">
-                      <h3 className="line-clamp-2 font-semibold text-white">
-                        {product.name}
-                      </h3>
+                    <Link
+                      href={`/${slug}/product/${product.id}`}
+                      className="flex min-w-0 flex-1"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <h3 className="line-clamp-2 font-semibold text-white">
+                          {product.name}
+                        </h3>
 
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="text-lg font-bold text-[var(--text-price)]">
-                          {formatCurrency(product.price)}
-                        </span>
-                        {product.originalPrice &&
-                          product.originalPrice > product.price && (
-                            <span className="text-sm text-gray-400 line-through">
-                              {formatCurrency(product.originalPrice)}
-                            </span>
-                          )}
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-lg font-bold text-[var(--text-price)]">
+                            {formatCurrency(product.price)}
+                          </span>
+                          {product.originalPrice &&
+                            product.originalPrice > product.price && (
+                              <span className="text-sm text-gray-400 line-through">
+                                {formatCurrency(product.originalPrice)}
+                              </span>
+                            )}
+                        </div>
                       </div>
-                    </div>
+                    </Link>
 
                     {/* Controles de quantidade */}
                     <div className="flex items-center gap-3">
