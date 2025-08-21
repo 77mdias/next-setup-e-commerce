@@ -12,7 +12,8 @@ export default withAuth(
     const isCartPage = req.nextUrl.pathname.includes("/carrinho");
 
     // Redirecionar usuários autenticados das páginas de auth
-    if (isAuthPage && isAuth) {
+    // Mas não redirecionar durante o processo de OAuth
+    if (isAuthPage && isAuth && !req.nextUrl.searchParams.has("callbackUrl")) {
       return NextResponse.redirect(new URL("/", req.url));
     }
 

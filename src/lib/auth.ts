@@ -19,6 +19,22 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          role: UserRole.CUSTOMER,
+        };
+      },
     }),
     // Credentials Provider para login com email/senha
     CredentialsProvider({
@@ -96,11 +112,36 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as UserRole;
         session.user.cpf = token.cpf as string;
       }
+
       return session;
     },
     async signIn({ user, account, profile }) {
-      // Permitir login OAuth sempre
+      // Para login OAuth (Google, GitHub)
       if (account?.provider !== "credentials") {
+        // Verificar se já existe um usuário com este email
+        const existingUser = await db.user.findUnique({
+          where: { email: user.email! },
+          include: {
+            accounts: true,
+          },
+        });
+
+        if (existingUser) {
+          // Se o usuário existe mas não tem provider OAuth configurado
+          if (!existingUser.accounts || existingUser.accounts.length === 0) {
+            throw new Error("OAuthAccountNotLinked");
+          }
+
+          // Verificar se o provider está vinculado
+          const hasProvider = existingUser.accounts.some(
+            (acc) => acc.provider === account?.provider,
+          );
+
+          if (!hasProvider) {
+            throw new Error("OAuthAccountNotLinked");
+          }
+        }
+
         return true;
       }
 
@@ -123,6 +164,18 @@ export const authOptions: NextAuthOptions = {
         return url;
       }
 
+      // Se a URL contém callbackUrl, extrai e usa
+      if (url.includes("callbackUrl=")) {
+        const urlObj = new URL(url);
+        const callbackUrl = urlObj.searchParams.get("callbackUrl");
+        if (callbackUrl) {
+          const finalUrl = callbackUrl.startsWith("/")
+            ? `${baseUrl}${callbackUrl}`
+            : callbackUrl;
+          return finalUrl;
+        }
+      }
+
       // Se não, volta para o baseUrl
       return baseUrl;
     },
@@ -130,7 +183,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/auth/signin",
     error: "/auth/error",
-    signOut: "/auth/signin", // Redirecionar para login após logout
+    signOut: "/", // Redirecionar para home após logout
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
