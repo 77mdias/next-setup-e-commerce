@@ -39,7 +39,7 @@ export async function GET(
       );
     }
 
-    // Buscar a categoria específica com suas subcategorias
+    // Buscar a categoria específica com suas subcategorias e produtos
     const category = await prisma.category.findFirst({
       where: {
         slug: categorySlug,
@@ -64,6 +64,22 @@ export async function GET(
                 },
               },
             },
+          },
+        },
+        products: {
+          where: {
+            storeId: store.id,
+            isActive: true,
+          },
+          include: {
+            brand: {
+              select: {
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
           },
         },
         _count: {
