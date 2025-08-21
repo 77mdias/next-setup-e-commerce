@@ -39,7 +39,7 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--all-black)]">
+    <div className="min-h-screen w-screen bg-[var(--all-black)]">
       {/* VOLTAR */}
       <div className="container mx-auto px-4 py-4">
         <ButtonBack />

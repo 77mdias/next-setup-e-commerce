@@ -42,7 +42,7 @@ export default function CategoryPage() {
   const isEmpty = filteredCount === 0;
 
   return (
-    <div className="min-h-screen bg-[var(--all-black)]">
+    <div className="min-h-screen w-screen bg-[var(--all-black)]">
       {/* Header da Página */}
       <CategoryHeader
         slug={slug}

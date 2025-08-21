@@ -29,7 +29,7 @@ export default function CarrinhoPage() {
   // Loading state
   if (authLoading || isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--all-black)]">
+      <div className="flex min-h-screen w-screen items-center justify-center bg-[var(--all-black)]">
         <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-[var(--text-price)]"></div>
       </div>
     );
@@ -49,7 +49,7 @@ export default function CarrinhoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--all-black)] py-8">
+    <div className="min-h-screen w-screen bg-[var(--all-black)] py-8">
       <div className="container mx-auto max-w-4xl px-4">
         {/* Header */}
         <div className="mb-8">

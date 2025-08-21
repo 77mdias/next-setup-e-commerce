@@ -46,7 +46,7 @@ export default function WishlistPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--all-black)]">
+      <div className="flex min-h-screen w-screen items-center justify-center bg-[var(--all-black)]">
         <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-[var(--text-price)]"></div>
       </div>
     );
@@ -55,7 +55,7 @@ export default function WishlistPage() {
   // Não autenticado
   if (!isAuthenticated || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--all-black)]">
+      <div className="flex min-h-screen w-screen items-center justify-center bg-[var(--all-black)]">
         <div className="text-center">
           <h1 className="mb-4 text-2xl font-bold text-white">
             Acesso não autorizado
@@ -71,7 +71,7 @@ export default function WishlistPage() {
   // Se a wishlist estiver vazia, exibe uma mensagem de lista vazia
   if (wishlistItems.size === 0) {
     return (
-      <div className="min-h-screen bg-[var(--all-black)] py-8">
+      <div className="min-h-screen w-screen bg-[var(--all-black)] py-8">
         <div className="container mx-auto max-w-4xl px-4">
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--button-primary)]">
@@ -85,7 +85,7 @@ export default function WishlistPage() {
 
   // Se a wishlist não estiver vazia, exibe os produtos
   return (
-    <div className="min-h-screen bg-[var(--all-black)] py-8">
+    <div className="min-h-screen w-screen bg-[var(--all-black)] py-8">
       <div className="container mx-auto max-w-4xl px-4">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--button-primary)]">

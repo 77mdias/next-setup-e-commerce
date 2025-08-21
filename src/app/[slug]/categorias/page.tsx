@@ -71,7 +71,7 @@ export default function Categorias() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--all-black)]">
+      <div className="flex min-h-screen w-screen items-center justify-center bg-[var(--all-black)]">
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[var(--button-primary)]"></div>
           <p className="text-white">Carregando categorias...</p>
@@ -81,7 +81,7 @@ export default function Categorias() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--all-black)]">
+    <div className="min-h-screen w-screen bg-[var(--all-black)]">
       {/* Header da Página */}
       <div className="relative overflow-hidden from-[var(--button-primary)] via-purple-600 to-[var(--text-price-secondary)] p-6">
         {/* Elementos decorativos */}

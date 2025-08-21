@@ -36,7 +36,7 @@ export default function ProductListPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--all-black)]">
+      <div className="min-h-screen w-screen bg-[var(--all-black)]">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--button-primary)]"></div>
@@ -49,7 +49,7 @@ export default function ProductListPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[var(--all-black)]">
+      <div className="min-h-screen w-screen bg-[var(--all-black)]">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <div className="mb-4 text-6xl">❌</div>
@@ -64,7 +64,7 @@ export default function ProductListPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--all-black)]">
+    <div className="min-h-screen w-screen bg-[var(--all-black)]">
       {/* Header */}
       <div className="container mx-auto px-4 py-4">
         <ButtonBack />
