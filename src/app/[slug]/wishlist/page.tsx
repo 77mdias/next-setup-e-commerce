@@ -3,18 +3,19 @@
 import CardProducts from "@/components/ui/card-products";
 import { useAuth } from "@/hooks/useAuth";
 import { Heart } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import ButtonBack from "@/components/ui/ButtonBack";
+import { Product } from "@prisma/client";
 
 export default function WishlistPage() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [wishlistData, setWishlistData] = useState<any[]>([]);
   const params = useParams();
   const slug = params.slug as string;
-
+  const router = useRouter();
   const { wishlistItems, loadingWishlist, handleAddToWishlist } =
     useWishlist(slug);
   const { loadingCart, handleAddToCart } = useAddToCart(slug);
@@ -37,6 +38,10 @@ export default function WishlistPage() {
 
     loadWishlistData();
   }, [isAuthenticated]);
+
+  const buttonCardProduct = (product: Product) => {
+    router.push(`/${slug}/product/${product.id}`);
+  };
 
   // Loading state
   if (isLoading) {
@@ -108,7 +113,7 @@ export default function WishlistPage() {
                   handleAddToCart={handleAddToCart}
                   loadingCart={loadingCart}
                   slug={slug as string}
-                  buttonCardProduct={() => {}}
+                  buttonCardProduct={() => buttonCardProduct(item.product)}
                   buttonCardProductName="Ver"
                   displayButtonCart="flex"
                 />
