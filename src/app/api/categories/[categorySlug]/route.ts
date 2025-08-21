@@ -5,12 +5,12 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { categorySlug: string } },
+  { params }: { params: Promise<{ categorySlug: string }> },
 ) {
   try {
     const { searchParams } = new URL(request.url);
     const storeSlug = searchParams.get("storeSlug");
-    const { categorySlug } = params;
+    const { categorySlug } = await params;
 
     if (!storeSlug) {
       return NextResponse.json(
