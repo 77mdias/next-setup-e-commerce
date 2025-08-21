@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAddToCart } from "@/hooks/useAddToCart";
+import ButtonBack from "@/components/ui/ButtonBack";
 
 export default function WishlistPage() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -90,6 +91,7 @@ export default function WishlistPage() {
           </h1>
           <p className="text-gray-400">Seus produtos favoritos</p>
         </div>
+        <ButtonBack />
 
         {wishlistData.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -106,6 +108,9 @@ export default function WishlistPage() {
                   handleAddToCart={handleAddToCart}
                   loadingCart={loadingCart}
                   slug={slug as string}
+                  buttonCardProduct={() => {}}
+                  buttonCardProductName="Ver"
+                  displayButtonCart="flex"
                 />
               </div>
             ))}

@@ -8,6 +8,7 @@ import { formatCurrency } from "@/helpers/format-currency";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import ButtonBack from "@/components/ui/ButtonBack";
 
 export default function CarrinhoPage() {
   const { slug } = useParams();
@@ -53,16 +54,7 @@ export default function CarrinhoPage() {
         {/* Header */}
         <div className="mb-8">
           {/* Botão de voltar */}
-          <div className="mb-4">
-            <Button
-              variant="ghost"
-              onClick={() => router.back()}
-              className="flex items-center gap-2 p-2 text-gray-400 transition-colors hover:bg-gray-800/50 hover:text-white"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              Voltar
-            </Button>
-          </div>
+          <ButtonBack />
 
           {/* Título e navegação */}
           <div className="flex items-center justify-between">

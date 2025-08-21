@@ -6,6 +6,7 @@ import { Product } from "@prisma/client";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import CardProducts from "@/components/ui/card-products";
+import ButtonBack from "@/components/ui/ButtonBack";
 
 const ProductPage = () => {
   const params = useParams();
@@ -87,6 +88,7 @@ const ProductPage = () => {
   return (
     <div className="min-h-screen bg-[var(--all-black)] py-8">
       <div className="container mx-auto max-w-4xl px-4">
+        <ButtonBack />
         <CardProducts
           product={product}
           wishlistItems={wishlistItems}
