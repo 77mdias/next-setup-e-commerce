@@ -37,7 +37,7 @@ export default async function Layout({
         <CartProvider>{children}</CartProvider>
       </ScrollArea>
       <Menu />
-      <ScrollToTop useScrollArea={true} threshold={200} />
+      <ScrollToTop useScrollArea={true} threshold={800} />
     </div>
   );
 }

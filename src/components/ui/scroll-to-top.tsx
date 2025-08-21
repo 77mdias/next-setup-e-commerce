@@ -12,7 +12,7 @@ interface ScrollToTopProps {
 }
 
 export function ScrollToTop({
-  threshold = 300,
+  threshold = 2400,
   smooth = true,
   className = "",
   useScrollArea = false,

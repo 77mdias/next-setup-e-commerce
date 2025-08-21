@@ -7,7 +7,7 @@ interface UseScrollToTopOptions {
 }
 
 export function useScrollToTop(options: UseScrollToTopOptions = {}) {
-  const { threshold = 300, smooth = true, useScrollArea = false } = options;
+  const { threshold = 2400, smooth = true, useScrollArea = false } = options;
   const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   useEffect(() => {
