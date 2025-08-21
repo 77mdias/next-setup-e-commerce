@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { House, Star, ShoppingBasket, User } from "lucide-react";
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useSearchParams } from "next/navigation";
 
 export default function Menu() {
   const { slug } = useParams();
   const pathname = usePathname();
-
+  const { categorySlug } = useParams();
   // Verificar se estamos em qualquer página da loja (navegação principal)
   const isInStoreNavigation = () => {
     // Verificar se estamos na página inicial da loja
@@ -16,6 +16,7 @@ export default function Menu() {
     // Verificar se estamos em páginas específicas da loja
     const storeNavRoutes = [
       `/${slug}/categorias`,
+      `/${slug}/categorias/${categorySlug}`,
       `/${slug}/ofertas`,
       `/${slug}/suporte`,
       `/${slug}/menu`,
