@@ -1,0 +1,129 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    // Configurações de espaçamento e visualização
+    "workbench.tree.indent": 24,
+    "workbench.tree.renderIndentGuides": "always",
+    "workbench.tree.expandMode": "singleClick",
+    "workbench.tree.itemHeight": 32,
+    // Configurações do Explorer
+    "explorer.compactFolders": false,
+    "explorer.incrementalNaming": "smart",
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "explorer.openEditors.visible": 0,
+    // Configurações de fonte
+    "editor.fontSize": 14,
+    "editor.lineHeight": 1.6,
+    "editor.fontFamily": "'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace",
+    "editor.fontLigatures": true,
+    // Configurações de cores personalizadas
+    "workbench.colorCustomizations": {
+      "tree.indentGuidesStroke": "#404040",
+      "tree.tableColumnsBorder": "#404040",
+      "tree.tableOddRowsBackground": "#1a1a1a",
+      "sideBar.background": "#1e1e1e",
+      "sideBar.foreground": "#cccccc",
+      "sideBarTitle.foreground": "#ffffff",
+      "list.activeSelectionBackground": "#264f78",
+      "list.activeSelectionForeground": "#ffffff",
+      "list.hoverBackground": "#2a2d2e",
+      "list.hoverForeground": "#ffffff",
+      "list.inactiveSelectionBackground": "#37373d",
+      "list.inactiveSelectionForeground": "#cccccc"
+    },
+    // Configurações de ícones
+    "workbench.iconTheme": "material-icon-theme",
+    "material-icon-theme.folders.associations": {
+      "components": "react-components",
+      "hooks": "react-hooks",
+      "context": "react-context",
+      "types": "typescript",
+      "interfaces": "typescript",
+      "utils": "utils",
+      "helpers": "utils",
+      "lib": "lib",
+      "api": "api",
+      "middleware": "middleware",
+      "prisma": "database",
+      "migrations": "database",
+      "seed": "database",
+      "categorias": "folder",
+      "product": "folder",
+      "auth": "folder",
+      "admin": "folder",
+      "carrinho": "folder",
+      "wishlist": "folder",
+      "ofertas": "folder",
+      "perfil": "folder",
+      "suporte": "folder"
+    },
+    // Configurações de arquivos
+    "material-icon-theme.files.associations": {
+      "*.tsx": "react-tsx",
+      "*.ts": "typescript",
+      "*.js": "javascript",
+      "*.jsx": "react-jsx",
+      "*.json": "json",
+      "*.prisma": "prisma",
+      "*.scss": "scss",
+      "*.css": "css",
+      "*.md": "markdown"
+    },
+    // Configurações de minimap
+    "editor.minimap.enabled": true,
+    "editor.minimap.renderCharacters": false,
+    "editor.minimap.maxColumn": 120,
+    // Configurações de breadcrumbs
+    "breadcrumbs.enabled": true,
+    "breadcrumbs.showFiles": true,
+    "breadcrumbs.showSymbols": true,
+    "breadcrumbs.showIcons": true,
+    // Configurações de outline
+    "outline.showVariables": true,
+    "outline.showFunctions": true,
+    "outline.showClasses": true,
+    "outline.showModules": true,
+    "outline.showNamespaces": true,
+    "outline.showInterfaces": true,
+    "outline.showEnums": true,
+    "outline.showEnumsMembers": true,
+    "outline.showConstructors": true,
+    "outline.showProperties": true,
+    "outline.showEvents": true,
+    "outline.showOperators": true,
+    "outline.showTypeParameters": true,
+    "outline.showTypeAliases": true,
+    "outline.showConstants": true,
+    "outline.showEnums": true,
+    "outline.showFunctions": true,
+    "outline.showInterfaces": true,
+    "outline.showClasses": true,
+    "outline.showModules": true,
+    "outline.showNamespaces": true,
+    "outline.showVariables": true,
+    "outline.showTypeAliases": true,
+    "outline.showTypeParameters": true,
+    "outline.showOperators": true,
+    "outline.showEvents": true,
+    "outline.showProperties": true,
+    "outline.showConstructors": true,
+    "outline.showEnumsMembers": true
+  },
+  "extensions": {
+    "recommendations": [
+      "bradlc.vscode-tailwindcss",
+      "ms-vscode.vscode-typescript-next",
+      "esbenp.prettier-vscode",
+      "ms-vscode.vscode-eslint",
+      "prisma.prisma",
+      "pkief.material-icon-theme",
+      "ms-vscode.vscode-json",
+      "bradlc.vscode-tailwindcss"
+    ]
+  }
+}

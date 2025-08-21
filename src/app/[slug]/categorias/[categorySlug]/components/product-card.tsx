@@ -177,9 +177,7 @@ export function ProductCard({
 
                 {/* Botão Ver Produto */}
                 <Button
-                  onClick={() =>
-                    router.push(`/${slug}/product/${product.slug}`)
-                  }
+                  onClick={() => router.push(`/${slug}/product/${product.id}`)}
                   className="flex-1 bg-[var(--button-primary)] text-white hover:bg-[var(--text-price-secondary)] md:min-w-[100px] md:flex-none"
                   size="sm"
                 >

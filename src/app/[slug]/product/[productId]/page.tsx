@@ -1,109 +1,119 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { Product } from "@prisma/client";
-import { useWishlist } from "@/hooks/useWishlist";
-import { useAddToCart } from "@/hooks/useAddToCart";
-import CardProducts from "@/components/ui/card-products";
+import { ProductGallery } from "./components/product-gallery";
+import { ProductHeader } from "./components/product-header";
+import { ProductPricing } from "./components/product-pricing";
+import { QuantitySelector } from "./components/quantity-selector";
+import { ActionButtons } from "./components/action-buttons";
+import { ShippingInfo } from "./components/shipping-info";
+import { ProductTabs } from "./components/product-tabs";
+import { ProductStats } from "./components/product-stats";
+import { LoadingState } from "./components/loading-state";
+import { ErrorState } from "./components/error-state";
+import { useProductPage } from "./hooks/use-product-page";
+import { useRouter } from "next/navigation";
 import ButtonBack from "@/components/ui/ButtonBack";
 
-const ProductPage = () => {
-  const params = useParams();
-  const slug = params.slug as string;
-  const productId = params.productId as string;
-
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const { wishlistItems, loadingWishlist, handleAddToWishlist } =
-    useWishlist(slug);
-  const { loadingCart, handleAddToCart } = useAddToCart(slug);
-
-  const buttonCardProduct = (product: Product) => {
-    handleAddToCart(product);
-  };
-
-  // Buscar dados do produto
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        console.log("Buscando produto com ID:", productId);
-
-        const response = await fetch(`/api/products/${productId}`);
-        console.log("Response status:", response.status);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error("Erro na API:", errorData);
-          throw new Error(errorData.error || "Produto não encontrado");
-        }
-
-        const data = await response.json();
-        console.log("Dados do produto:", data);
-        setProduct(data.product);
-      } catch (error) {
-        console.error("Erro ao buscar produto:", error);
-        setError(
-          error instanceof Error ? error.message : "Erro ao carregar produto",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (productId) {
-      fetchProduct();
-    }
-  }, [productId]);
+export default function ProductPage() {
+  const router = useRouter();
+  const {
+    product,
+    loading,
+    error,
+    quantity,
+    slug,
+    loadingCart,
+    loadingWishlist,
+    isInWishlist,
+    handleQuantityChange,
+    handleAddToCartWithQuantity,
+    handleAddToWishlistClick,
+  } = useProductPage();
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--all-black)]">
-        <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-[var(--text-price)]"></div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (error || !product) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--all-black)]">
-        <div className="text-center text-white">
-          <h1 className="mb-4 text-2xl font-bold">Produto não encontrado</h1>
-          <p className="mb-4 text-gray-400">
-            {error || "O produto solicitado não existe"}
-          </p>
-          <div className="text-sm text-gray-500">
-            <p>Slug: {slug}</p>
-            <p>Product ID: {productId}</p>
-            <p>URL da API: /api/products/{productId}</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <ErrorState slug={slug || ""} error={error || ""} />;
   }
 
   return (
-    <div className="min-h-screen bg-[var(--all-black)] py-8">
-      <div className="container mx-auto max-w-4xl px-4">
+    <div className="min-h-screen bg-[var(--all-black)]">
+      {/* VOLTAR */}
+      <div className="container mx-auto px-4 py-4">
         <ButtonBack />
-        <CardProducts
-          product={product}
-          wishlistItems={wishlistItems}
-          loadingWishlist={loadingWishlist}
-          handleAddToWishlist={handleAddToWishlist}
-          handleAddToCart={handleAddToCart}
-          loadingCart={loadingCart}
-          slug={slug}
-          buttonCardProduct={buttonCardProduct}
-          buttonCardProductName="Adicionar ao carrinho"
-          displayButtonCart="hidden"
-        />
+      </div>
+
+      <div className="container mx-auto px-4 pb-8">
+        <div className="grid gap-8 lg:grid-cols-2">
+          {/* Galeria de Imagens */}
+          <ProductGallery
+            images={product.images}
+            productName={product.name}
+            isOnSale={Boolean(product.isOnSale)}
+            isFeatured={Boolean(product.isFeatured)}
+          />
+
+          {/* Informações do Produto */}
+          <div className="space-y-6">
+            {/* Cabeçalho do Produto */}
+            <ProductHeader
+              name={product.name}
+              brandName={product.brand?.name || ""}
+              shortDesc={product.shortDesc}
+              rating={product.rating}
+              reviewCount={product.reviewCount}
+              soldCount={product.soldCount}
+              viewCount={product.viewCount}
+            />
+
+            {/* Preços */}
+            <ProductPricing
+              price={product.price}
+              originalPrice={product.originalPrice}
+            />
+
+            {/* Seletor de Quantidade */}
+            <QuantitySelector
+              quantity={quantity}
+              onQuantityChange={handleQuantityChange}
+            />
+
+            {/* Botões de Ação */}
+            <ActionButtons
+              onAddToCart={handleAddToCartWithQuantity}
+              onAddToWishlist={handleAddToWishlistClick}
+              loadingCart={Boolean(loadingCart)}
+              loadingWishlist={Boolean(loadingWishlist)}
+              isInWishlist={isInWishlist}
+            />
+
+            {/* Informações de Entrega */}
+            <ShippingInfo />
+          </div>
+        </div>
+
+        {/* Abas de Descrição e Especificações */}
+        <div className="mt-12">
+          <ProductTabs
+            description={product.description}
+            specifications={product.specifications}
+            sku={product.sku}
+            weight={product.weight}
+            warranty={product.warranty}
+            dimensions={product.dimensions}
+          />
+        </div>
+
+        {/* Estatísticas do Produto */}
+        <div className="mt-8">
+          <ProductStats
+            viewCount={product.viewCount}
+            soldCount={product.soldCount}
+          />
+        </div>
       </div>
     </div>
   );
-};
-
-export default ProductPage;
+}

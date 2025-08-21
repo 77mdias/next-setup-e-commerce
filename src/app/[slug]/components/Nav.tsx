@@ -17,7 +17,7 @@ import { useParams } from "next/navigation";
 const Nav = () => {
   const { slug } = useParams();
   const pathname = usePathname();
-  const { categorySlug } = useParams();
+  const { categorySlug, productId } = useParams();
   return (
     <NavigationMenu className="flex px-4 pt-6">
       <NavigationMenuList>
@@ -25,7 +25,9 @@ const Nav = () => {
           <NavigationMenuLink
             asChild
             className={`rounded-full px-4 py-2 transition-colors duration-300 ${
-              pathname === `/${slug}`
+              pathname === `/${slug}` ||
+              pathname === `/${slug}/product` ||
+              pathname === `/${slug}/product/${productId}`
                 ? "nav-item-active hover:nav-item-active"
                 : "nav-item-inactive hover:nav-item-active"
             }`}
@@ -34,7 +36,7 @@ const Nav = () => {
               href={`/${slug}`}
               className="text-sm font-medium transition-colors duration-300"
             >
-              Tudo
+              Início
             </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>

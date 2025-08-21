@@ -47,5 +47,42 @@
   "typescript.preferences.quoteStyle": "double",
   "javascript.preferences.quoteStyle": "double",
   "css.validate": false,
-  "scss.validate": false
+  "scss.validate": false,
+  // Configurações de espaçamento do Explorer
+  "workbench.tree.indent": 20,
+  "workbench.tree.renderIndentGuides": "always",
+  "workbench.tree.expandMode": "singleClick",
+  // Espaçamento vertical entre itens
+  "workbench.tree.itemHeight": 28,
+  // Configurações de fonte para melhor legibilidade
+  "editor.fontSize": 14,
+  "editor.lineHeight": 1.5,
+  // Configurações do Explorer
+  "explorer.compactFolders": false,
+  "explorer.incrementalNaming": "smart",
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  // Configurações de cores para melhor contraste
+  "workbench.colorCustomizations": {
+    "tree.indentGuidesStroke": "#404040",
+    "tree.tableColumnsBorder": "#404040",
+    "tree.tableOddRowsBackground": "#1a1a1a"
+  },
+  // Configurações de ícones
+  "workbench.iconTheme": "material-icon-theme",
+  "material-icon-theme.folders.associations": {
+    "components": "react-components",
+    "hooks": "react-hooks",
+    "context": "react-context",
+    "types": "typescript",
+    "interfaces": "typescript",
+    "utils": "utils",
+    "helpers": "utils",
+    "lib": "lib",
+    "api": "api",
+    "middleware": "middleware",
+    "prisma": "database",
+    "migrations": "database",
+    "seed": "database"
+  }
 }
