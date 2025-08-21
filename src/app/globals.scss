@@ -90,3 +90,50 @@
     }
   }
 }
+
+/* Animações customizadas para ScrollToTop */
+@layer components {
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(220, 38, 127, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(220, 38, 127, 0.6);
+    }
+  }
+
+  @keyframes sparkle {
+    0%,
+    100% {
+      opacity: 0;
+      transform: scale(0) rotate(0deg);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1) rotate(180deg);
+    }
+  }
+
+  .scroll-to-top-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .scroll-to-top-pulse {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .scroll-to-top-sparkle {
+    animation: sparkle 1.5s ease-in-out infinite;
+  }
+}
