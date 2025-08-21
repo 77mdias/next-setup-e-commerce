@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Nav from "./components/Nav";
 import { CartProvider } from "./context/cart";
+import { ScrollToTop } from "@/components/ui/scroll-to-top";
 
 const prisma = new PrismaClient();
 
@@ -36,6 +37,7 @@ export default async function Layout({
         <CartProvider>{children}</CartProvider>
       </ScrollArea>
       <Menu />
+      <ScrollToTop useScrollArea={true} threshold={200} />
     </div>
   );
 }

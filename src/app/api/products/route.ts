@@ -3,28 +3,29 @@ import { db } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("API: Listando produtos...");
-    // Buscar todos os produtos ativos
+    const { searchParams } = new URL(request.url);
+    const storeSlug = searchParams.get("storeSlug");
+
+    console.log("API: Listando produtos para store:", storeSlug);
+
+    // Buscar produtos da loja específica
     const products = await db.product.findMany({
       where: {
         isActive: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        sku: true,
-        price: true,
         store: {
-          select: {
-            slug: true,
-          },
+          slug: storeSlug || "",
+          isActive: true,
         },
       },
-      take: 10, // Limitar a 10 produtos para debug
+      include: {
+        brand: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     console.log("API: Produtos encontrados:", products.length);
-    console.log("API: Primeiros produtos:", products.slice(0, 3));
 
     return NextResponse.json({
       success: true,

@@ -25,9 +25,7 @@ const Nav = () => {
           <NavigationMenuLink
             asChild
             className={`rounded-full px-4 py-2 transition-colors duration-300 ${
-              pathname === `/${slug}` ||
-              pathname === `/${slug}/product` ||
-              pathname === `/${slug}/product/${productId}`
+              pathname === `/${slug}`
                 ? "nav-item-active hover:nav-item-active"
                 : "nav-item-inactive hover:nav-item-active"
             }`}
@@ -37,6 +35,24 @@ const Nav = () => {
               className="text-sm font-medium transition-colors duration-300"
             >
               Início
+            </Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem className="rounded-full">
+          <NavigationMenuLink
+            asChild
+            className={`rounded-full px-4 py-2 transition-colors duration-300 ${
+              pathname === `/${slug}/product` ||
+              pathname === `/${slug}/product/${productId}`
+                ? "nav-item-active hover:nav-item-active"
+                : "nav-item-inactive hover:nav-item-active"
+            }`}
+          >
+            <Link
+              href={`/${slug}/product`}
+              className="text-sm font-medium transition-colors duration-300"
+            >
+              Produtos
             </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
