@@ -56,7 +56,13 @@ export default function SignInForm() {
       });
 
       if (result?.error) {
-        setError("Email ou senha inválidos");
+        if (result.error === "EmailNotVerified") {
+          setError(
+            "Email não verificado. Verifique sua caixa de entrada e clique no link de verificação.",
+          );
+        } else {
+          setError("Email ou senha inválidos");
+        }
       } else {
         router.push(callbackUrl);
       }
@@ -115,6 +121,16 @@ export default function SignInForm() {
           {error && (
             <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
               {error}
+              {error.includes("Email não verificado") && (
+                <div className="mt-2">
+                  <Link
+                    href="/auth/verify-email"
+                    className="text-blue-600 underline hover:text-blue-800"
+                  >
+                    Reenviar email de verificação
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 

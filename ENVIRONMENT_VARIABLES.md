@@ -38,6 +38,20 @@ STRIPE_WEBHOOK_SECRET_KEY="whsec_..."
 REMOVE_BG_API_KEY="your-remove-bg-api-key"
 ```
 
+## Email (para verificação de conta)
+
+```
+EMAIL_USER="your-email@gmail.com"
+EMAIL_PASSWORD="your-app-password"
+```
+
+**Nota:** Para Gmail, você precisa usar uma "senha de app" ao invés da senha normal da conta. Para criar uma senha de app:
+
+1. Ative a verificação em duas etapas na sua conta Google
+2. Vá para "Gerenciar sua Conta Google" > "Segurança"
+3. Em "Como você faz login no Google", selecione "Senhas de app"
+4. Gere uma nova senha de app para este projeto
+
 ## Como obter as chaves OAuth:
 
 ### GitHub:

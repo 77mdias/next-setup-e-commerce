@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
+import { sendVerificationEmail, generateVerificationToken } from "@/lib/email";
 
 // Função para validar senha com requisitos de segurança
 function validatePassword(password: string): {
@@ -45,7 +46,7 @@ function validatePassword(password: string): {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, password, cpf } = await request.json();
+    const { name, email, password, cpf, callbackUrl } = await request.json();
 
     if (!name || !email || !password || !cpf) {
       return NextResponse.json(
@@ -97,6 +98,10 @@ export async function POST(request: NextRequest) {
     // Hash da senha
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Gerar token de verificação
+    const verificationToken = generateVerificationToken();
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
     // Criar o usuário
     const user = await db.user.create({
       data: {
@@ -105,7 +110,9 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         cpf,
         role: UserRole.CUSTOMER,
-        isActive: true,
+        isActive: false, // Usuário inativo até verificar email
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires,
       },
       select: {
         id: true,
@@ -116,9 +123,27 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Enviar email de verificação
+    const emailResult = await sendVerificationEmail(
+      email,
+      verificationToken,
+      callbackUrl,
+    );
+
+    if (!emailResult.success) {
+      // Se falhar ao enviar email, deletar o usuário criado
+      await db.user.delete({ where: { id: user.id } });
+      return NextResponse.json(
+        { message: "Erro ao enviar email de verificação. Tente novamente." },
+        { status: 500 },
+      );
+    }
+
     return NextResponse.json({
-      message: "Usuário criado com sucesso",
+      message:
+        "Usuário criado com sucesso. Verifique seu email para ativar sua conta.",
       user,
+      emailSent: true,
     });
   } catch (error) {
     console.error("Erro ao criar usuário:", error);

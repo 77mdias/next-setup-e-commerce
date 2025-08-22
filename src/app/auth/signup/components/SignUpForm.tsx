@@ -106,6 +106,7 @@ export default function SignUpForm() {
           email: formData.email,
           password: formData.password,
           cpf: formData.cpf,
+          callbackUrl: callbackUrl,
         }),
       });
 
@@ -117,23 +118,14 @@ export default function SignUpForm() {
           throw new Error(`Senha deve conter: ${data.details.join(", ")}`);
         }
         throw new Error(data.message || "Erro ao criar conta");
-        return;
       }
 
-      // Fazer login automático após registro
-      const result = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError(
-          "Conta criada, mas erro ao fazer login. Tente fazer login manualmente.",
-        );
-      } else {
-        router.push(callbackUrl);
-      }
+      // Mostrar mensagem de sucesso e redirecionar para verificação
+      setError(""); // Limpar qualquer erro anterior
+      const verifyUrl = slug
+        ? `/${slug}/auth/verify-email?email=${encodeURIComponent(formData.email)}`
+        : `/auth/verify-email?email=${encodeURIComponent(formData.email)}`;
+      router.push(verifyUrl);
     } catch (error: any) {
       setError(error.message);
     } finally {

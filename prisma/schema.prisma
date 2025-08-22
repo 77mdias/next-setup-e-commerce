@@ -19,7 +19,9 @@ model User {
   image          String?              // NextAuth usa 'image' ao invés de 'avatar'
   role           UserRole             @default(CUSTOMER)
   emailVerified  DateTime?
-  isActive       Boolean              @default(true)
+  emailVerificationToken String?      // Token para verificação de email
+  emailVerificationExpires DateTime?  // Data de expiração do token
+  isActive       Boolean              @default(false) // Mudança: usuários começam inativos até verificar email
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
   

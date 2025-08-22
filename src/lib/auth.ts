@@ -58,6 +58,11 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Verificar se o usuário está ativo
+        if (!user.isActive) {
+          throw new Error("EmailNotVerified");
+        }
+
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
           user.password,
