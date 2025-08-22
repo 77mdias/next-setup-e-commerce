@@ -122,10 +122,28 @@ export default function SignUpForm() {
 
       // Mostrar mensagem de sucesso e redirecionar para verificação
       setError(""); // Limpar qualquer erro anterior
-      const verifyUrl = slug
-        ? `/${slug}/auth/verify-email?email=${encodeURIComponent(formData.email)}`
-        : `/auth/verify-email?email=${encodeURIComponent(formData.email)}`;
-      router.push(verifyUrl);
+
+      // Extrair slug do callbackUrl
+      const callbackUrlParam = searchParams.get("callbackUrl");
+      let targetSlug = null;
+
+      if (callbackUrlParam) {
+        const pathSegments = callbackUrlParam.split("/").filter(Boolean);
+        if (pathSegments.length > 0) {
+          targetSlug = pathSegments[0]; // Ex: "nextstore" de "/nextstore"
+        }
+      }
+
+      // Se não conseguir extrair slug do callbackUrl, usar o slug dos params
+      const finalSlug = targetSlug || slug;
+
+      if (finalSlug) {
+        const verifyUrl = `/${finalSlug}/auth/verify-email?email=${encodeURIComponent(formData.email)}`;
+        router.push(verifyUrl);
+      } else {
+        // Se não tiver slug, algo está errado - redirecionar para home
+        router.push("/");
+      }
     } catch (error: any) {
       setError(error.message);
     } finally {
