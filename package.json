@@ -12,6 +12,7 @@
     "restore-images": "node scripts/backup-processed-images.js restore",
     "smart-seed": "node scripts/smart-seed.js",
     "reprocess-images": "node scripts/auto-reprocess-images.js",
+    "check-images": "node scripts/check-processed-images.js",
     "seed": "prisma db seed"
   },
   "prisma": {

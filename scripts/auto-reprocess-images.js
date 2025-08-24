@@ -44,7 +44,32 @@ async function processImageWithRemoveBg(imageUrl) {
 
     return dataUrl;
   } catch (error) {
-    console.error('Erro ao processar imagem:', error.message);
+    // Melhor tratamento de erros específicos
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+
+      if (status === 402) {
+        console.error('❌ CRÉDITOS ESGOTADOS! Erro 402 - Payment Required');
+        console.error('   Você precisa adicionar mais créditos na sua conta do Remove.bg');
+        return 'CREDITS_EXHAUSTED';
+      } else if (status === 401) {
+        console.error('❌ API KEY INVÁLIDA! Erro 401 - Unauthorized');
+        console.error('   Verifique se sua API key está correta');
+        return 'INVALID_API_KEY';
+      } else if (status === 429) {
+        console.error('⚠️  RATE LIMIT EXCEDIDO! Erro 429 - Too Many Requests');
+        console.error('   Aguarde um pouco antes de tentar novamente');
+        return 'RATE_LIMITED';
+      } else {
+        console.error(`❌ Erro HTTP ${status}:`, data);
+      }
+    } else if (error.request) {
+      console.error('❌ Erro de rede:', error.message);
+    } else {
+      console.error('❌ Erro ao processar imagem:', error.message);
+    }
+
     return null;
   }
 }
@@ -57,6 +82,11 @@ async function reprocessAllImages() {
   }
 
   console.log('🔄 Reprocessando todas as imagens automaticamente...');
+  console.log(`🔑 Usando API Key: ${REMOVE_BG_API_KEY.substring(0, 10)}...`);
+
+  let creditsExhausted = false;
+  let invalidApiKey = false;
+  let rateLimited = false;
 
   try {
     // Buscar todos os produtos com imagens originais (URLs)
@@ -89,7 +119,21 @@ async function reprocessAllImages() {
 
           const processedImage = await processImageWithRemoveBg(imageUrl);
 
-          if (processedImage) {
+          if (processedImage === 'CREDITS_EXHAUSTED') {
+            creditsExhausted = true;
+            console.log(`  ⏸️  Parando processamento - créditos esgotados`);
+            break;
+          } else if (processedImage === 'INVALID_API_KEY') {
+            invalidApiKey = true;
+            console.log(`  ⏸️  Parando processamento - API key inválida`);
+            break;
+          } else if (processedImage === 'RATE_LIMITED') {
+            rateLimited = true;
+            console.log(`  ⏸️  Aguardando 5 segundos devido ao rate limit...`);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            j--; // Tentar novamente a mesma imagem
+            continue;
+          } else if (processedImage) {
             processedImages.push(processedImage);
             console.log(`  ✅ Imagem ${j + 1} processada com sucesso`);
           } else {
@@ -105,19 +149,38 @@ async function reprocessAllImages() {
         }
       }
 
-      // Atualizar produto no banco
-      await prisma.product.update({
-        where: { id: product.id },
-        data: {
-          images: processedImages,
-          updatedAt: new Date()
-        },
-      });
+      // Atualizar produto no banco apenas se processou alguma imagem
+      if (processedImages.length > 0) {
+        await prisma.product.update({
+          where: { id: product.id },
+          data: {
+            images: processedImages,
+            updatedAt: new Date()
+          },
+        });
+        console.log(`  💾 Produto ${product.name} atualizado no banco`);
+      }
 
-      console.log(`  💾 Produto ${product.name} atualizado no banco`);
+      // Parar se os créditos acabaram
+      if (creditsExhausted || invalidApiKey) {
+        console.log(`\n⏸️  Processamento interrompido no produto ${i + 1}/${productsWithOriginalImages.length}`);
+        break;
+      }
     }
 
-    console.log('\n🎉 Reprocessamento concluído com sucesso!');
+    // Resumo final
+    console.log('\n📋 RESUMO DO PROCESSAMENTO:');
+    if (creditsExhausted) {
+      console.log('❌ PROCESSAMENTO INTERROMPIDO - Créditos esgotados');
+      console.log('💡 Solução: Adicione mais créditos na sua conta do Remove.bg');
+    } else if (invalidApiKey) {
+      console.log('❌ PROCESSAMENTO INTERROMPIDO - API Key inválida');
+      console.log('💡 Solução: Verifique sua API key do Remove.bg');
+    } else if (rateLimited) {
+      console.log('⚠️  PROCESSAMENTO COMPLETO - Algumas imagens foram rate limited');
+    } else {
+      console.log('🎉 REPROCESSAMENTO CONCLUÍDO COM SUCESSO!');
+    }
 
   } catch (error) {
     console.error('❌ Erro no reprocessamento:', error);

@@ -19,7 +19,6 @@ const main = async () => {
   await prismaClient.category.deleteMany();
   await prismaClient.brand.deleteMany();
   await prismaClient.store.deleteMany();
-  await prismaClient.userSession.deleteMany();
   await prismaClient.user.deleteMany();
 
   // ===================================
