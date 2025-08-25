@@ -10,6 +10,7 @@ export default function Menu() {
   const slug = params.slug as string;
   const categorySlug = params.categorySlug as string;
   const productId = params.productId as string;
+  const orderId = params.orderId as string;
   // Verificar se estamos em qualquer página da loja (navegação principal)
   const isInStoreNavigation = () => {
     // Verificar se estamos na página inicial da loja
@@ -61,7 +62,7 @@ export default function Menu() {
         <li className="flex items-center justify-center gap-3 px-6 py-3">
           <Link href={`/${slug}/pedido`}>
             <Package
-              className={`h-6 w-6 ${pathname === `/${slug}/pedido` ? "menu-item-active" : ""}`}
+              className={`h-6 w-6 ${pathname === `/${slug}/pedido` || pathname === `/${slug}/pedido/falha` || pathname === `/${slug}/pedido/sucesso` || pathname === `/${slug}/pedido/${orderId}` ? "menu-item-active" : ""}`}
             />
           </Link>
         </li>

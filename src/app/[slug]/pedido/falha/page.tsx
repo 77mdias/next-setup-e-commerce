@@ -338,7 +338,7 @@ export default function PedidoFalhaPage() {
         </div>
 
         {/* Ações */}
-        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
+        <div className="mt-8 flex flex-col gap-4 text-[var(--text-primary)] sm:flex-row sm:justify-center">
           <Button
             onClick={handleRetryPayment}
             className="w-full bg-[var(--button-primary)] hover:bg-[var(--text-price-secondary)] sm:w-auto"

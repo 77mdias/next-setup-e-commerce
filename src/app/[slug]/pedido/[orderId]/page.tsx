@@ -413,7 +413,7 @@ export default function PedidoDetalhesPage() {
         )}
 
         {/* Ações */}
-        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
+        <div className="mt-8 flex flex-col gap-4 text-[var(--text-primary)] sm:flex-row sm:justify-center">
           <Link href={`/${slug}/pedido`}>
             <Button variant="outline" className="w-full sm:w-auto">
               <Receipt className="mr-2 h-4 w-4" />
@@ -422,7 +422,7 @@ export default function PedidoDetalhesPage() {
           </Link>
 
           <Link href={`/${slug}`}>
-            <Button className="w-full bg-[var(--button-primary)] hover:bg-[var(--text-price-secondary)] sm:w-auto">
+            <Button className="w-full bg-[var(--button-primary)] text-[var(--text-primary)] hover:bg-[var(--text-price-secondary)] sm:w-auto">
               <Home className="mr-2 h-4 w-4" />
               Continuar Comprando
             </Button>
