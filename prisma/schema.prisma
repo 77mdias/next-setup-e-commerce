@@ -10,54 +10,50 @@ datasource db {
 }
 
 model User {
-  id             String               @id @default(uuid())
-  email          String               @unique
-  password       String?              // Opcional para OAuth
-  name           String?
-  phone          String?
-  cpf            String?              @unique
-  image          String?              // NextAuth usa 'image' ao invés de 'avatar'
-  role           UserRole             @default(CUSTOMER)
-  emailVerified  DateTime?
-  emailVerificationToken String?      // Token para verificação de email
-  emailVerificationExpires DateTime?  // Data de expiração do token
-  isActive       Boolean              @default(false) // Mudança: usuários começam inativos até verificar email
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  
-  // Relacionamentos existentes
-  addresses      Address[]
-  statusChanges  OrderStatusHistory[]
-  orders         Order[]
-  reviews        Review[]
-  stockMovements StockMovement[]
-  stores         Store[]
-  wishlist       Wishlist[]
-  cart           Cart[]
-  
-  // NextAuth relacionamentos
-  accounts       Account[]
-  sessions       Session[]
+  id                       String               @id @default(uuid())
+  email                    String               @unique
+  password                 String?
+  name                     String?
+  phone                    String?
+  cpf                      String?              @unique
+  role                     UserRole             @default(CUSTOMER)
+  emailVerified            DateTime?
+  isActive                 Boolean              @default(false)
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+  image                    String?
+  emailVerificationExpires DateTime?
+  emailVerificationToken   String?
+  resetPasswordExpires     DateTime?
+  resetPasswordToken       String?
+  accounts                 Account[]
+  addresses                Address[]
+  cart                     Cart[]
+  statusChanges            OrderStatusHistory[]
+  orders                   Order[]
+  reviews                  Review[]
+  sessions                 Session[]
+  stockMovements           StockMovement[]
+  stores                   Store[]
+  wishlist                 Wishlist[]
 
   @@map("users")
 }
 
-// NextAuth.js Models
 model Account {
   id                String  @id @default(uuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -170,6 +166,7 @@ model Product {
   viewCount      Int              @default(0)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+  cart           Cart[]
   inventory      Inventory[]
   orderItems     OrderItem[]
   variants       ProductVariant[]
@@ -178,7 +175,6 @@ model Product {
   store          Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
   reviews        Review[]
   wishlist       Wishlist[]
-  cart           Cart[]
 
   @@map("products")
 }
@@ -402,6 +398,33 @@ model Coupon {
   @@map("coupons")
 }
 
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlists")
+}
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("carts")
+}
+
 enum UserRole {
   CUSTOMER
   SELLER
@@ -444,45 +467,4 @@ enum PaymentStatus {
 enum CouponType {
   PERCENTAGE
   FIXED
-}
-
-// ===================================
-// 💖 MÓDULO DE WISHLIST/FAVORITOS
-// ===================================
-
-model Wishlist {
-  id        String   @id @default(uuid())
-  userId    String
-  productId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relacionamentos
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  // Índice único para evitar duplicatas
-  @@unique([userId, productId])
-  @@map("wishlists")
-}
-
-// ===================================
-// 🛒 MÓDULO DE CARRINHO
-// ===================================
-
-model Cart {
-  id        String   @id @default(uuid())
-  userId    String
-  productId String
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relacionamentos
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  // Índice único para evitar duplicatas do mesmo produto
-  @@unique([userId, productId])
-  @@map("carts")
 }

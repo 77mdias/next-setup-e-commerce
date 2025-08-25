@@ -183,7 +183,7 @@ export default function SignInForm() {
 
           <div className="flex items-center justify-between">
             <Link
-              href="/auth/forgot-password"
+              href={`/auth/reset-password${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
               className="text-sm text-[var(--text-price)] hover:text-[var(--text-price-secondary)]"
             >
               Esqueceu sua senha?
