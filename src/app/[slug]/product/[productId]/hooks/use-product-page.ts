@@ -3,6 +3,7 @@ import { useParams } from "next/navigation";
 import { Product, Brand } from "@prisma/client";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAddToCart } from "@/hooks/useAddToCart";
+import { useAuth } from "@/hooks/useAuth";
 
 type ProductWithBrand = Product & {
   brand: Brand;
@@ -18,13 +19,12 @@ export function useProductPage() {
   const slug = params.slug as string;
   const productId = params.productId as string;
 
+  const { isAuthenticated } = useAuth();
   const { wishlistItems, loadingWishlist, handleAddToWishlist } =
     useWishlist(slug);
   const { loadingCart, handleAddToCart } = useAddToCart(slug);
 
-  const isInWishlist = Array.from(wishlistItems).some(
-    (item: any) => item.id === product?.id,
-  );
+  const isInWishlist = product ? wishlistItems.has(product.id) : false;
 
   // Buscar dados do produto
   useEffect(() => {

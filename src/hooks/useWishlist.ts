@@ -40,6 +40,27 @@ export const useWishlist = (slug: string) => {
     loadWishlist();
   }, [isAuthenticated]);
 
+  // Recarregar wishlist quando a autenticação mudar
+  useEffect(() => {
+    if (isAuthenticated) {
+      const loadWishlist = async () => {
+        try {
+          const response = await fetch("/api/wishlist");
+          if (response.ok) {
+            const data = await response.json();
+            const productIds = new Set<string>(
+              data.wishlist.map((item: any) => item.productId as string),
+            );
+            setWishlistItems(productIds);
+          }
+        } catch (error) {
+          console.error("Erro ao recarregar wishlist:", error);
+        }
+      };
+      loadWishlist();
+    }
+  }, [isAuthenticated]);
+
   // Adicionar/remover produto da wishlist
   const handleAddToWishlist = async (product: Product) => {
     if (!isAuthenticated) {

@@ -19,7 +19,7 @@ export function ActionButtons({
   isInWishlist,
 }: ActionButtonsProps) {
   return (
-    <div className="flex gap-3">
+    <div className="flex items-center gap-3">
       <Button
         onClick={onAddToCart}
         disabled={loadingCart}
