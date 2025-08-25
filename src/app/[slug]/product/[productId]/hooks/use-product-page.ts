@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Product, Brand } from "@prisma/client";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/app/[slug]/context/cart";
 
 type ProductWithBrand = Product & {
   brand: Brand;
@@ -16,6 +17,7 @@ export function useProductPage() {
   const [quantity, setQuantity] = useState(1);
 
   const params = useParams();
+  const router = useRouter();
   const slug = params.slug as string;
   const productId = params.productId as string;
 
@@ -23,6 +25,7 @@ export function useProductPage() {
   const { wishlistItems, loadingWishlist, handleAddToWishlist } =
     useWishlist(slug);
   const { loadingCart, handleAddToCart } = useAddToCart(slug);
+  const { addProductToCart, loading: cartLoading } = useCart();
 
   const isInWishlist = product ? wishlistItems.has(product.id) : false;
 
@@ -61,11 +64,24 @@ export function useProductPage() {
     }
   };
 
-  const handleAddToCartWithQuantity = () => {
+  const handleAddToCartWithQuantity = async () => {
     if (product) {
-      // Adicionar múltiplas quantidades
-      for (let i = 0; i < quantity; i++) {
-        handleAddToCart(product);
+      try {
+        // Adicionar produto com a quantidade selecionada
+        await addProductToCart({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          originalPrice: product.originalPrice,
+          images: product.images,
+          quantity: quantity,
+        });
+
+        // Redirecionar para o carrinho após adicionar
+        router.push(`/${slug}/carrinho`);
+      } catch (error) {
+        console.error("Erro ao adicionar produto ao carrinho:", error);
+        alert("Erro ao adicionar produto ao carrinho. Tente novamente.");
       }
     }
   };
@@ -85,7 +101,7 @@ export function useProductPage() {
     slug,
 
     // Hooks
-    loadingCart,
+    loadingCart: loadingCart || cartLoading,
     loadingWishlist,
     isInWishlist,
 
