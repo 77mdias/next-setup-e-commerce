@@ -61,6 +61,15 @@ export default function PedidoFalhaPage() {
     }
   }, [sessionId]);
 
+  // Redirecionar se não estiver autenticado
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push(
+        `/auth/signin?callbackUrl=/${slug}/pedido/falha?session_id=${sessionId}`,
+      );
+    }
+  }, [isAuthenticated, router, slug, sessionId]);
+
   const fetchOrderDetails = async () => {
     try {
       const response = await fetch(`/api/orders/session/${sessionId}`);
@@ -89,7 +98,8 @@ export default function PedidoFalhaPage() {
     router.push(`/${slug}/suporte`);
   };
 
-  if (isLoading) {
+  // Mostrar loading enquanto verifica autenticação ou carrega dados
+  if (!isAuthenticated || isLoading) {
     return (
       <div className="flex min-h-screen w-screen items-center justify-center bg-[var(--all-black)]">
         <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-[var(--text-price)]"></div>

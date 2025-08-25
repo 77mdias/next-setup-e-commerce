@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/helpers/format-currency";
@@ -34,13 +34,23 @@ interface Order {
 export default function PedidoSucessoPage() {
   const params = useParams();
   const slug = params.slug as string;
+  const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Redirecionar se não estiver autenticado
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push(
+        `/auth/signin?callbackUrl=/${slug}/pedido/sucesso?session_id=${sessionId}`,
+      );
+    }
+  }, [isAuthenticated, router, slug, sessionId]);
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -68,10 +78,13 @@ export default function PedidoSucessoPage() {
       }
     };
 
-    fetchOrderDetails();
-  }, [sessionId]);
+    if (isAuthenticated) {
+      fetchOrderDetails();
+    }
+  }, [sessionId, isAuthenticated]);
 
-  if (isLoading) {
+  // Mostrar loading enquanto verifica autenticação ou carrega dados
+  if (!isAuthenticated || isLoading) {
     return (
       <div className="flex min-h-screen w-screen items-center justify-center bg-[var(--all-black)]">
         <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-[var(--text-price)]"></div>
@@ -277,7 +290,7 @@ export default function PedidoSucessoPage() {
             </Button>
           </Link>
 
-          <Link href={`/${slug}/perfil`}>
+          <Link href={`/${slug}/pedido`}>
             <Button variant="outline" className="w-full sm:w-auto">
               <Receipt className="mr-2 h-4 w-4" />
               Meus Pedidos

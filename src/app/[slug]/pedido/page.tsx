@@ -70,42 +70,56 @@ const statusConfig = {
     icon: Clock,
     color: "text-yellow-400",
     bg: "bg-yellow-500/10",
+    border: "border-yellow-400/30",
+    hover: "hover:border-yellow-400 hover:bg-yellow-500/5",
   },
   PAID: {
     label: "Pago",
     icon: CheckCircle,
     color: "text-green-400",
     bg: "bg-green-500/10",
+    border: "border-green-400/30",
+    hover: "hover:border-green-400 hover:bg-green-500/5",
   },
   PROCESSING: {
     label: "Processando",
     icon: Package,
     color: "text-blue-400",
     bg: "bg-blue-500/10",
+    border: "border-blue-400/30",
+    hover: "hover:border-blue-400 hover:bg-blue-500/5",
   },
   SHIPPED: {
     label: "Enviado",
     icon: Truck,
     color: "text-purple-400",
     bg: "bg-purple-500/10",
+    border: "border-purple-400/30",
+    hover: "hover:border-purple-400 hover:bg-purple-500/5",
   },
   DELIVERED: {
     label: "Entregue",
     icon: CheckCircle,
     color: "text-green-400",
     bg: "bg-green-500/10",
+    border: "border-green-400/30",
+    hover: "hover:border-green-400 hover:bg-green-500/5",
   },
   CANCELLED: {
     label: "Cancelado",
     icon: XCircle,
     color: "text-red-400",
     bg: "bg-red-500/10",
+    border: "border-red-400/30",
+    hover: "hover:border-red-400 hover:bg-red-500/5",
   },
   REFUNDED: {
     label: "Reembolsado",
     icon: XCircle,
     color: "text-gray-400",
     bg: "bg-gray-500/10",
+    border: "border-gray-400/30",
+    hover: "hover:border-gray-400 hover:bg-gray-500/5",
   },
 };
 
@@ -124,14 +138,17 @@ export default function PedidosPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   // Redirecionar se não estiver autenticado
-  if (!isAuthenticated) {
-    router.push(`/auth/signin?callbackUrl=/${slug}/pedido`);
-    return null;
-  }
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push(`/auth/signin?callbackUrl=/${slug}/pedido`);
+    }
+  }, [isAuthenticated, router, slug]);
 
   useEffect(() => {
-    fetchOrders();
-  }, [statusFilter, currentPage]);
+    if (isAuthenticated) {
+      fetchOrders();
+    }
+  }, [statusFilter, currentPage, isAuthenticated]);
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -186,7 +203,8 @@ export default function PedidosPage() {
     setCurrentPage(page);
   };
 
-  if (isLoading) {
+  // Mostrar loading enquanto verifica autenticação ou carrega dados
+  if (!isAuthenticated || isLoading) {
     return (
       <div className="flex min-h-screen w-screen items-center justify-center bg-[var(--all-black)]">
         <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-[var(--text-price)]"></div>
@@ -210,25 +228,37 @@ export default function PedidosPage() {
         <div className="mb-6">
           <div className="flex flex-wrap gap-2">
             <Button
-              variant={statusFilter === "ALL" ? "default" : "outline"}
+              variant="outline"
               size="sm"
               onClick={() => handleStatusFilter("ALL")}
-              className="text-xs"
+              className={`text-xs font-medium transition-all duration-200 ${
+                statusFilter === "ALL"
+                  ? "border-[var(--text-price)] bg-[var(--text-price)] text-white shadow-lg hover:bg-[var(--text-price-secondary)]"
+                  : "border-gray-600 text-gray-300 hover:border-[var(--text-price)] hover:bg-[var(--text-price)]/5 hover:text-[var(--text-price)]"
+              }`}
             >
               Todos
             </Button>
-            {Object.entries(statusConfig).map(([status, config]) => (
-              <Button
-                key={status}
-                variant={statusFilter === status ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleStatusFilter(status)}
-                className="text-xs"
-              >
-                <config.icon className="mr-1 h-3 w-3" />
-                {config.label}
-              </Button>
-            ))}
+            {Object.entries(statusConfig).map(([status, config]) => {
+              const isActive = statusFilter === status;
+
+              return (
+                <Button
+                  key={status}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleStatusFilter(status)}
+                  className={`text-xs font-medium transition-all duration-200 ${
+                    isActive
+                      ? `${config.bg} ${config.border} ${config.color} shadow-lg`
+                      : `border-gray-600 text-gray-300 ${config.hover}`
+                  }`}
+                >
+                  <config.icon className="mr-1 h-3 w-3" />
+                  {config.label}
+                </Button>
+              );
+            })}
           </div>
         </div>
 
@@ -311,7 +341,11 @@ export default function PedidosPage() {
                       )}
                     </div>
                     <Link href={`/${slug}/pedido/${order.id}`}>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="bg-[var(--button-primary)] text-[var(--text-primary)] hover:bg-[var(--text-price-secondary)]"
+                      >
                         <Eye className="mr-1 h-3 w-3" />
                         Ver Detalhes
                       </Button>
