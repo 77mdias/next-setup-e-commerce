@@ -71,9 +71,11 @@ export function useProductPage() {
         await addProductToCart({
           id: product.id,
           name: product.name,
+          description: product.description,
           price: product.price,
           originalPrice: product.originalPrice,
           images: product.images,
+          specifications: product.specifications,
           quantity: quantity,
         });
 
