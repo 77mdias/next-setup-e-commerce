@@ -11,7 +11,8 @@ import Link from "next/link";
 import ButtonBack from "@/components/ui/ButtonBack";
 
 export default function CarrinhoPage() {
-  const { slug } = useParams();
+  const params = useParams();
+  const slug = params.slug as string;
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const {
@@ -44,8 +45,9 @@ export default function CarrinhoPage() {
     }
 
     // Se estiver autenticado, prosseguir para checkout
-    // TODO: Implementar página de checkout
-    alert("Redirecionando para checkout... (ainda não implementado)");
+    // TODO: Implementar modal/formulário de checkout
+    // Por enquanto, redirecionar para uma página de checkout
+    router.push(`/${slug}/checkout`);
   };
 
   return (

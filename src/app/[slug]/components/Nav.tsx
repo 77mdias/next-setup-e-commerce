@@ -15,9 +15,11 @@ import { usePathname } from "next/navigation";
 import { useParams } from "next/navigation";
 
 const Nav = () => {
-  const { slug } = useParams();
+  const params = useParams();
   const pathname = usePathname();
-  const { categorySlug, productId } = useParams();
+  const slug = params.slug as string;
+  const categorySlug = params.categorySlug as string;
+  const productId = params.productId as string;
   return (
     <NavigationMenu className="flex flex-wrap px-4 pt-6">
       <NavigationMenuList className="flex flex-wrap justify-center">

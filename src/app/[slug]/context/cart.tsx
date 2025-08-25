@@ -11,7 +11,16 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 
 export interface CartProcuct
-  extends Pick<Product, "id" | "name" | "price" | "originalPrice" | "images"> {
+  extends Pick<
+    Product,
+    | "id"
+    | "name"
+    | "description"
+    | "price"
+    | "originalPrice"
+    | "images"
+    | "specifications"
+  > {
   quantity: number;
 }
 
@@ -125,9 +134,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         const cartProducts: CartProcuct[] = data.cart.map((item: any) => ({
           id: item.product.id,
           name: item.product.name,
+          description: item.product.description,
           price: item.product.price,
           originalPrice: item.product.originalPrice,
           images: item.product.images,
+          specifications: item.product.specifications,
           quantity: item.quantity,
         }));
         setProducts(cartProducts);
@@ -174,9 +185,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             const cartProducts: CartProcuct[] = data.cart.map((item: any) => ({
               id: item.product.id,
               name: item.product.name,
+              description: item.product.description,
               price: item.product.price,
               originalPrice: item.product.originalPrice,
               images: item.product.images,
+              specifications: item.product.specifications,
               quantity: item.quantity,
             }));
             setProducts(cartProducts);

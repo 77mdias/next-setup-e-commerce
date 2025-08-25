@@ -13,7 +13,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const body = await request.text();
+  // Verificar se a chave secreta do Stripe está configurada
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error("❌ Chave secreta do Stripe não encontrada");
+    return NextResponse.json(
+      { error: "Missing Stripe secret key" },
+      { status: 500 },
+    );
+  }
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: "2025-07-30.basil",
+  });
+
   const signature = request.headers.get("stripe-signature");
 
   if (!signature) {
@@ -24,46 +36,148 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET_KEY;
+
+  if (!webhookSecret) {
+    console.error("❌ Chave secreta do webhook do Stripe não encontrada");
+    return NextResponse.json(
+      { error: "Missing Stripe webhook secret key" },
+      { status: 500 },
+    );
+  }
+
+  const text = await request.text();
+  console.log("📄 Corpo da requisição recebido, tamanho:", text.length);
+
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET_KEY,
-    );
+    event = stripe.webhooks.constructEvent(text, signature, webhookSecret);
   } catch (error) {
     console.error("Webhook signature verification failed:", error);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  switch (event.type) {
-    case "checkout.session.completed":
-      const session = event.data.object as Stripe.Checkout.Session;
-      const orderId = session.metadata?.orderId;
+  console.log("🔍 Evento recebido:", event.type);
 
-      if (orderId) {
-        await db.order.update({
-          where: { id: parseInt(orderId) },
-          data: { status: "PAID" },
+  try {
+    switch (event.type) {
+      case "checkout.session.completed":
+        const session = event.data.object as Stripe.Checkout.Session;
+        const orderId = session.metadata?.orderId;
+
+        console.log("🔍 ID do pedido:", orderId);
+        console.log("📋 Metadata completa:", session.metadata);
+
+        if (!orderId) {
+          console.warn("⚠️ ID do pedido não encontrado nos metadados");
+          return NextResponse.json({
+            received: true,
+            warning: "No order ID found",
+          });
+        }
+
+        // Verificar se o pedido existe antes de atualizar
+        const existingOrder = await db.order.findUnique({
+          where: {
+            id: Number(orderId),
+          },
         });
-      }
-      break;
 
-    case "checkout.session.async_payment_failed":
-    case "checkout.session.expired":
-    case "charge.failed":
-      const failedSession = event.data.object as Stripe.Checkout.Session;
-      const failedOrderId = failedSession.metadata?.orderId;
+        if (!existingOrder) {
+          console.error("❌ Pedido não encontrado no banco de dados:", orderId);
+          return NextResponse.json(
+            { error: "Order not found", orderId },
+            { status: 404 },
+          );
+        }
 
-      if (failedOrderId) {
-        await db.order.update({
-          where: { id: parseInt(failedOrderId) },
-          data: { status: "CANCELLED" },
+        console.log(
+          "📊 Pedido encontrado, status atual:",
+          existingOrder.status,
+        );
+
+        // Atualizar o pedido para PAID
+        const updatedOrder = await db.order.update({
+          where: {
+            id: Number(orderId),
+          },
+          data: {
+            status: "PAID",
+            paymentStatus: "PAID",
+          },
+          include: {
+            store: { select: { slug: true } },
+            items: true,
+          },
         });
-      }
-      break;
+
+        console.log("✅ Pedido atualizado com sucesso:", {
+          orderId: updatedOrder.id,
+          newStatus: updatedOrder.status,
+          paymentStatus: updatedOrder.paymentStatus,
+        });
+
+        // Criar registro de pagamento
+        await db.payment.create({
+          data: {
+            orderId: Number(orderId),
+            method: "stripe",
+            amount: updatedOrder.total,
+            status: "PAID",
+            stripePaymentId: session.payment_intent as string,
+            paidAt: new Date(),
+          },
+        });
+
+        console.log("💰 Registro de pagamento criado com sucesso");
+
+        break;
+
+      case "checkout.session.async_payment_failed":
+      case "checkout.session.expired":
+      case "charge.failed":
+        const failedSession = event.data.object as Stripe.Checkout.Session;
+        const failedOrderId = failedSession.metadata?.orderId;
+
+        if (failedOrderId) {
+          // Verificar se o pedido existe
+          const failedOrder = await db.order.findUnique({
+            where: {
+              id: Number(failedOrderId),
+            },
+          });
+
+          if (failedOrder) {
+            // Atualizar o pedido para CANCELLED
+            await db.order.update({
+              where: { id: Number(failedOrderId) },
+              data: {
+                status: "CANCELLED",
+                paymentStatus: "FAILED",
+                cancelledAt: new Date(),
+                cancelReason: "Pagamento falhou ou expirou",
+              },
+            });
+
+            console.log(
+              "❌ Pedido cancelado devido a falha no pagamento:",
+              failedOrderId,
+            );
+          }
+        }
+        break;
+
+      default:
+        console.log("ℹ️ Evento não processado:", event.type);
+    }
+
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error("❌ Erro ao processar webhook:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
-
-  return NextResponse.json({ received: true });
 }
