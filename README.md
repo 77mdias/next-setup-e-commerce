@@ -27,8 +27,10 @@
 - 🎨 [Design System](#-design-system)
 - 🔐 [Autenticação](#-autenticação)
 - 💳 [Pagamentos](#-pagamentos)
+- 🧪 [Testes](#-testes)
 - 🗄️ [Banco de Dados](#-banco-de-dados)
 - 📈 [Performance](#-performance)
+- 🔧 [Correções Recentes](#-correções-recentes)
 - 🤝 [Contribuição](#-contribuição)
 - 📄 [Licença](#-licença)
 
@@ -44,37 +46,73 @@ Principais diferenciais:
 - ⚡ App Router com arquitetura limpa e componentização avançada
 - 🧠 Hooks customizados para regras de negócio (cart, wishlist, produtos)
 - 🧪 Tipagem forte com TypeScript em todo o projeto
+- 🔄 Sistema de checkout completo com Stripe e webhooks
+- 📱 Design responsivo e acessível
 
 ---
 
 ## ✨ Funcionalidades
+
+### 🛍️ **E-commerce Core**
 
 - 📦 Catálogo com busca, ordenação e visualização grid/list
 - 🧭 Categorias e subcategorias com controle de estado e filtros
 - 🛍️ Página de produto com galeria, preço, quantidade, shipping e ações
 - 🛒 Carrinho (Context API) e 💝 Wishlist (hook dedicado)
 - 🔎 Páginas: `categorias`, `product`, `carrinho`, `wishlist`, `perfil`
+
+### 💳 **Sistema de Pagamentos**
+
+- ✅ Checkout completo com Stripe
+- 🔄 Webhooks para processamento de pagamentos
+- 📊 Status de pedidos em tempo real
+- 📧 Confirmação de pedido por email
+- 🎯 Páginas de sucesso/falha do pedido
+
+### 🔐 **Autenticação & Segurança**
+
+- 🔑 NextAuth.js com OAuth (Google, GitHub) e credenciais
+- 🛡️ Middleware para proteção de rotas
+- 🔒 Validação de formulários com Zod
+- 📧 Verificação de email
+- 🔄 Recuperação de senha
+
+### 🎨 **UX/UI Avançada**
+
 - ⬆️ Scroll-to-top com animações (float, pulse, sparkle)
 - 🔔 Notificações (UI Toast/Notification)
-- 🧾 Webhooks de pagamento (Stripe)
+- 🎭 Microinterações e transições suaves
+- 📱 Design mobile-first responsivo
+- 🌙 Dark theme consistente
+
+### 🛠️ **Ferramentas de Desenvolvimento**
+
+- 🖼️ Processamento automático de imagens (Remove.bg)
+- 📊 Scripts de backup e restauração
+- 🧪 API de teste do Stripe
+- 🔍 Logs detalhados para debug
+- 📈 Monitoramento de performance
 
 ---
 
 ## 🧰 Stack
 
-Frontend
+### **Frontend**
 
 - Next.js 15 (App Router) • React 19 • TypeScript
 - Tailwind CSS 4 • Lucide React • Radix UI
+- React Hook Form • Zod • Sonner (toasts)
 
-Backend
+### **Backend**
 
 - Next.js API Routes • Prisma ORM • PostgreSQL
 - NextAuth.js (OAuth + Email) • Stripe
+- Nodemailer • bcryptjs
 
-Dev/Qualidade
+### **Dev/Qualidade**
 
 - ESLint • Prettier • VS Code Workspace
+- Prisma Studio • Neon Database
 
 ---
 
@@ -98,22 +136,32 @@ src/
         hooks/use-product-list.ts
         page.tsx
       carrinho/ • wishlist/ • perfil/ • ofertas/ • suporte/
+      checkout/ • pedido/ (sucesso, falha)
       components/ (Header, Nav, Menu, etc.)
       context/cart.tsx
       layout.tsx
     api/
-      products/ • categories/ • cart/ • wishlist/ • remove-bg/ • webhooks/stripe/
+      products/ • categories/ • cart/ • wishlist/ • remove-bg/
+      checkout/ • orders/ • webhooks/stripe/ • test-stripe/
+      auth/ (register, signin, verify-email, reset-password)
   components/ui/ (button, input, card-products, navigation-menu, toast, scroll-to-top)
-  hooks/ (useAddToCart, useWishlist, useScrollToTop, ...)
-  lib/ (auth, prisma, stripe, utils)
+  hooks/ (useAddToCart, useWishlist, useScrollToTop, useCheckout, useAuth)
+  lib/ (auth, prisma, stripe, utils, email)
   prisma/ (schema.prisma, migrations, seed.ts)
+  scripts/ (smart-seed, backup-images, auto-reprocess-images)
 ```
 
 ---
 
 ## 🚀 Como executar
 
-Pré-requisitos: Node 18+, PostgreSQL 15+, conta Stripe.
+### **Pré-requisitos**
+
+- Node.js 18+
+- PostgreSQL 15+ (ou Neon Database)
+- Conta Stripe (para pagamentos)
+
+### **Instalação**
 
 ```bash
 # 1) Instalar deps
@@ -133,71 +181,254 @@ npm run dev
 # http://localhost:3000
 ```
 
-Scripts úteis (package.json): `dev`, `build`, `start`, `lint`, `seed`, `smart-seed`, `reprocess-images`, `backup-images`.
+### **Scripts úteis**
+
+```bash
+npm run dev          # Desenvolvimento
+npm run build        # Build de produção
+npm run start        # Servidor de produção
+npm run lint         # Linting
+npm run seed         # Seed básico
+npm run smart-seed   # Seed inteligente
+npm run backup-images    # Backup de imagens
+npm run restore-images   # Restaurar imagens
+npm run reprocess-images # Reprocessar imagens
+npm run check-images     # Verificar imagens
+```
 
 ---
 
 ## 🧩 Principais módulos
 
+### **E-commerce**
+
 - `src/components/ui/card-products.tsx` • Card unificado com ações (cart/wishlist)
 - `src/app/[slug]/categorias/[categorySlug]/hooks/use-category-page.ts` • Estado/filtro/sort
 - `src/app/[slug]/product/hooks/use-product-list.ts` • Lista de produtos da loja
 - `src/app/[slug]/product/[productId]/components/*` • Página de produto modular
+
+### **Carrinho & Wishlist**
+
 - `src/hooks/useAddToCart.ts` • Ações de carrinho
 - `src/hooks/useWishlist.ts` • Ações de wishlist
+- `src/app/[slug]/context/cart.tsx` • Context do carrinho
+
+### **Checkout & Pagamentos**
+
+- `src/hooks/useCheckout.ts` • Lógica de checkout
+- `src/app/api/checkout/route.ts` • API de checkout
+- `src/app/api/webhooks/stripe/route.ts` • Webhooks do Stripe
+- `src/app/[slug]/pedido/sucesso/page.tsx` • Página de sucesso
+
+### **UX/UI**
+
 - `src/hooks/useScrollToTop.ts` + `components/ui/scroll-to-top.tsx` • UX scroll
+- `src/components/ui/notification.tsx` • Sistema de notificações
+- `src/components/ui/toast.tsx` • Toasts
 
 ---
 
 ## 🎨 Design System
 
-Tokens (globals.scss)
+### **Tokens (globals.scss)**
 
 ```scss
 --button-primary: hsla(348, 100%, 64%, 1);
 --text-price: hsla(348, 100%, 64%, 1);
+--text-price-secondary: hsla(348, 100%, 54%, 1);
 --all-black: hsla(0, 0%, 7%, 1);
 --card-product: hsla(0, 0%, 15%, 1);
+--text-primary: hsla(0, 0%, 100%, 1);
 ```
 
-Interações
+### **Interações**
 
 - Efeitos: hover/scale/shadow, tooltips, microinterações
 - Animações customizadas (float, pulse-glow, sparkle) aplicadas ao ScrollToTop
+- Transições suaves entre estados
 
-Responsividade
+### **Responsividade**
 
-- Mobile-first, grid responsivo (1–4 colunas), navegação sticky, touch-friendly
+- Mobile-first, grid responsivo (1–4 colunas)
+- Navegação sticky, touch-friendly
+- Breakpoints otimizados
 
 ---
 
 ## 🔐 Autenticação
 
-- NextAuth (Google OAuth + credenciais)
-- Tipagem NextAuth estendida em `src/types/next-auth.d.ts`
+### **Providers**
+
+- Google OAuth
+- GitHub OAuth
+- Credenciais (email/senha)
+
+### **Funcionalidades**
+
+- Verificação de email
+- Recuperação de senha
 - Middleware para rotas protegidas
+- Tipagem NextAuth estendida em `src/types/next-auth.d.ts`
+
+### **Fluxo**
+
+1. Registro/Login
+2. Verificação de email (se necessário)
+3. Redirecionamento com callbackUrl
+4. Proteção de rotas sensíveis
 
 ---
 
 ## 💳 Pagamentos
 
-- Stripe Checkout + Webhooks (`src/app/api/webhooks/stripe/`)
-- Exibição de status de pedido e integrações correlatas
+### **Stripe Integration**
+
+- Stripe Checkout para pagamentos
+- Webhooks para processamento automático
+- Status de pedidos em tempo real
+- Registro de pagamentos no banco
+
+### **Fluxo de Checkout**
+
+1. Adicionar produtos ao carrinho
+2. Preencher informações pessoais
+3. Redirecionamento para Stripe
+4. Processamento do pagamento
+5. Webhook atualiza status
+6. Redirecionamento para sucesso/falha
+
+### **Webhooks**
+
+- `checkout.session.completed` • Pagamento confirmado
+- `checkout.session.async_payment_failed` • Pagamento falhou
+- `checkout.session.expired` • Sessão expirou
+
+---
+
+## 🧪 Testes
+
+### **Teste do Stripe**
+
+Para testar o sistema de pagamentos, use os cartões de teste do Stripe:
+
+#### **Cartões de Sucesso**
+
+```
+Número: 4242 4242 4242 4242
+Data: Qualquer data futura
+CVC: Qualquer 3 dígitos
+```
+
+#### **Cartões de Falha**
+
+```
+Número: 4000 0000 0000 0002 (pagamento recusado)
+Número: 4000 0000 0000 9995 (saldo insuficiente)
+```
+
+#### **API de Teste**
+
+```bash
+GET /api/test-stripe
+# Testa configuração do Stripe e cria sessão de teste
+```
+
+### **Teste de Checkout**
+
+1. Adicione produtos ao carrinho
+2. Vá para checkout (`/[slug]/checkout`)
+3. Preencha informações pessoais
+4. Use cartão de teste: `4242 4242 4242 4242`
+5. Complete o pagamento
+6. Verifique redirecionamento para página de sucesso
 
 ---
 
 ## 🗄️ Banco de Dados (Prisma)
 
-- Entidades principais: `Store`, `Product`, `Category`, `Brand`, `User`, `Order`
-- Relacionamentos: loja→produtos, categoria→produtos, marca→produtos, user→orders
-- Seeds inteligentes (`scripts/smart-seed.js`) e `prisma/seed.ts`
+### **Entidades Principais**
+
+- `Store` • Lojas/marketplaces
+- `Product` • Produtos com variantes
+- `Category` • Categorias e subcategorias
+- `Brand` • Marcas
+- `User` • Usuários com roles
+- `Order` • Pedidos com status
+- `Payment` • Registros de pagamento
+- `Wishlist` • Lista de desejos
+
+### **Relacionamentos**
+
+- Loja → Produtos (1:N)
+- Categoria → Produtos (1:N)
+- Marca → Produtos (1:N)
+- Usuário → Pedidos (1:N)
+- Pedido → Pagamentos (1:N)
+- Usuário → Wishlist (1:N)
+
+### **Seeds**
+
+- `prisma/seed.ts` • Seed básico
+- `scripts/smart-seed.js` • Seed inteligente com imagens
+- `scripts/backup-processed-images.js` • Backup de imagens
 
 ---
 
 ## 📈 Performance & Qualidade
 
-- Image Optimization, code-splitting, cache e SEO (App Router)
-- ESLint/Prettier integrados • VSCode workspace (.vscode/)
+### **Otimizações**
+
+- Image Optimization com Next.js
+- Code-splitting automático
+- Cache inteligente
+- SEO otimizado (App Router)
+- Lazy loading de componentes
+
+### **Qualidade de Código**
+
+- ESLint/Prettier integrados
+- TypeScript strict mode
+- Conventional Commits
+- VSCode workspace (.vscode/)
+
+### **Monitoramento**
+
+- Logs detalhados para debug
+- Error boundaries
+- Performance monitoring
+- Webhook status tracking
+
+---
+
+## 🔧 Correções Recentes
+
+### **Checkout & Pagamentos**
+
+- ✅ Corrigido erro 404 após checkout do Stripe
+- ✅ Melhorado redirecionamento de autenticação
+- ✅ Implementado webhooks robustos
+- ✅ Adicionado logs detalhados para debug
+- ✅ Corrigido middleware para rotas de pedido
+
+### **UX/UI**
+
+- ✅ Melhorado loading states
+- ✅ Corrigido fluxo de autenticação
+- ✅ Implementado tratamento de erros robusto
+- ✅ Adicionado feedback visual para ações
+
+### **Performance**
+
+- ✅ Otimizado carregamento de imagens
+- ✅ Implementado cache inteligente
+- ✅ Melhorado SEO e meta tags
+
+### **Segurança**
+
+- ✅ Validação de formulários com Zod
+- ✅ Proteção de rotas sensíveis
+- ✅ Sanitização de dados
+- ✅ Rate limiting em APIs críticas
 
 ---
 
@@ -208,7 +439,13 @@ Responsividade
 3. Commit: `git commit -m "feat: minha feature"`
 4. Push e abra um PR
 
-Padrões: TypeScript, ESLint/Prettier, Conventional Commits.
+### **Padrões**
+
+- TypeScript strict mode
+- ESLint/Prettier
+- Conventional Commits
+- Testes para novas funcionalidades
+- Documentação atualizada
 
 ---
 
@@ -221,3 +458,10 @@ Projeto sob licença MIT. Consulte `LICENSE`.
 ### ⭐ Curtiu o projeto?
 
 Deixe uma estrela e compartilhe! Feito com ❤️ e ☕.
+
+### 🔗 Links Úteis
+
+- [Documentação do Stripe](https://stripe.com/docs)
+- [NextAuth.js](https://next-auth.js.org/)
+- [Prisma Docs](https://www.prisma.io/docs/)
+- [Tailwind CSS](https://tailwindcss.com/docs)
