@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
+import { createStripeCheckoutSession } from "@/lib/stripe-config";
 import { db } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -94,7 +94,25 @@ export async function POST(request: NextRequest) {
     });
 
     // Criar sessão do Stripe
-    const stripeSession = await stripe.checkout.sessions.create({
+    console.log("🔧 Criando sessão do Stripe com dados:", {
+      storeId,
+      itemsCount: items.length,
+      subtotal,
+      shippingFee,
+      total,
+      customerEmail: customerInfo.email,
+      baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+    });
+
+    const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${store.slug}/pedido/sucesso?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${store.slug}/pedido/falha?session_id={CHECKOUT_SESSION_ID}`;
+
+    console.log("🔧 URLs do Stripe:", {
+      successUrl,
+      cancelUrl,
+    });
+
+    const stripeSession = await createStripeCheckoutSession({
       payment_method_types: ["card"],
       line_items: items.map((item: any) => ({
         price_data: {
@@ -109,8 +127,8 @@ export async function POST(request: NextRequest) {
         quantity: item.quantity,
       })),
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/${store.slug}/pedido/sucesso?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/${store.slug}/pedido/falha?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       metadata: {
         orderId: order.id.toString(),
         storeId: store.id,
@@ -173,8 +191,27 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("❌ Erro ao criar checkout:", error);
+
+    // Log detalhado para debug em produção
+    if (error instanceof Error) {
+      console.error("❌ Mensagem de erro:", error.message);
+      console.error("❌ Stack trace:", error.stack);
+    }
+
+    // Verificar se é erro do Stripe
+    if (error && typeof error === "object" && "type" in error) {
+      console.error("❌ Erro do Stripe:", {
+        type: (error as any).type,
+        message: (error as any).message,
+        code: (error as any).code,
+      });
+    }
+
     return NextResponse.json(
-      { error: "Erro interno do servidor" },
+      {
+        error: "Erro interno do servidor",
+        details: process.env.NODE_ENV === "development" ? error : undefined,
+      },
       { status: 500 },
     );
   }
