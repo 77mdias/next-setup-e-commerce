@@ -3,48 +3,76 @@ import { stripe } from "@/lib/stripe-config";
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("🔧 Testando configuração do Stripe...");
-
-    // Verificar variáveis de ambiente
-    const envCheck = {
+    // Verificar configurações
+    const config = {
       STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
       NEXT_PUBLIC_BASE_URL: !!process.env.NEXT_PUBLIC_BASE_URL,
       NODE_ENV: process.env.NODE_ENV,
     };
 
-    console.log("🔧 Variáveis de ambiente:", envCheck);
+    console.log("🔧 Configurações do Stripe:", config);
+
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { error: "STRIPE_SECRET_KEY não configurada" },
+        { status: 500 },
+      );
+    }
+
+    if (!process.env.NEXT_PUBLIC_BASE_URL) {
+      return NextResponse.json(
+        { error: "NEXT_PUBLIC_BASE_URL não configurada" },
+        { status: 500 },
+      );
+    }
 
     // Testar conexão com Stripe
-    const account = await stripe.accounts.retrieve();
-
-    console.log("✅ Conexão com Stripe estabelecida:", {
-      accountId: account.id,
-      environment: account.object,
+    const testSession = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "brl",
+            product_data: {
+              name: "Teste de Configuração",
+              description: "Produto de teste para verificar configuração",
+            },
+            unit_amount: 1000, // R$ 10,00
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/test-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/test-cancel`,
+      metadata: {
+        test: "true",
+        orderId: "test-123",
+      },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Configuração do Stripe está funcionando corretamente",
-      data: {
-        account: {
-          id: account.id,
-          object: account.object,
-          country: account.country,
-        },
-        environment: process.env.NODE_ENV,
-        baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
-        envCheck,
+      config,
+      testSession: {
+        id: testSession.id,
+        url: testSession.url,
+        status: testSession.status,
       },
+      message: "Configuração do Stripe está funcionando corretamente",
     });
   } catch (error) {
     console.error("❌ Erro ao testar Stripe:", error);
 
     return NextResponse.json(
       {
-        success: false,
-        message: "Erro na configuração do Stripe",
-        error: error instanceof Error ? error.message : "Erro desconhecido",
-        details: process.env.NODE_ENV === "development" ? error : undefined,
+        error: "Erro ao testar configuração do Stripe",
+        details: error instanceof Error ? error.message : "Erro desconhecido",
+        config: {
+          STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
+          NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+          NODE_ENV: process.env.NODE_ENV,
+        },
       },
       { status: 500 },
     );

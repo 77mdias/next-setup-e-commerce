@@ -68,6 +68,8 @@ export async function POST(request: NextRequest) {
 
         console.log("🔍 ID do pedido:", orderId);
         console.log("📋 Metadata completa:", session.metadata);
+        console.log("💰 Status do pagamento:", session.payment_status);
+        console.log("💳 ID do pagamento:", session.payment_intent);
 
         if (!orderId) {
           console.warn("⚠️ ID do pedido não encontrado nos metadados");
@@ -82,6 +84,9 @@ export async function POST(request: NextRequest) {
           where: {
             id: Number(orderId),
           },
+          include: {
+            store: { select: { slug: true } },
+          },
         });
 
         if (!existingOrder) {
@@ -95,6 +100,8 @@ export async function POST(request: NextRequest) {
         console.log(
           "📊 Pedido encontrado, status atual:",
           existingOrder.status,
+          "paymentStatus:",
+          existingOrder.paymentStatus,
         );
 
         // Atualizar o pedido para PAID
@@ -105,6 +112,7 @@ export async function POST(request: NextRequest) {
           data: {
             status: "PAID",
             paymentStatus: "PAID",
+            stripePaymentId: session.payment_intent as string,
           },
           include: {
             store: { select: { slug: true } },
@@ -116,10 +124,11 @@ export async function POST(request: NextRequest) {
           orderId: updatedOrder.id,
           newStatus: updatedOrder.status,
           paymentStatus: updatedOrder.paymentStatus,
+          stripePaymentId: updatedOrder.stripePaymentId,
         });
 
         // Criar registro de pagamento
-        await db.payment.create({
+        const payment = await db.payment.create({
           data: {
             orderId: Number(orderId),
             method: "stripe",
@@ -130,7 +139,11 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        console.log("💰 Registro de pagamento criado com sucesso");
+        console.log("💰 Registro de pagamento criado com sucesso:", {
+          paymentId: payment.id,
+          amount: payment.amount,
+          status: payment.status,
+        });
 
         break;
 

@@ -37,20 +37,25 @@ export default function PedidoSucessoPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirecionar se não estiver autenticado
+  // Aguardar a verificação de autenticação antes de fazer qualquer redirecionamento
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push(
-        `/auth/signin?callbackUrl=/${slug}/pedido/sucesso?session_id=${sessionId}`,
-      );
+    if (authLoading) {
+      return; // Aguardar a verificação de autenticação
     }
-  }, [isAuthenticated, router, slug, sessionId]);
+
+    if (!isAuthenticated) {
+      // Redirecionar para login com callbackUrl específico para a página de sucesso
+      const callbackUrl = `/auth/signin?callbackUrl=/${slug}/pedido/sucesso?session_id=${sessionId}`;
+      router.push(callbackUrl);
+      return;
+    }
+  }, [isAuthenticated, authLoading, router, slug, sessionId]);
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -60,38 +65,83 @@ export default function PedidoSucessoPage() {
         return;
       }
 
+      // Só buscar os detalhes se estiver autenticado
+      if (!isAuthenticated || authLoading) {
+        return;
+      }
+
       try {
+        console.log("🔍 Buscando detalhes do pedido para sessão:", sessionId);
+
         // Buscar detalhes do pedido pela sessão do Stripe
         const response = await fetch(`/api/orders/session/${sessionId}`);
 
         if (!response.ok) {
-          throw new Error("Erro ao buscar detalhes do pedido");
+          const errorData = await response.json().catch(() => ({}));
+          console.error(
+            "❌ Erro na resposta da API:",
+            response.status,
+            errorData,
+          );
+          throw new Error(
+            errorData.error || "Erro ao buscar detalhes do pedido",
+          );
         }
 
         const orderData = await response.json();
+        console.log("✅ Pedido encontrado:", orderData);
         setOrder(orderData);
+        setError(null); // Limpar qualquer erro anterior
       } catch (err) {
         console.error("❌ Erro ao buscar pedido:", err);
-        setError("Erro ao carregar detalhes do pedido");
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Erro ao carregar detalhes do pedido",
+        );
+        setOrder(null); // Limpar pedido em caso de erro
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (isAuthenticated) {
+    // Resetar estados quando a autenticação mudar
+    if (authLoading) {
+      setIsLoading(true);
+      setError(null);
+      setOrder(null);
+      return;
+    }
+
+    if (isAuthenticated && !authLoading) {
+      setIsLoading(true);
+      setError(null);
       fetchOrderDetails();
     }
-  }, [sessionId, isAuthenticated]);
+  }, [sessionId, isAuthenticated, authLoading]);
 
   // Mostrar loading enquanto verifica autenticação ou carrega dados
-  if (!isAuthenticated || isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="flex min-h-screen w-screen items-center justify-center bg-[var(--all-black)]">
-        <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-[var(--text-price)]"></div>
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-32 w-32 animate-spin rounded-full border-b-2 border-[var(--text-price)]"></div>
+          <p className="text-white">
+            {authLoading
+              ? "Verificando autenticação..."
+              : "Carregando pedido..."}
+          </p>
+        </div>
       </div>
     );
   }
 
+  // Se não está autenticado, não mostrar nada (já está sendo redirecionado)
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // Mostrar erro apenas se não estiver carregando e não estiver autenticado
   if (error || !order) {
     return (
       <div className="min-h-screen w-screen bg-[var(--all-black)] py-8">
@@ -107,11 +157,18 @@ export default function PedidoSucessoPage() {
             <p className="mb-6 text-gray-400">
               {error || "Não foi possível carregar os detalhes do pedido"}
             </p>
-            <Link href={`/${slug}`}>
-              <Button className="bg-[var(--button-primary)] hover:bg-[var(--text-price-secondary)]">
-                Voltar para a Loja
-              </Button>
-            </Link>
+            <div className="space-y-3">
+              <Link href={`/${slug}`}>
+                <Button className="bg-[var(--button-primary)] hover:bg-[var(--text-price-secondary)]">
+                  Voltar para a Loja
+                </Button>
+              </Link>
+              {sessionId && (
+                <p className="text-sm text-gray-500">
+                  ID da Sessão: {sessionId}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

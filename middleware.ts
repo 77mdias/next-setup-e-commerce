@@ -10,6 +10,8 @@ export default withAuth(
     const isProfilePage = req.nextUrl.pathname.includes("/perfil");
     const isWishlistPage = req.nextUrl.pathname.includes("/wishlist");
     const isCartPage = req.nextUrl.pathname.includes("/carrinho");
+    const isOrderPage = req.nextUrl.pathname.includes("/pedido");
+    const isCheckoutPage = req.nextUrl.pathname.includes("/checkout");
 
     // Redirecionar usuários autenticados das páginas de auth
     // Mas não redirecionar durante o processo de OAuth ou páginas de erro
@@ -23,10 +25,19 @@ export default withAuth(
     }
 
     // Proteger páginas que requerem autenticação
-    if (!isAuth && (isProfilePage || isWishlistPage || isCartPage)) {
+    if (
+      !isAuth &&
+      (isProfilePage || isWishlistPage || isCartPage || isCheckoutPage)
+    ) {
       const signInUrl = new URL("/auth/signin", req.url);
       signInUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
       return NextResponse.redirect(signInUrl);
+    }
+
+    // Para páginas de pedido, permitir acesso mesmo sem autenticação
+    // (o componente interno vai lidar com a autenticação)
+    if (isOrderPage) {
+      return NextResponse.next();
     }
 
     // Proteger páginas de admin
@@ -53,6 +64,7 @@ export const config = {
     "/:slug/perfil/:path*",
     "/:slug/wishlist/:path*",
     "/:slug/carrinho/:path*",
+    "/:slug/checkout/:path*",
     // Proteger rotas de admin
     "/admin/:path*",
   ],
