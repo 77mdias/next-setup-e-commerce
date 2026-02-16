@@ -5,6 +5,10 @@ import styles from "@/app/[slug]/scss/page.module.scss";
 import { Button } from "./button";
 import { Heart, ShoppingCart } from "lucide-react";
 import Link from "next/link";
+import {
+  normalizeProductImageSrc,
+  shouldUseUnoptimizedImage,
+} from "@/lib/product-image";
 
 const CardProducts = ({
   product,
@@ -18,7 +22,7 @@ const CardProducts = ({
   buttonCardProductName,
   displayButtonCart,
 }: {
-  product: Product;
+  product: Product | null | undefined;
   wishlistItems: Set<string>;
   loadingWishlist: string | null;
   handleAddToWishlist: (product: Product) => void;
@@ -29,6 +33,14 @@ const CardProducts = ({
   buttonCardProductName: string;
   displayButtonCart: string;
 }) => {
+  if (!product) {
+    return null;
+  }
+
+  const imageSrc = normalizeProductImageSrc(
+    Array.isArray(product.images) ? product.images[0] : undefined,
+  );
+
   return (
     <article className="group relative overflow-hidden rounded-xl p-4 transition-all duration-300 hover:scale-[1.02]">
       {/* Badge de promoção */}
@@ -45,9 +57,10 @@ const CardProducts = ({
       {/* Imagem do produto */}
       <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-lg sm:aspect-[4/3] md:aspect-square">
         <Image
-          src={product.images[0] || "/placeholder-product.jpg"}
+          src={imageSrc}
           alt={`Imagem do produto ${product.name}`}
           fill
+          unoptimized={shouldUseUnoptimizedImage(imageSrc)}
           className="object-contain transition-transform duration-300 group-hover:scale-102"
           sizes="(max-width: 640px) 80vw, (max-width: 768px) 60vw, (max-width: 1200px) 40vw, 25vw"
         />

@@ -90,8 +90,10 @@ export async function GET(request: NextRequest) {
     const wishlist = await db.wishlist.findMany({
       where: { userId: user.id },
       select: {
+        id: true,
         productId: true,
         createdAt: true,
+        product: true,
       },
       orderBy: { createdAt: "desc" },
     });

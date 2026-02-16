@@ -9,6 +9,10 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import ButtonBack from "@/components/ui/ButtonBack";
+import {
+  normalizeProductImageSrc,
+  shouldUseUnoptimizedImage,
+} from "@/lib/product-image";
 
 export default function CarrinhoPage() {
   const params = useParams();
@@ -115,95 +119,101 @@ export default function CarrinhoPage() {
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             {/* Lista de produtos */}
             <div className="space-y-4 lg:col-span-2">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="rounded-lg bg-[var(--card-product)] p-6"
-                >
-                  <div className="flex items-start gap-4">
-                    {/* Imagem do produto */}
-                    <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                      <Image
-                        src={product.images[0] || "/placeholder-product.jpg"}
-                        alt={product.name}
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
+              {products.map((product) => {
+                const imageSrc = normalizeProductImageSrc(product.images[0]);
 
-                    {/* Informações do produto */}
-                    <Link
-                      href={`/${slug}/product/${product.id}`}
-                      className="flex min-w-0 flex-1"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <h3 className="line-clamp-2 font-semibold text-white">
-                          {product.name}
-                        </h3>
-
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className="text-lg font-bold text-[var(--text-price)]">
-                            {formatCurrency(product.price)}
-                          </span>
-                          {product.originalPrice &&
-                            product.originalPrice > product.price && (
-                              <span className="text-sm text-gray-400 line-through">
-                                {formatCurrency(product.originalPrice)}
-                              </span>
-                            )}
-                        </div>
-                      </div>
-                    </Link>
-
-                    {/* Controles de quantidade */}
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 rounded-lg bg-gray-700 p-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => decreaseProductQuantity(product.id)}
-                          className="h-8 w-8 p-0 text-white hover:bg-gray-600"
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-
-                        <span className="min-w-[2rem] text-center text-white">
-                          {product.quantity}
-                        </span>
-
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => increaseProductQuantity(product.id)}
-                          className="h-8 w-8 p-0 text-white hover:bg-gray-600"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
+                return (
+                  <div
+                    key={product.id}
+                    className="rounded-lg bg-[var(--card-product)] p-6"
+                  >
+                    <div className="flex items-start gap-4">
+                      {/* Imagem do produto */}
+                      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                        <Image
+                          src={imageSrc}
+                          alt={product.name}
+                          fill
+                          sizes="80px"
+                          unoptimized={shouldUseUnoptimizedImage(imageSrc)}
+                          className="object-contain"
+                        />
                       </div>
 
-                      {/* Botão remover */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeProductFromCart(product.id)}
-                        className="h-8 w-8 p-0 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                      {/* Informações do produto */}
+                      <Link
+                        href={`/${slug}/product/${product.id}`}
+                        className="flex min-w-0 flex-1"
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="line-clamp-2 font-semibold text-white">
+                            {product.name}
+                          </h3>
+
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-lg font-bold text-[var(--text-price)]">
+                              {formatCurrency(product.price)}
+                            </span>
+                            {product.originalPrice &&
+                              product.originalPrice > product.price && (
+                                <span className="text-sm text-gray-400 line-through">
+                                  {formatCurrency(product.originalPrice)}
+                                </span>
+                              )}
+                          </div>
+                        </div>
+                      </Link>
+
+                      {/* Controles de quantidade */}
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 rounded-lg bg-gray-700 p-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => decreaseProductQuantity(product.id)}
+                            className="h-8 w-8 p-0 text-white hover:bg-gray-600"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+
+                          <span className="min-w-[2rem] text-center text-white">
+                            {product.quantity}
+                          </span>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => increaseProductQuantity(product.id)}
+                            className="h-8 w-8 p-0 text-white hover:bg-gray-600"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        {/* Botão remover */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeProductFromCart(product.id)}
+                          className="h-8 w-8 p-0 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Subtotal do produto */}
+                    <div className="mt-4 flex justify-end">
+                      <span className="text-sm text-gray-400">
+                        Subtotal:{" "}
+                        <span className="font-semibold text-[var(--text-price)]">
+                          {formatCurrency(product.price * product.quantity)}
+                        </span>
+                      </span>
                     </div>
                   </div>
-
-                  {/* Subtotal do produto */}
-                  <div className="mt-4 flex justify-end">
-                    <span className="text-sm text-gray-400">
-                      Subtotal:{" "}
-                      <span className="font-semibold text-[var(--text-price)]">
-                        {formatCurrency(product.price * product.quantity)}
-                      </span>
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
 
               {/* Botão limpar carrinho */}
               <div className="flex justify-end">

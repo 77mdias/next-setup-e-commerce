@@ -7,13 +7,17 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Store, Product } from "@prisma/client";
+import { Product } from "@prisma/client";
 import Image from "next/image";
 import { formatCurrency } from "@/helpers/format-currency";
 import styles from "../scss/page.module.scss";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import type { CarouselApi } from "@/components/ui/carousel";
+import {
+  normalizeProductImageSrc,
+  shouldUseUnoptimizedImage,
+} from "@/lib/product-image";
 
 const OffersForYou = ({ slug, store }: { slug: string; store: Product[] }) => {
   const [api, setApi] = useState<CarouselApi>();
@@ -98,63 +102,69 @@ const OffersForYou = ({ slug, store }: { slug: string; store: Product[] }) => {
       <div ref={carouselRef} className="cursor-grab active:cursor-grabbing">
         <Carousel className="relative" setApi={setApi}>
           <CarouselContent className="flex gap-2 pl-6">
-            {sortedProducts.map((product) => (
-              <CarouselItem
-                key={product.id}
-                className="basis-1/2 rounded-xl bg-[var(--card-product)] p-4 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg sm:basis-1/3 md:basis-1/4 lg:basis-1/5"
-              >
-                <Link
-                  href={`/${slug}/product/${product.id}`}
-                  className="flex h-full flex-col items-center justify-between gap-4"
+            {sortedProducts.map((product) => {
+              const imageSrc = normalizeProductImageSrc(product.images[0]);
+
+              return (
+                <CarouselItem
+                  key={product.id}
+                  className="basis-1/2 rounded-xl bg-[var(--card-product)] p-4 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg sm:basis-1/3 md:basis-1/4 lg:basis-1/5"
                 >
-                  <div className="flex flex-1 items-center justify-center">
-                    <div className="relative h-[120px] w-[140px] sm:h-[100px] sm:w-[120px] md:h-[110px] md:w-[130px]">
-                      <Image
-                        src={product.images[0] || ""}
-                        alt={product.name}
-                        fill
-                        className="object-contain transition-transform duration-300 hover:scale-105"
-                      />
+                  <Link
+                    href={`/${slug}/product/${product.id}`}
+                    className="flex h-full flex-col items-center justify-between gap-4"
+                  >
+                    <div className="flex flex-1 items-center justify-center">
+                      <div className="relative h-[120px] w-[140px] sm:h-[100px] sm:w-[120px] md:h-[110px] md:w-[130px]">
+                        <Image
+                          src={imageSrc}
+                          alt={product.name}
+                          fill
+                          sizes="(max-width: 640px) 40vw, (max-width: 1024px) 28vw, 140px"
+                          unoptimized={shouldUseUnoptimizedImage(imageSrc)}
+                          className="object-contain transition-transform duration-300 hover:scale-105"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Nome do produto */}
-                  <div className="w-full text-center">
-                    <h3 className="line-clamp-2 text-xs font-medium text-white sm:text-sm">
-                      {product.name}
-                    </h3>
-                  </div>
+                    {/* Nome do produto */}
+                    <div className="w-full text-center">
+                      <h3 className="line-clamp-2 text-xs font-medium text-white sm:text-sm">
+                        {product.name}
+                      </h3>
+                    </div>
 
-                  {/* Preços */}
-                  <div className="flex flex-col items-center gap-1">
-                    {product.originalPrice &&
-                      product.originalPrice > product.price && (
-                        <p className="text-xs font-extralight text-gray-400 line-through opacity-60">
-                          {formatCurrency(product.originalPrice)}
-                        </p>
-                      )}
-                    <p
-                      className={`${styles.price} text-sm font-bold tracking-tighter text-[var(--text-price)] sm:text-base`}
-                    >
-                      {formatCurrency(product.price)}
-                    </p>
+                    {/* Preços */}
+                    <div className="flex flex-col items-center gap-1">
+                      {product.originalPrice &&
+                        product.originalPrice > product.price && (
+                          <p className="text-xs font-extralight text-gray-400 line-through opacity-60">
+                            {formatCurrency(product.originalPrice)}
+                          </p>
+                        )}
+                      <p
+                        className={`${styles.price} text-sm font-bold tracking-tighter text-[var(--text-price)] sm:text-base`}
+                      >
+                        {formatCurrency(product.price)}
+                      </p>
 
-                    {/* Badge de desconto */}
-                    {product.originalPrice &&
-                      product.originalPrice > product.price && (
-                        <div className="rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white">
-                          {Math.round(
-                            ((product.originalPrice - product.price) /
-                              product.originalPrice) *
-                              100,
-                          )}
-                          % OFF
-                        </div>
-                      )}
-                  </div>
-                </Link>
-              </CarouselItem>
-            ))}
+                      {/* Badge de desconto */}
+                      {product.originalPrice &&
+                        product.originalPrice > product.price && (
+                          <div className="rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white">
+                            {Math.round(
+                              ((product.originalPrice - product.price) /
+                                product.originalPrice) *
+                                100,
+                            )}
+                            % OFF
+                          </div>
+                        )}
+                    </div>
+                  </Link>
+                </CarouselItem>
+              );
+            })}
           </CarouselContent>
           {canScrollPrev && (
             <CarouselPrevious className="left-0 size-10 bg-black/60 text-white hover:bg-black/80" />

@@ -10,9 +10,17 @@ import { useAddToCart } from "@/hooks/useAddToCart";
 import ButtonBack from "@/components/ui/ButtonBack";
 import { Product } from "@prisma/client";
 
+interface WishlistItem {
+  id: string;
+  productId: string;
+  product: Product | null;
+  createdAt: string;
+}
+
 export default function WishlistPage() {
   const { user, isLoading, isAuthenticated } = useAuth();
-  const [wishlistData, setWishlistData] = useState<any[]>([]);
+  const [wishlistData, setWishlistData] = useState<WishlistItem[]>([]);
+  const [isWishlistDataLoading, setIsWishlistDataLoading] = useState(true);
   const params = useParams();
   const slug = params.slug as string;
   const router = useRouter();
@@ -23,16 +31,24 @@ export default function WishlistPage() {
   // Carregar dados da wishlist
   useEffect(() => {
     const loadWishlistData = async () => {
-      if (!isAuthenticated) return;
+      if (!isAuthenticated) {
+        setIsWishlistDataLoading(false);
+        return;
+      }
 
       try {
         const response = await fetch("/api/wishlist");
         if (response.ok) {
           const data = await response.json();
-          setWishlistData(data.wishlist);
+          const validItems = (data.wishlist as WishlistItem[]).filter(
+            (item) => item?.product && item?.productId,
+          );
+          setWishlistData(validItems);
         }
       } catch (error) {
         console.error("Erro ao carregar wishlist:", error);
+      } finally {
+        setIsWishlistDataLoading(false);
       }
     };
 
@@ -44,7 +60,7 @@ export default function WishlistPage() {
   };
 
   // Loading state
-  if (isLoading) {
+  if (isLoading || isWishlistDataLoading) {
     return (
       <div className="flex min-h-screen w-screen items-center justify-center bg-[var(--all-black)]">
         <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-[var(--text-price)]"></div>
@@ -69,7 +85,7 @@ export default function WishlistPage() {
   }
 
   // Se a wishlist estiver vazia, exibe uma mensagem de lista vazia
-  if (wishlistItems.size === 0) {
+  if (wishlistItems.size === 0 || wishlistData.length === 0) {
     return (
       <div className="min-h-screen w-screen bg-[var(--all-black)] py-8">
         <div className="container mx-auto max-w-4xl px-4">
@@ -100,20 +116,20 @@ export default function WishlistPage() {
 
         {wishlistData.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {wishlistData.map((item: any) => (
+            {wishlistData.map((item) => (
               <div
-                key={item.id}
+                key={item.id || item.productId}
                 className="flex flex-col gap-2 rounded-xl bg-[var(--card-product)] px-4 py-3 text-[var(--text-primary)]"
               >
                 <CardProducts
                   product={item.product}
                   wishlistItems={wishlistItems}
-                  loadingWishlist={null}
-                  handleAddToWishlist={() => {}}
+                  loadingWishlist={loadingWishlist}
+                  handleAddToWishlist={handleAddToWishlist}
                   handleAddToCart={handleAddToCart}
                   loadingCart={loadingCart}
                   slug={slug as string}
-                  buttonCardProduct={() => buttonCardProduct(item.product)}
+                  buttonCardProduct={buttonCardProduct}
                   buttonCardProductName="Ver"
                   displayButtonCart="flex"
                 />
