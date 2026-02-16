@@ -1,13 +1,11 @@
 import Menu from "./components/Menu";
 import Header from "./components/Header";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Nav from "./components/Nav";
 import { CartProvider } from "./context/cart";
 import { ScrollToTop } from "@/components/ui/scroll-to-top";
-
-const prisma = new PrismaClient();
 
 export default async function Layout({
   children,
@@ -19,7 +17,7 @@ export default async function Layout({
   const { slug } = await params;
 
   // Buscar a loja pelo slug
-  const store = await prisma.store.findUnique({
+  const store = await db.store.findUnique({
     where: {
       slug: slug,
     },

@@ -5,6 +5,7 @@ const TIMEOUT_PRONE_HOST_SUFFIXES = [
   "mlstatic.com",
   "dooca.store",
   "media-amazon.com",
+  "pichau.com.br",
 ];
 
 const isRemoteUrl = (value: string) =>

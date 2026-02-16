@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar a loja primeiro
-    const store = await prisma.store.findUnique({
+    const store = await db.store.findUnique({
       where: { slug: storeSlug },
       select: { id: true },
     });
@@ -29,7 +27,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar categorias principais (sem parentId) com suas subcategorias
-    const categories = await prisma.category.findMany({
+    const categories = await db.category.findMany({
       where: {
         parentId: null, // Apenas categorias principais
         isActive: true,

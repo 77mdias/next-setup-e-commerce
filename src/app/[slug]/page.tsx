@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/prisma";
 import HighlightedProducst from "./components/HighlightedProducst";
 import OffersForYou from "./components/OffersForYou";
-
-const prisma = new PrismaClient();
 
 interface StorePageProps {
   params: Promise<{
@@ -15,7 +13,7 @@ export default async function StorePage({ params }: StorePageProps) {
   const { slug } = await params;
 
   // Buscar a loja pelo slug
-  const store = await prisma.store.findUnique({
+  const store = await db.store.findUnique({
     where: {
       slug: slug,
     },
@@ -88,7 +86,7 @@ export default async function StorePage({ params }: StorePageProps) {
 }
 
 export async function generateStaticParams() {
-  const stores = await prisma.store.findMany({
+  const stores = await db.store.findMany({
     where: {
       isActive: true,
     },
