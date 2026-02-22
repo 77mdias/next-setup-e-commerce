@@ -199,7 +199,7 @@ export function buildHomeContent(
       actions: [
         {
           label: "Shop Sale",
-          href: `${basePath}/ofertas`,
+          href: "/explore",
           variant: "primary",
         },
         {

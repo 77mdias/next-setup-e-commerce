@@ -36,10 +36,10 @@ export function ProductNav({ slug }: ProductNavProps) {
               Categorias
             </Link>
             <Link
-              href={`/${slug}/ofertas`}
+              href="/explore"
               className="rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
             >
-              Ofertas
+              Explore
             </Link>
             <Link
               href={`/${slug}/suporte`}

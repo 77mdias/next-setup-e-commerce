@@ -23,6 +23,7 @@ export default function Menu() {
       `/${slug}/categorias`,
       `/${slug}/categorias/${categorySlug}`,
       `/${slug}/ofertas`,
+      "/explore",
       `/${slug}/suporte`,
       `/${slug}/menu`,
     ];

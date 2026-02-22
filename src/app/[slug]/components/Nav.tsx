@@ -80,16 +80,16 @@ const Nav = () => {
           <NavigationMenuLink
             asChild
             className={`rounded-full px-4 py-2 transition-colors duration-300 ${
-              pathname === `/${slug}/ofertas`
+              pathname === "/explore" || pathname === `/${slug}/ofertas`
                 ? "nav-item-active hover:nav-item-active"
                 : "nav-item-inactive hover:nav-item-active"
             }`}
           >
             <Link
-              href={`/${slug}/ofertas`}
+              href="/explore"
               className="text-sm font-medium transition-colors duration-300"
             >
-              Ofertas
+              Explore
             </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>

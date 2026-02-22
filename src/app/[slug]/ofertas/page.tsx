@@ -1,5 +1,13 @@
-const Ofertas = () => {
-  return <div>Ofertas</div>;
-};
+import { redirect } from "next/navigation";
 
-export default Ofertas;
+interface OfertasRedirectPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function OfertasRedirectPage({
+  params,
+}: OfertasRedirectPageProps) {
+  await params;
+
+  redirect("/explore");
+}

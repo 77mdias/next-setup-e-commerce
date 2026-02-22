@@ -14,6 +14,7 @@ import type {
 const canonicalTopLevelRoutes = new Set([
   "",
   "products",
+  "explore",
   "product",
   "carrinho",
   "checkout",
@@ -65,12 +66,15 @@ function buildNavigationLinks(pathname: string): NavigationLink[] {
     pathname === "/products" ||
     pathname.startsWith("/product/") ||
     pathname.startsWith("/products/");
+  const isExplorePath =
+    pathname === "/explore" || pathname.startsWith("/explore/");
   const isProfilePath =
     pathname === "/perfil" || pathname.startsWith("/perfil/");
 
   return [
     { label: "Home", href: "/", isActive: pathname === "/" },
     { label: "Products", href: "/products", isActive: isProductsPath },
+    { label: "Explore", href: "/explore", isActive: isExplorePath },
     {
       label: "Categories",
       href: "/products",
