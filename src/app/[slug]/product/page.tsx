@@ -37,7 +37,7 @@ export default function ProductListPage() {
   if (loading) {
     return (
       <div className="min-h-screen w-screen bg-[var(--all-black)]">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-10">
           <div className="flex items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--button-primary)]"></div>
             <span className="ml-2 text-white">Carregando produtos...</span>
@@ -50,7 +50,7 @@ export default function ProductListPage() {
   if (error) {
     return (
       <div className="min-h-screen w-screen bg-[var(--all-black)]">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-10">
           <div className="text-center">
             <div className="mb-4 text-6xl">❌</div>
             <h1 className="mb-2 text-2xl font-bold text-white">
@@ -66,13 +66,13 @@ export default function ProductListPage() {
   return (
     <div className="min-h-screen w-screen bg-[var(--all-black)]">
       {/* Header */}
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-6">
         <ButtonBack />
       </div>
 
-      <div className="container mx-auto px-4 pb-8">
+      <div className="container mx-auto px-4 pb-12">
         {/* Título */}
-        <div className="mb-8">
+        <div className="mb-10">
           <h1 className="text-3xl font-bold text-white">Todos os Produtos</h1>
           <p className="text-gray-400">
             {filteredAndSortedProducts.length} produto
@@ -82,7 +82,7 @@ export default function ProductListPage() {
         </div>
 
         {/* Controles */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           {/* Busca */}
           <div className="relative max-w-md flex-1">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -155,7 +155,7 @@ export default function ProductListPage() {
           </div>
         ) : (
           <div
-            className={`grid gap-6 ${
+            className={`grid gap-8 ${
               viewMode === "grid"
                 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                 : "grid-cols-1"

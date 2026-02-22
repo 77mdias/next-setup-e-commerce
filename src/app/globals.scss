@@ -1,5 +1,7 @@
 @use "tailwindcss" as *;
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Variáveis CSS customizadas */
 @layer base {
   :root {

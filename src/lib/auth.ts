@@ -7,6 +7,10 @@ import { db } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
 import { getServerSession } from "next-auth";
+import {
+  DEFAULT_AUTH_CALLBACK_PATH,
+  normalizeCallbackPath,
+} from "@/lib/callback-url";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
@@ -163,18 +167,13 @@ export const authOptions: NextAuthOptions = {
       return dbUser?.isActive ?? false;
     },
     async redirect({ url, baseUrl }) {
-      console.log("🔍 NextAuth redirect callback:", { url, baseUrl });
-
       // Se a URL é relativa, adiciona o baseUrl
       if (url.startsWith("/")) {
-        const redirectUrl = `${baseUrl}${url}`;
-        console.log("🔍 URL relativa, redirecionando para:", redirectUrl);
-        return redirectUrl;
+        return `${baseUrl}${url}`;
       }
 
       // Se a URL é do mesmo domínio, permite
       if (url.startsWith(baseUrl)) {
-        console.log("🔍 URL do mesmo domínio, permitindo:", url);
         return url;
       }
 
@@ -183,26 +182,18 @@ export const authOptions: NextAuthOptions = {
         const urlObj = new URL(url);
         const callbackUrl = urlObj.searchParams.get("callbackUrl");
         if (callbackUrl) {
-          const finalUrl = callbackUrl.startsWith("/")
-            ? `${baseUrl}${callbackUrl}`
-            : callbackUrl;
-          console.log(
-            "🔍 CallbackUrl encontrada, redirecionando para:",
-            finalUrl,
-          );
-          return finalUrl;
+          const safePath = normalizeCallbackPath(callbackUrl);
+          return `${baseUrl}${safePath}`;
         }
       }
 
       // Verificar se é uma URL de callback do Stripe
       if (url.includes("session_id=") && url.includes("/pedido/")) {
-        console.log("🔍 URL de callback do Stripe detectada:", url);
         return url;
       }
 
-      // Se não, volta para o baseUrl
-      console.log("🔍 Redirecionando para baseUrl:", baseUrl);
-      return baseUrl;
+      // Se não, volta para o catálogo
+      return `${baseUrl}${DEFAULT_AUTH_CALLBACK_PATH}`;
     },
   },
   pages: {

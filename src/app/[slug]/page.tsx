@@ -84,18 +84,3 @@ export default async function StorePage({ params }: StorePageProps) {
     </div>
   );
 }
-
-export async function generateStaticParams() {
-  const stores = await db.store.findMany({
-    where: {
-      isActive: true,
-    },
-    select: {
-      slug: true,
-    },
-  });
-
-  return stores.map((store) => ({
-    slug: store.slug,
-  }));
-}

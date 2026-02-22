@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import { useNotification } from "@/components/ui/notification";
 import { Alert } from "@/components/ui/alert";
+import {
+  DEFAULT_AUTH_CALLBACK_PATH,
+  normalizeCallbackPath,
+} from "@/lib/callback-url";
 
 export default function ResetPasswordForm() {
   const [email, setEmail] = useState("");
@@ -20,14 +24,11 @@ export default function ResetPasswordForm() {
   const [success, setSuccess] = useState(false);
   const [token, setToken] = useState("");
 
-  const params = useParams();
   const searchParams = useSearchParams();
-  const slug = params.slug as string;
   const router = useRouter();
   const { showNotification, NotificationContainer } = useNotification();
 
-  const callbackUrl =
-    searchParams.get("callbackUrl") || (slug ? `/${slug}` : "/");
+  const callbackUrl = normalizeCallbackPath(searchParams.get("callbackUrl"));
   const tokenParam = searchParams.get("token");
 
   // Verificar se há token na URL
@@ -89,7 +90,7 @@ export default function ResetPasswordForm() {
         // Redirecionar após 3 segundos
         setTimeout(() => {
           router.push(
-            `/auth/signin${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`,
+            `/auth/signin${callbackUrl !== DEFAULT_AUTH_CALLBACK_PATH ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`,
           );
         }, 3000);
       }
@@ -119,7 +120,10 @@ export default function ResetPasswordForm() {
         },
         body: JSON.stringify({
           email,
-          callbackUrl: callbackUrl !== "/" ? callbackUrl : undefined,
+          callbackUrl:
+            callbackUrl !== DEFAULT_AUTH_CALLBACK_PATH
+              ? callbackUrl
+              : undefined,
         }),
       });
 
@@ -192,7 +196,7 @@ export default function ResetPasswordForm() {
 
             <div className="text-center">
               <Link
-                href={`/auth/signin${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+                href={`/auth/signin${callbackUrl !== DEFAULT_AUTH_CALLBACK_PATH ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
                 className="flex items-center justify-center text-sm text-[var(--text-price)] hover:text-[var(--text-price-secondary)]"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -230,7 +234,7 @@ export default function ResetPasswordForm() {
             />
             <div className="text-center">
               <Link
-                href={`/auth/signin${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+                href={`/auth/signin${callbackUrl !== DEFAULT_AUTH_CALLBACK_PATH ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
                 className="text-[var(--text-price)] hover:text-[var(--text-price-secondary)]"
               >
                 Ir para o login agora
@@ -330,7 +334,7 @@ export default function ResetPasswordForm() {
 
             <div className="text-center">
               <Link
-                href={`/auth/signin${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+                href={`/auth/signin${callbackUrl !== DEFAULT_AUTH_CALLBACK_PATH ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
                 className="flex items-center justify-center text-sm text-[var(--text-price)] hover:text-[var(--text-price-secondary)]"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />

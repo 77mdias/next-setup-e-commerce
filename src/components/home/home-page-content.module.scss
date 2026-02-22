@@ -1,0 +1,54 @@
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pageBackdrop {
+  isolation: isolate;
+}
+
+.mesh {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 14% 12%, rgb(255 46 99 / 10%), transparent 34%),
+    radial-gradient(circle at 82% 8%, rgb(92 124 250 / 12%), transparent 33%),
+    radial-gradient(circle at 50% 74%, rgb(92 124 250 / 6%), transparent 40%);
+  z-index: 0;
+}
+
+:global(.dark) .mesh {
+  background:
+    radial-gradient(circle at 14% 12%, rgb(255 46 99 / 16%), transparent 34%),
+    radial-gradient(circle at 82% 8%, rgb(92 124 250 / 18%), transparent 33%),
+    radial-gradient(circle at 50% 74%, rgb(92 124 250 / 8%), transparent 40%);
+}
+
+.reveal {
+  opacity: 0;
+  animation: reveal-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.delayOne {
+  animation-delay: 0.08s;
+}
+
+.delayTwo {
+  animation-delay: 0.16s;
+}
+
+.delayThree {
+  animation-delay: 0.24s;
+}
+
+.delayFour {
+  animation-delay: 0.32s;
+}

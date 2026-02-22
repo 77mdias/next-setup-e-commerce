@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { normalizeCallbackPath } from "@/lib/callback-url";
 
 // Configuração do transporter de email
 const transporter = nodemailer.createTransport({
@@ -19,20 +20,12 @@ export async function sendVerificationEmail(
   callbackUrl?: string,
 ) {
   const baseUrl = process.env.NEXTAUTH_URL;
+  const safeCallbackPath = normalizeCallbackPath(callbackUrl);
+  const callbackQuery = callbackUrl
+    ? `&callbackUrl=${encodeURIComponent(safeCallbackPath)}`
+    : "";
 
-  // Extrair slug do callbackUrl se existir
-  let slug = null;
-  if (callbackUrl) {
-    const url = new URL(callbackUrl, baseUrl);
-    const pathSegments = url.pathname.split("/").filter(Boolean);
-    if (pathSegments.length > 0) {
-      slug = pathSegments[0];
-    }
-  }
-
-  const verificationUrl = slug
-    ? `${baseUrl}/${slug}/auth/verify-email?token=${token}`
-    : `${baseUrl}/auth/verify-email?token=${token}`;
+  const verificationUrl = `${baseUrl}/auth/verify-email?token=${token}${callbackQuery}`;
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -44,7 +37,7 @@ export async function sendVerificationEmail(
         <p>Olá! Obrigado por se cadastrar em nossa plataforma.</p>
         <p>Para ativar sua conta, clique no botão abaixo:</p>
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${verificationUrl}" 
+          <a href="${verificationUrl}"
              style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
             Verificar Email
           </a>

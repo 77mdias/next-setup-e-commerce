@@ -4,11 +4,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 interface ErrorStateProps {
-  slug: string;
+  categoriesPath?: string;
   error?: string;
 }
 
-export function ErrorState({ slug, error }: ErrorStateProps) {
+export function ErrorState({
+  categoriesPath = "/products",
+  error,
+}: ErrorStateProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--all-black)]">
       <div className="text-center">
@@ -19,9 +22,9 @@ export function ErrorState({ slug, error }: ErrorStateProps) {
         <p className="mb-6 text-gray-400">
           {error || "O produto solicitado não existe"}
         </p>
-        <Link href={`/${slug}/categorias`}>
+        <Link href={categoriesPath}>
           <Button className="bg-[var(--button-primary)] hover:bg-[var(--text-price-secondary)]">
-            Voltar às Categorias
+            Voltar aos produtos
           </Button>
         </Link>
       </div>

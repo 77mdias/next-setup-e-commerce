@@ -102,6 +102,7 @@ model Store {
   reviews        Review[]
   owner          User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
+  @@index([isActive, createdAt])
   @@map("stores")
 }
 
@@ -135,6 +136,7 @@ model Category {
   children    Category[] @relation("CategoryHierarchy")
   products    Product[]
 
+  @@index([isActive, sortOrder, name])
   @@map("categories")
 }
 
@@ -176,6 +178,12 @@ model Product {
   reviews        Review[]
   wishlist       Wishlist[]
 
+  @@index([storeId, isActive, createdAt])
+  @@index([storeId, isActive, categoryId])
+  @@index([storeId, isActive, price])
+  @@index([storeId, isActive, name])
+  @@index([storeId, isActive, soldCount])
+  @@index([storeId, isActive, rating, reviewCount])
   @@map("products")
 }
 

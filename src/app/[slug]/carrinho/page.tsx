@@ -1,6 +1,6 @@
 "use client";
 
-import { useCart } from "@/app/[slug]/context/cart";
+import { useCart } from "@/context/cart";
 import { useAuth } from "@/hooks/useAuth";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";

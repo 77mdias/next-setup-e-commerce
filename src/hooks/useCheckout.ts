@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useCart } from "@/app/[slug]/context/cart";
+import { useCart } from "@/context/cart";
 import { useAuth } from "@/hooks/useAuth";
-import { useParams } from "next/navigation";
 
 interface CustomerInfo {
   name: string;
@@ -23,8 +22,6 @@ export function useCheckout() {
   const [error, setError] = useState<string | null>(null);
   const { products, total, clearCart } = useCart();
   const { user } = useAuth();
-  const params = useParams();
-  const slug = params.slug as string;
 
   const createCheckoutSession = async (
     customerInfo: CustomerInfo,
@@ -39,12 +36,17 @@ export function useCheckout() {
         throw new Error("Carrinho vazio");
       }
 
-      // Buscar informações da loja pelo slug
-      const storeResponse = await fetch(`/api/stores/${slug}`);
+      // Buscar informações da loja ativa
+      const storeResponse = await fetch("/api/products?limit=1");
       if (!storeResponse.ok) {
         throw new Error("Erro ao buscar informações da loja");
       }
-      const store = await storeResponse.json();
+      const storeData = await storeResponse.json();
+      const store = storeData?.store;
+
+      if (!store?.id) {
+        throw new Error("Loja ativa não encontrada");
+      }
 
       // Preparar dados para checkout
       const checkoutData: CheckoutData = {

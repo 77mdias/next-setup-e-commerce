@@ -1,35 +1,77 @@
+import { HomePageContent } from "@/components/home/home-page-content";
+import type { HomeFeaturedProductInput } from "@/components/home/types";
+import { formatCurrency } from "@/helpers/format-currency";
 import { db } from "@/lib/prisma";
-import Link from "next/link";
+
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const store = await db.store.findFirst();
+  const store = await db.store.findFirst({
+    where: {
+      isActive: true,
+    },
+    include: {
+      products: {
+        where: {
+          isActive: true,
+        },
+        include: {
+          category: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: [
+          {
+            isFeatured: "desc",
+          },
+          {
+            isOnSale: "desc",
+          },
+          {
+            rating: "desc",
+          },
+          {
+            createdAt: "desc",
+          },
+        ],
+        take: 4,
+      },
+    },
+  });
 
   if (!store) {
-    return <div>Loja não encontrada</div>;
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#0b0d10] text-white">
+        Loja não encontrada
+      </main>
+    );
   }
 
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-blue-500">
-      <div className="flex flex-col items-center justify-center space-y-6">
-        <h1 className="text-4xl font-bold text-gray-900">💻 NeXT Store</h1>
-        <p className="text-xl text-gray-600">
-          E-commerce moderno de eletrônicos e periféricos
-        </p>
-      </div>
+  const featuredProducts: HomeFeaturedProductInput[] = store.products.map(
+    (product) => ({
+      id: product.id,
+      category: product.category?.name ?? "Gear",
+      name: product.name,
+      price: formatCurrency(product.price),
+      previousPrice:
+        product.originalPrice && product.originalPrice > product.price
+          ? formatCurrency(product.originalPrice)
+          : undefined,
+      rating: product.rating > 0 ? product.rating.toFixed(1) : "4.8",
+      imageSrc: product.images[0] ?? "/images/home/card-razer-node.png",
+      imageAlt: `Imagem do produto ${product.name}`,
+      href: `/product/${product.id}`,
+      isOnSale: product.isOnSale,
+      isFeatured: product.isFeatured,
+    }),
+  );
 
-      <div className="mt-4 flex flex-col gap-4 p-4 text-center text-white">
-        <h1 className="text-2xl font-bold">
-          Sua nova loja online de forma rápida e fácil
-        </h1>
-        <p className="text-sm">
-          Acesse agora a loja criada com Next.js 15.1.6 e Prisma 5.1.1
-        </p>
-        <Link href={`/${store.slug}`}>
-          <button className="cursor-pointer rounded-md bg-white p-2 text-black transition-colors hover:bg-blue-600 hover:text-white">
-            Acessar loja
-          </button>
-        </Link>
-      </div>
-    </div>
+  return (
+    <HomePageContent
+      storeSlug={store.slug}
+      featuredProducts={featuredProducts}
+    />
   );
 }

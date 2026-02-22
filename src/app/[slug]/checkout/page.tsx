@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useCart } from "@/app/[slug]/context/cart";
+import { useCart } from "@/context/cart";
 import { useAuth } from "@/hooks/useAuth";
 import { useCheckout } from "@/hooks/useCheckout";
 import { Button } from "@/components/ui/button";

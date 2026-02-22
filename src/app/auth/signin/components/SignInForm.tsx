@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,10 @@ import { Github, Mail, Eye, EyeOff } from "lucide-react";
 import ButtonLogin from "./ButtonLogin";
 import { useNotification } from "@/components/ui/notification";
 import { Alert } from "@/components/ui/alert";
+import {
+  DEFAULT_AUTH_CALLBACK_PATH,
+  normalizeCallbackPath,
+} from "@/lib/callback-url";
 
 export default function SignInForm() {
   const [email, setEmail] = useState("");
@@ -18,13 +22,10 @@ export default function SignInForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [oauthError, setOauthError] = useState<string | null>(null);
-  const params = useParams();
   const searchParams = useSearchParams();
-  const slug = params.slug as string;
   const router = useRouter();
   const { showNotification, NotificationContainer } = useNotification();
-  const callbackUrl =
-    searchParams.get("callbackUrl") || (slug ? `/${slug}` : "/");
+  const callbackUrl = normalizeCallbackPath(searchParams.get("callbackUrl"));
 
   // Verificar se há erro na URL e mostrar alerta
   useEffect(() => {
@@ -87,7 +88,7 @@ export default function SignInForm() {
           <p className="mt-2 text-sm text-gray-400">
             Ou{" "}
             <Link
-              href={`/auth/signup${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+              href={`/auth/signup${callbackUrl !== DEFAULT_AUTH_CALLBACK_PATH ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
               className="font-medium text-[var(--text-price)] hover:text-[var(--text-price-secondary)]"
             >
               crie uma nova conta
@@ -183,7 +184,7 @@ export default function SignInForm() {
 
           <div className="flex items-center justify-between">
             <Link
-              href={`/auth/reset-password${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+              href={`/auth/reset-password${callbackUrl !== DEFAULT_AUTH_CALLBACK_PATH ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
               className="text-sm text-[var(--text-price)] hover:text-[var(--text-price-secondary)]"
             >
               Esqueceu sua senha?

@@ -2,11 +2,15 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams, useParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Github, Mail, Eye, EyeOff } from "lucide-react";
+import {
+  DEFAULT_AUTH_CALLBACK_PATH,
+  normalizeCallbackPath,
+} from "@/lib/callback-url";
 
 export default function SignUpForm() {
   const [formData, setFormData] = useState({
@@ -23,10 +27,7 @@ export default function SignUpForm() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const params = useParams();
-  const slug = params.slug as string;
-  const callbackUrl =
-    searchParams.get("callbackUrl") || (slug ? `/${slug}` : "/");
+  const callbackUrl = normalizeCallbackPath(searchParams.get("callbackUrl"));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -123,27 +124,9 @@ export default function SignUpForm() {
       // Mostrar mensagem de sucesso e redirecionar para verificação
       setError(""); // Limpar qualquer erro anterior
 
-      // Extrair slug do callbackUrl
-      const callbackUrlParam = searchParams.get("callbackUrl");
-      let targetSlug = null;
-
-      if (callbackUrlParam) {
-        const pathSegments = callbackUrlParam.split("/").filter(Boolean);
-        if (pathSegments.length > 0) {
-          targetSlug = pathSegments[0]; // Ex: "nextstore" de "/nextstore"
-        }
-      }
-
-      // Se não conseguir extrair slug do callbackUrl, usar o slug dos params
-      const finalSlug = targetSlug || slug;
-
-      if (finalSlug) {
-        const verifyUrl = `/${finalSlug}/auth/verify-email?email=${encodeURIComponent(formData.email)}`;
-        router.push(verifyUrl);
-      } else {
-        // Se não tiver slug, algo está errado - redirecionar para home
-        router.push("/");
-      }
+      router.push(
+        `/auth/verify-email?email=${encodeURIComponent(formData.email)}&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+      );
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -168,7 +151,7 @@ export default function SignUpForm() {
           <p className="mt-2 text-sm text-gray-400">
             Ou{" "}
             <Link
-              href={`/auth/signin${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+              href={`/auth/signin${callbackUrl !== DEFAULT_AUTH_CALLBACK_PATH ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
               className="font-medium text-[var(--text-price)] hover:text-[var(--text-price-secondary)]"
             >
               faça login em sua conta existente

@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
 const nextConfig: NextConfig = {
+  // Isolate dev artifacts from production build output to avoid
+  // chunk-mismatch/corruption when `next dev` and `next build` run in parallel.
+  distDir: isDevelopment ? ".next-dev" : ".next",
   images: {
     remotePatterns: [
       {

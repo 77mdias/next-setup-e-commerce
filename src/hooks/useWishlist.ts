@@ -5,7 +5,22 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { Product } from "@prisma/client";
 
-export const useWishlist = (slug: string) => {
+function resolveCallbackPath(redirectPath?: string) {
+  if (redirectPath && redirectPath.trim().length > 0) {
+    return redirectPath.startsWith("/") ? redirectPath : `/${redirectPath}`;
+  }
+
+  if (typeof window !== "undefined") {
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    if (currentPath && currentPath !== "/") {
+      return currentPath;
+    }
+  }
+
+  return "/products";
+}
+
+export const useWishlist = (redirectPath?: string) => {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const [loadingWishlist, setLoadingWishlist] = useState<string | null>(null);
@@ -64,7 +79,10 @@ export const useWishlist = (slug: string) => {
   // Adicionar/remover produto da wishlist
   const handleAddToWishlist = async (product: Product) => {
     if (!isAuthenticated) {
-      router.push(`/auth/signin?callbackUrl=/${slug}`);
+      const callbackPath = resolveCallbackPath(redirectPath);
+      router.push(
+        `/auth/signin?callbackUrl=${encodeURIComponent(callbackPath)}`,
+      );
       return;
     }
 

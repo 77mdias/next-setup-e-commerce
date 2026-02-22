@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import { normalizeCallbackPath } from "@/lib/callback-url";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,9 +18,6 @@ export async function POST(request: NextRequest) {
     // Verificar se o usuário existe
     const user = await db.user.findUnique({
       where: { email },
-      include: {
-        stores: true,
-      },
     });
 
     if (!user) {
@@ -46,24 +44,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Construir URL de reset - extrair slug do callbackUrl se existir
-    let resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}`;
+    const safeCallbackPath = normalizeCallbackPath(callbackUrl);
+    const callbackQuery = callbackUrl
+      ? `&callbackUrl=${encodeURIComponent(safeCallbackPath)}`
+      : "";
 
-    // Adicionar callbackUrl se fornecido
-    if (callbackUrl) {
-      resetUrl += `&callbackUrl=${encodeURIComponent(callbackUrl)}`;
-    }
-
-    // Se o usuário tem uma loja associada, usar o slug da loja
-    if (user.stores && user.stores.length > 0) {
-      const userStore = user.stores[0];
-      resetUrl = `${process.env.NEXTAUTH_URL}/${userStore.slug}/auth/reset-password?token=${resetToken}`;
-
-      // Adicionar callbackUrl se fornecido
-      if (callbackUrl) {
-        resetUrl += `&callbackUrl=${encodeURIComponent(callbackUrl)}`;
-      }
-    }
+    // Construir URL canônica de reset
+    const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}${callbackQuery}`;
 
     // Configurar transporter de email
     const transporter = nodemailer.createTransport({

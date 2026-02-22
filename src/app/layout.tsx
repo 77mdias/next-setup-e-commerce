@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
-import "./globals.scss";
-import SessionProvider from "@/components/providers/SessionProvider";
+import type { CSSProperties } from "react";
 import { Toaster } from "sonner";
+
+import AppChrome from "@/components/layout/app-chrome";
+import SessionProvider from "@/components/providers/SessionProvider";
+import ThemeProvider from "@/components/providers/ThemeProvider";
+
+import "./globals.scss";
 
 export const metadata: Metadata = {
   title: "My Store - E-commerce de Eletrônicos",
@@ -13,10 +18,19 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const fontVariablesStyle = {
+    "--font-arimo": '"Arimo", "Segoe UI", Arial, sans-serif',
+    "--font-space-grotesk": '"Space Grotesk", "Arial Black", sans-serif',
+  } as CSSProperties;
+
   return (
-    <html lang="pt-BR">
-      <body className="antialiased">
-        <SessionProvider>{children}</SessionProvider>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className="antialiased" style={fontVariablesStyle}>
+        <ThemeProvider>
+          <SessionProvider>
+            <AppChrome>{children}</AppChrome>
+          </SessionProvider>
+        </ThemeProvider>
         <Toaster />
       </body>
     </html>

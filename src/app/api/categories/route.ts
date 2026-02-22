@@ -1,27 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
+import { resolveStoreBySlugOrActive } from "@/lib/store";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const storeSlug = searchParams.get("storeSlug");
 
-    if (!storeSlug) {
-      return NextResponse.json(
-        { error: "Store slug é obrigatório" },
-        { status: 400 },
-      );
-    }
-
-    // Buscar a loja primeiro
-    const store = await db.store.findUnique({
-      where: { slug: storeSlug },
-      select: { id: true },
-    });
+    const store = await resolveStoreBySlugOrActive(storeSlug);
 
     if (!store) {
       return NextResponse.json(
-        { error: "Loja não encontrada" },
+        {
+          error: storeSlug
+            ? "Loja não encontrada"
+            : "Nenhuma loja ativa encontrada",
+        },
         { status: 404 },
       );
     }
