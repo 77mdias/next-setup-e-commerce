@@ -14,7 +14,8 @@
     "smart-seed": "node scripts/smart-seed.js",
     "reprocess-images": "node scripts/auto-reprocess-images.js",
     "check-images": "node scripts/check-processed-images.js",
-    "seed": "prisma db seed"
+    "seed": "prisma db seed",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -71,6 +72,7 @@
     "postcss": "^8.5.6",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^4.0.18"
   }
 }

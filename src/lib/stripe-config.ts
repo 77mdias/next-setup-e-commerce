@@ -34,7 +34,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 // Função para criar sessão com logs detalhados
-export const createStripeCheckoutSession = async (sessionData: any) => {
+export const createStripeCheckoutSession = async (sessionData: Stripe.Checkout.SessionCreateParams) => {
   try {
     console.log("🔧 Iniciando criação da sessão do Stripe");
     console.log("🔧 Dados da sessão:", {

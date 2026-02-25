@@ -7,10 +7,12 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/prisma";
 import { createStripeCheckoutSession } from "@/lib/stripe-config";
 
+const MAX_ITEM_QUANTITY = 1000;
+
 const checkoutItemSchema = z
   .object({
     productId: z.string().trim().min(1),
-    quantity: z.number().int().positive(),
+    quantity: z.number().int().positive().max(MAX_ITEM_QUANTITY),
     variantId: z.string().trim().min(1).optional(),
   })
   .strict();
@@ -31,11 +33,21 @@ type CanonicalCheckoutItem = {
   variantId?: string;
   quantity: number;
   unitPrice: number;
+  unitPriceCents: number;
   totalPrice: number;
+  totalPriceCents: number;
   productName: string;
   productImage: string;
   productDescription: string;
   specifications: Prisma.InputJsonValue;
+};
+
+type InventorySnapshot = {
+  productId: string;
+  variantId: string | null;
+  quantity: number;
+  reserved: number;
+  minStock: number;
 };
 
 function badRequest(
@@ -49,6 +61,14 @@ function badRequest(
     },
     { status: 400 },
   );
+}
+
+function notFound(error: string) {
+  return NextResponse.json({ error }, { status: 404 });
+}
+
+function conflict(error: string) {
+  return NextResponse.json({ error }, { status: 409 });
 }
 
 function normalizeItems(items: CheckoutItemPayload[]): CheckoutItemPayload[] {
@@ -82,6 +102,49 @@ function resolveItemName(
   }
 
   return `${productName} (${variant.name}: ${variant.value})`;
+}
+
+function moneyToCents(amount: number): number {
+  return Math.round(amount * 100);
+}
+
+function centsToMoney(cents: number): number {
+  return Number((cents / 100).toFixed(2));
+}
+
+function buildInventoryKey(
+  productId: string,
+  variantId?: string | null,
+): string {
+  return `${productId}:${variantId ?? ""}`;
+}
+
+function resolveShippingFeeCents(
+  shippingMethod: ShippingMethod,
+  subtotalCents: number,
+  storeShippingFee: number,
+  freeShippingThreshold: number,
+): number {
+  if (shippingMethod === "PICKUP") {
+    return 0;
+  }
+
+  const shippingFeeCents = moneyToCents(storeShippingFee);
+
+  if (shippingFeeCents <= 0) {
+    return 0;
+  }
+
+  const freeShippingThresholdCents = moneyToCents(freeShippingThreshold);
+
+  if (
+    freeShippingThresholdCents > 0 &&
+    subtotalCents >= freeShippingThresholdCents
+  ) {
+    return 0;
+  }
+
+  return shippingFeeCents;
 }
 
 export async function POST(request: NextRequest) {
@@ -175,56 +238,177 @@ export async function POST(request: NextRequest) {
     const productIds = [
       ...new Set(normalizedItems.map((item) => item.productId)),
     ];
+    const variantIds = [
+      ...new Set(
+        normalizedItems
+          .map((item) => item.variantId)
+          .filter((variantId): variantId is string => Boolean(variantId)),
+      ),
+    ];
 
-    const products = await db.product.findMany({
-      where: {
-        id: { in: productIds },
-        storeId: store.id,
-        isActive: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        price: true,
-        images: true,
-        specifications: true,
-        variants: {
-          where: { isActive: true },
-          select: {
-            id: true,
-            name: true,
-            value: true,
-            price: true,
-          },
+    const [products, variants, inventories] = await Promise.all([
+      db.product.findMany({
+        where: {
+          id: { in: productIds },
         },
-      },
-    });
+        select: {
+          id: true,
+          storeId: true,
+          isActive: true,
+          name: true,
+          description: true,
+          price: true,
+          images: true,
+          specifications: true,
+        },
+      }),
+      db.productVariant.findMany({
+        where: {
+          id: { in: variantIds },
+        },
+        select: {
+          id: true,
+          productId: true,
+          isActive: true,
+          name: true,
+          value: true,
+          price: true,
+          stock: true,
+        },
+      }),
+      db.inventory.findMany({
+        where: {
+          storeId: store.id,
+          productId: { in: productIds },
+        },
+        select: {
+          productId: true,
+          variantId: true,
+          quantity: true,
+          reserved: true,
+          minStock: true,
+        },
+      }),
+    ]);
 
     const productById = new Map(
       products.map((product) => [product.id, product]),
     );
+    const variantById = new Map(
+      variants.map((variant) => [variant.id, variant]),
+    );
+    const inventoryByKey = new Map(
+      inventories.map((inventory) => [
+        buildInventoryKey(inventory.productId, inventory.variantId),
+        inventory,
+      ]),
+    );
+
+    const missingProduct = productIds.find(
+      (productId) => !productById.has(productId),
+    );
+
+    if (missingProduct) {
+      return notFound(`Produto não encontrado: ${missingProduct}`);
+    }
 
     const canonicalItems: CanonicalCheckoutItem[] = [];
+    const requestedByInventory = new Map<
+      string,
+      { quantity: number; label: string; inventory: InventorySnapshot }
+    >();
 
     for (const item of normalizedItems) {
       const product = productById.get(item.productId);
 
       if (!product) {
+        return notFound(`Produto não encontrado: ${item.productId}`);
+      }
+
+      if (!product.isActive) {
+        return badRequest(`Produto inativo: ${item.productId}`);
+      }
+
+      if (product.storeId !== store.id) {
         return badRequest(
-          `Produto inválido para a loja selecionada: ${item.productId}`,
+          `Produto não pertence à loja selecionada: ${item.productId}`,
         );
       }
 
       const selectedVariant = item.variantId
-        ? product.variants.find((variant) => variant.id === item.variantId)
+        ? variantById.get(item.variantId)
         : undefined;
 
       if (item.variantId && !selectedVariant) {
+        return notFound(`Variação não encontrada: ${item.variantId}`);
+      }
+
+      if (selectedVariant && !selectedVariant.isActive) {
         return badRequest(`Variação inválida para o produto ${item.productId}`);
       }
 
+      if (selectedVariant && selectedVariant.productId !== product.id) {
+        return badRequest(
+          `Variação ${selectedVariant.id} não pertence ao produto ${item.productId}`,
+        );
+      }
+
+      const variantInventoryKey = buildInventoryKey(
+        product.id,
+        selectedVariant?.id,
+      );
+      const baseInventoryKey = buildInventoryKey(product.id);
+      let inventoryKey = selectedVariant
+        ? variantInventoryKey
+        : baseInventoryKey;
+      let inventory = inventoryByKey.get(inventoryKey);
+
+      if (!inventory && selectedVariant) {
+        // Fallback para produtos que usam inventário consolidado no nível do produto.
+        inventoryKey = baseInventoryKey;
+        inventory = inventoryByKey.get(baseInventoryKey);
+      }
+
+      if (!inventory) {
+        return conflict(
+          `Estoque indisponível para o produto ${item.productId}`,
+        );
+      }
+
+      const availableInventory = Math.max(
+        inventory.quantity - inventory.reserved,
+        0,
+      );
+      const variantStock = selectedVariant
+        ? Math.max(selectedVariant.stock, 0)
+        : Number.POSITIVE_INFINITY;
+
+      if (item.quantity > variantStock) {
+        return conflict(
+          `Quantidade indisponível para a variação ${selectedVariant?.id}`,
+        );
+      }
+
+      const availableForSale = Math.min(availableInventory, variantStock);
+
+      if (item.quantity > availableForSale) {
+        return conflict(
+          `Estoque insuficiente para o produto ${item.productId}`,
+        );
+      }
+
+      const inventoryRequest = requestedByInventory.get(inventoryKey);
+      requestedByInventory.set(inventoryKey, {
+        quantity: (inventoryRequest?.quantity ?? 0) + item.quantity,
+        label:
+          inventoryRequest?.label ??
+          resolveItemName(product.name, selectedVariant),
+        inventory,
+      });
+
       const unitPrice = selectedVariant?.price ?? product.price;
+      const unitPriceCents = moneyToCents(unitPrice);
+      const totalPriceCents = unitPriceCents * item.quantity;
       const itemName = resolveItemName(product.name, selectedVariant);
 
       canonicalItems.push({
@@ -232,7 +416,9 @@ export async function POST(request: NextRequest) {
         variantId: selectedVariant?.id,
         quantity: item.quantity,
         unitPrice,
-        totalPrice: unitPrice * item.quantity,
+        unitPriceCents,
+        totalPrice: centsToMoney(totalPriceCents),
+        totalPriceCents,
         productName: itemName,
         productImage: product.images[0] ?? "",
         productDescription: product.description || product.name,
@@ -249,13 +435,69 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const subtotal = canonicalItems.reduce(
-      (sum, item) => sum + item.totalPrice,
+    for (const inventoryRequest of requestedByInventory.values()) {
+      const available = Math.max(
+        inventoryRequest.inventory.quantity -
+          inventoryRequest.inventory.reserved,
+        0,
+      );
+
+      if (inventoryRequest.quantity > available) {
+        return conflict(`Estoque insuficiente para ${inventoryRequest.label}`);
+      }
+
+      const remainingAfterCheckout = available - inventoryRequest.quantity;
+
+      if (remainingAfterCheckout < inventoryRequest.inventory.minStock) {
+        return conflict(
+          `Quantidade indisponível para ${inventoryRequest.label} devido ao estoque mínimo`,
+        );
+      }
+    }
+
+    const subtotalCents = canonicalItems.reduce(
+      (sum, item) => sum + item.totalPriceCents,
       0,
     );
-    const shippingFee =
-      subtotal >= store.freeShipping ? 0 : Number(store.shippingFee ?? 0);
-    const total = subtotal + shippingFee;
+    const shippingFeeCents = resolveShippingFeeCents(
+      payload.shippingMethod,
+      subtotalCents,
+      Number(store.shippingFee ?? 0),
+      Number(store.freeShipping ?? 0),
+    );
+    const totalCents = subtotalCents + shippingFeeCents;
+
+    const subtotal = centsToMoney(subtotalCents);
+    const shippingFee = centsToMoney(shippingFeeCents);
+    const total = centsToMoney(totalCents);
+
+    const stripeLineItems = canonicalItems.map((item) => ({
+      price_data: {
+        currency: "brl" as const,
+        product_data: {
+          name: item.productName,
+          images: item.productImage ? [item.productImage] : [],
+          description: item.productDescription,
+        },
+        unit_amount: item.unitPriceCents,
+      },
+      quantity: item.quantity,
+    }));
+
+    if (shippingFeeCents > 0) {
+      stripeLineItems.push({
+        price_data: {
+          currency: "brl",
+          product_data: {
+            name: "Frete",
+            images: [],
+            description: `Envio ${payload.shippingMethod.toLowerCase()} - ${store.name}`,
+          },
+          unit_amount: shippingFeeCents,
+        },
+        quantity: 1,
+      });
+    }
 
     const order = await db.order.create({
       data: {
@@ -293,18 +535,7 @@ export async function POST(request: NextRequest) {
 
     const stripeSession = await createStripeCheckoutSession({
       payment_method_types: ["card"],
-      line_items: canonicalItems.map((item) => ({
-        price_data: {
-          currency: "brl",
-          product_data: {
-            name: item.productName,
-            images: item.productImage ? [item.productImage] : [],
-            description: item.productDescription,
-          },
-          unit_amount: Math.round(item.unitPrice * 100),
-        },
-        quantity: item.quantity,
-      })),
+      line_items: stripeLineItems,
       mode: "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
@@ -312,6 +543,9 @@ export async function POST(request: NextRequest) {
         orderId: order.id.toString(),
         storeId: store.id,
         userId: session.user.id,
+        subtotalCents: subtotalCents.toString(),
+        shippingFeeCents: shippingFeeCents.toString(),
+        totalCents: totalCents.toString(),
       },
       customer_email: customer.email,
       shipping_address_collection: {
