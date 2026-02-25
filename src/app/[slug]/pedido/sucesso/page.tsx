@@ -8,6 +8,7 @@ import { formatCurrency } from "@/helpers/format-currency";
 import { CheckCircle, Package, Truck, Home, Receipt } from "lucide-react";
 import Link from "next/link";
 import ButtonBack from "@/components/ui/ButtonBack";
+import { buildAccessFeedbackPath } from "@/lib/access-feedback";
 
 interface Order {
   id: number;
@@ -51,8 +52,14 @@ export default function PedidoSucessoPage() {
 
     if (!isAuthenticated) {
       // Redirecionar para login com callbackUrl específico para a página de sucesso
-      const callbackUrl = `/auth/signin?callbackUrl=/${slug}/pedido/sucesso?session_id=${sessionId}`;
-      router.push(callbackUrl);
+      const callbackPath = `/${slug}/pedido/sucesso?session_id=${sessionId ?? ""}`;
+      router.push(
+        buildAccessFeedbackPath({
+          reason: "auth-required",
+          callbackUrl: callbackPath,
+          fromPath: callbackPath,
+        }),
+      );
       return;
     }
   }, [isAuthenticated, authLoading, router, slug, sessionId]);

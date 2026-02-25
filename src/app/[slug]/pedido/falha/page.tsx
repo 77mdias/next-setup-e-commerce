@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import ButtonBack from "@/components/ui/ButtonBack";
+import { buildAccessFeedbackPath } from "@/lib/access-feedback";
 
 interface Order {
   id: number;
@@ -64,8 +65,13 @@ export default function PedidoFalhaPage() {
   // Redirecionar se não estiver autenticado
   useEffect(() => {
     if (!isAuthenticated) {
+      const callbackPath = `/${slug}/pedido/falha?session_id=${sessionId ?? ""}`;
       router.push(
-        `/auth/signin?callbackUrl=/${slug}/pedido/falha?session_id=${sessionId}`,
+        buildAccessFeedbackPath({
+          reason: "auth-required",
+          callbackUrl: callbackPath,
+          fromPath: callbackPath,
+        }),
       );
     }
   }, [isAuthenticated, router, slug, sessionId]);

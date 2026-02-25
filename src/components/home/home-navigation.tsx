@@ -42,7 +42,7 @@ export function HomeNavigation({
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 bg-[#f8faff]/90 backdrop-blur-xl dark:bg-[#0b0d10]/90">
-      <div className="mx-auto flex h-20 w-full max-w-[1587px] items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex h-20 w-full max-w-[1587px] items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href={resolvedHomeHref} className="flex items-center gap-1">
           <Image
             src="/Valorant-Academy.png"
@@ -58,7 +58,7 @@ export function HomeNavigation({
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-8 lg:flex">
+        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex">
           {links.map((link) => (
             <Link
               key={link.label}

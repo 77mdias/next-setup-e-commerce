@@ -13,6 +13,7 @@ import {
   normalizeProductImageSrc,
   shouldUseUnoptimizedImage,
 } from "@/lib/product-image";
+import { buildAccessFeedbackPath } from "@/lib/access-feedback";
 
 export default function CarrinhoPage() {
   const params = useParams();
@@ -44,7 +45,14 @@ export default function CarrinhoPage() {
   const handleCheckout = () => {
     if (!isAuthenticated) {
       // Redirecionar para login se não estiver autenticado
-      router.push(`/auth/signin?callbackUrl=/${slug}/carrinho`);
+      const callbackPath = `/${slug}/carrinho`;
+      router.push(
+        buildAccessFeedbackPath({
+          reason: "auth-required",
+          callbackUrl: callbackPath,
+          fromPath: callbackPath,
+        }),
+      );
       return;
     }
 

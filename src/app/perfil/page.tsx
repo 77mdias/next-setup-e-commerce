@@ -1,15 +1,5 @@
-import { notFound, redirect } from "next/navigation";
+import { ProfilePageContent } from "@/components/profile/profile-page-content";
 
-import { resolveStoreBySlugOrActive } from "@/lib/store";
-
-export const dynamic = "force-dynamic";
-
-export default async function ProfileRedirectPage() {
-  const store = await resolveStoreBySlugOrActive();
-
-  if (!store) {
-    notFound();
-  }
-
-  redirect(`/${store.slug}/perfil`);
+export default function ProfilePage() {
+  return <ProfilePageContent signOutCallbackUrl="/" />;
 }

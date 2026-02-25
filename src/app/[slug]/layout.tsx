@@ -1,11 +1,6 @@
-import Menu from "./components/Menu";
-import Header from "./components/Header";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { db } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import Nav from "./components/Nav";
 import { CartProvider } from "./context/cart";
-import { ScrollToTop } from "@/components/ui/scroll-to-top";
 
 export default async function Layout({
   children,
@@ -27,15 +22,5 @@ export default async function Layout({
     notFound();
   }
 
-  return (
-    <div className="bg-background bg-[var(--all-black)]">
-      <Header slug={slug} store={store} />
-      <ScrollArea className="h-[calc(100vh-6.12rem)]">
-        <Nav />
-        <CartProvider>{children}</CartProvider>
-      </ScrollArea>
-      <Menu />
-      <ScrollToTop useScrollArea={true} threshold={800} />
-    </div>
-  );
+  return <CartProvider>{children}</CartProvider>;
 }

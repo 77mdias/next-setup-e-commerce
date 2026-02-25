@@ -47,10 +47,12 @@ function validatePassword(password: string): {
 export async function POST(request: NextRequest) {
   try {
     const { name, email, password, cpf, callbackUrl } = await request.json();
+    const normalizedCpf =
+      typeof cpf === "string" && cpf.trim().length > 0 ? cpf.trim() : null;
 
-    if (!name || !email || !password || !cpf) {
+    if (!name || !email || !password) {
       return NextResponse.json(
-        { message: "Nome, email, senha e CPF são obrigatórios" },
+        { message: "Nome, email e senha são obrigatórios" },
         { status: 400 },
       );
     }
@@ -82,17 +84,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar se o CPF já existe
-    const existingCpf = await db.user.findUnique({
-      where: {
-        cpf,
-      },
-    });
+    if (normalizedCpf) {
+      const existingCpf = await db.user.findUnique({
+        where: {
+          cpf: normalizedCpf,
+        },
+      });
 
-    if (existingCpf) {
-      return NextResponse.json(
-        { message: "Usuário já existe com este CPF" },
-        { status: 400 },
-      );
+      if (existingCpf) {
+        return NextResponse.json(
+          { message: "Usuário já existe com este CPF" },
+          { status: 400 },
+        );
+      }
     }
 
     // Hash da senha
@@ -108,7 +112,7 @@ export async function POST(request: NextRequest) {
         name,
         email: email.toLowerCase(),
         password: hashedPassword,
-        cpf,
+        cpf: normalizedCpf,
         role: UserRole.CUSTOMER,
         isActive: false, // Usuário inativo até verificar email
         emailVerificationToken: verificationToken,

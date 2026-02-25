@@ -11,6 +11,7 @@ import { formatCurrency } from "@/helpers/format-currency";
 import { ArrowLeft, CreditCard, User, MapPin, Phone, Mail } from "lucide-react";
 import Link from "next/link";
 import ButtonBack from "@/components/ui/ButtonBack";
+import { buildAccessFeedbackPath } from "@/lib/access-feedback";
 
 export default function CheckoutPage() {
   const params = useParams();
@@ -29,7 +30,14 @@ export default function CheckoutPage() {
 
   // Redirecionar se não estiver autenticado
   if (!isAuthenticated) {
-    router.push(`/auth/signin?callbackUrl=/${slug}/checkout`);
+    const callbackPath = `/${slug}/checkout`;
+    router.push(
+      buildAccessFeedbackPath({
+        reason: "auth-required",
+        callbackUrl: callbackPath,
+        fromPath: callbackPath,
+      }),
+    );
     return null;
   }
 

@@ -1,97 +1,91 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import { ArrowRight, Lock, Mail, Sparkles, UserRound } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Github, Mail, Eye, EyeOff } from "lucide-react";
 import {
   DEFAULT_AUTH_CALLBACK_PATH,
   normalizeCallbackPath,
 } from "@/lib/callback-url";
 
+type RegisterFormData = {
+  name: string;
+  email: string;
+  password: string;
+};
+
+function validatePassword(password: string): {
+  isValid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+
+  if (password.length < 8) {
+    errors.push("at least 8 characters");
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    errors.push("one uppercase letter (A-Z)");
+  }
+
+  if (!/[a-z]/.test(password)) {
+    errors.push("one lowercase letter (a-z)");
+  }
+
+  if (!/\d/.test(password)) {
+    errors.push("one number (0-9)");
+  }
+
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(password)) {
+    errors.push("one special character (!@#$%^&*)");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
+
 export default function SignUpForm() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<RegisterFormData>({
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
-    cpf: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const callbackUrl = normalizeCallbackPath(searchParams.get("callbackUrl"));
+  const callbackQuery =
+    callbackUrl !== DEFAULT_AUTH_CALLBACK_PATH
+      ? `?callbackUrl=${encodeURIComponent(callbackUrl)}`
+      : "";
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const signInHref = `/auth/signin${callbackQuery}`;
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData((previousValues) => ({ ...previousValues, [name]: value }));
   };
 
-  // Função para validar senha com requisitos de segurança
-  const validatePassword = (
-    password: string,
-  ): { isValid: boolean; errors: string[] } => {
-    const errors: string[] = [];
-
-    // Mínimo 8 caracteres
-    if (password.length < 8) {
-      errors.push("Pelo menos 8 caracteres");
-    }
-
-    // Pelo menos uma letra maiúscula
-    if (!/[A-Z]/.test(password)) {
-      errors.push("Uma letra maiúscula (A-Z)");
-    }
-
-    // Pelo menos uma letra minúscula
-    if (!/[a-z]/.test(password)) {
-      errors.push("Uma letra minúscula (a-z)");
-    }
-
-    // Pelo menos um número
-    if (!/\d/.test(password)) {
-      errors.push("Um número (0-9)");
-    }
-
-    // Pelo menos um caractere especial
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-      errors.push("Um caractere especial (!@#$%^&*)");
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-    };
-  };
-
-  const validateForm = () => {
-    if (formData.password !== formData.confirmPassword) {
-      setError("As senhas não coincidem");
-      return false;
-    }
-
-    const passwordValidation = validatePassword(formData.password);
-    if (!passwordValidation.isValid) {
-      setError(`Senha deve conter: ${passwordValidation.errors.join(", ")}`);
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsLoading(true);
     setError("");
 
-    if (!validateForm()) {
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      setError(
+        `Password must contain: ${passwordValidation.errors.join(", ")}.`,
+      );
       setIsLoading(false);
       return;
     }
@@ -106,270 +100,167 @@ export default function SignUpForm() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          cpf: formData.cpf,
-          callbackUrl: callbackUrl,
+          callbackUrl,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // Se o erro contém detalhes específicos da validação de senha, mostrar de forma mais amigável
-        if (data.details && Array.isArray(data.details)) {
-          throw new Error(`Senha deve conter: ${data.details.join(", ")}`);
+        if (Array.isArray(data.details)) {
+          throw new Error(`Password must contain: ${data.details.join(", ")}`);
         }
-        throw new Error(data.message || "Erro ao criar conta");
-      }
 
-      // Mostrar mensagem de sucesso e redirecionar para verificação
-      setError(""); // Limpar qualquer erro anterior
+        throw new Error(data.message || "Unable to create account right now.");
+      }
 
       router.push(
         `/auth/verify-email?email=${encodeURIComponent(formData.email)}&callbackUrl=${encodeURIComponent(callbackUrl)}`,
       );
-    } catch (error: any) {
-      setError(error.message);
+    } catch (submitError) {
+      const message =
+        submitError instanceof Error
+          ? submitError.message
+          : "Unable to create account right now.";
+      setError(message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, "");
-    setFormData((prev) => ({ ...prev, cpf: value }));
-  };
-
-  const handleOAuthSignIn = (provider: string) => {
-    signIn(provider, { callbackUrl });
-  };
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--all-black)] px-6">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold text-white">Crie sua conta</h2>
-          <p className="mt-2 text-sm text-gray-400">
-            Ou{" "}
-            <Link
-              href={`/auth/signin${callbackUrl !== DEFAULT_AUTH_CALLBACK_PATH ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
-              className="font-medium text-[var(--text-price)] hover:text-[var(--text-price-secondary)]"
+    <main className="relative isolate flex min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-[#f5f8ff] text-[#0f172a] transition-colors dark:bg-[#0B0D10] dark:text-[#F1F3F5]">
+      <Image
+        src="/images/auth/signin-bg.png"
+        alt="Gaming setup background"
+        fill
+        priority
+        className="object-cover opacity-[0.03] dark:opacity-[0.05]"
+      />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_16%,rgba(92,124,250,0.08),transparent_36%),radial-gradient(circle_at_80%_18%,rgba(92,124,250,0.08),transparent_40%)] dark:bg-[radial-gradient(circle_at_16%_16%,rgba(92,124,250,0.12),transparent_36%),radial-gradient(circle_at_80%_18%,rgba(92,124,250,0.10),transparent_40%)]" />
+      <div className="pointer-events-none absolute top-1/2 left-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#5C7CFA]/12 blur-[240px] dark:bg-[#5C7CFA]/20" />
+
+      <div className="relative mx-auto flex w-full max-w-[1587px] items-center justify-center px-4 py-16 sm:px-6 lg:min-h-[874px] lg:px-8">
+        <section className="w-full max-w-[448px] rounded-2xl border border-[#dbe4ff] bg-white/75 px-6 py-8 shadow-[0_25px_50px_-12px_rgba(15,23,42,0.08)] backdrop-blur-sm sm:px-8 sm:py-9 dark:border-white/10 dark:bg-[rgba(23,26,33,0.5)] dark:shadow-[0_25px_50px_-12px_rgba(92,124,250,0.05)]">
+          <div className="text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-[#5C7CFA]/20 bg-[#5C7CFA]/10">
+              <Sparkles className="h-5 w-5 text-[#5C7CFA]" />
+            </div>
+
+            <h1 className="[font-family:var(--font-space-grotesk)] text-[30px] leading-[1.2] font-bold text-[#0f172a] dark:text-[#F1F3F5]">
+              Join Nexus
+            </h1>
+
+            <p className="mt-2 [font-family:var(--font-arimo)] text-base leading-6 text-[#64748b] dark:text-[#9CA3AF]">
+              Become an elite operative today.
+            </p>
+          </div>
+
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <label
+                  htmlFor="name"
+                  className="[font-family:var(--font-arimo)] text-sm font-medium text-[#0f172a] dark:text-[#F1F3F5]"
+                >
+                  Username
+                </label>
+
+                <div className="relative">
+                  <UserRound className="pointer-events-none absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2 text-[#64748b] dark:text-[#9CA3AF]" />
+
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    required
+                    placeholder="PlayerOne"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="h-12 rounded-2xl border border-[#ccd7f8] bg-white/80 pl-11 text-base text-[#0f172a] placeholder:text-[#64748b] focus-visible:border-[#5C7CFA]/40 focus-visible:ring-[#5C7CFA]/20 dark:border-white/10 dark:bg-[rgba(18,21,26,0.5)] dark:text-[#F1F3F5] dark:placeholder:text-[#9CA3AF]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="email"
+                  className="[font-family:var(--font-arimo)] text-sm font-medium text-[#0f172a] dark:text-[#F1F3F5]"
+                >
+                  Email
+                </label>
+
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2 text-[#64748b] dark:text-[#9CA3AF]" />
+
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    placeholder="player@nexus.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="h-12 rounded-2xl border border-[#ccd7f8] bg-white/80 pl-11 text-base text-[#0f172a] placeholder:text-[#64748b] focus-visible:border-[#5C7CFA]/40 focus-visible:ring-[#5C7CFA]/20 dark:border-white/10 dark:bg-[rgba(18,21,26,0.5)] dark:text-[#F1F3F5] dark:placeholder:text-[#9CA3AF]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="password"
+                  className="[font-family:var(--font-arimo)] text-sm font-medium text-[#0f172a] dark:text-[#F1F3F5]"
+                >
+                  Password
+                </label>
+
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2 text-[#64748b] dark:text-[#9CA3AF]" />
+
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="h-12 rounded-2xl border border-[#ccd7f8] bg-white/80 pl-11 text-base text-[#0f172a] placeholder:text-[#64748b] focus-visible:border-[#5C7CFA]/40 focus-visible:ring-[#5C7CFA]/20 dark:border-white/10 dark:bg-[rgba(18,21,26,0.5)] dark:text-[#F1F3F5] dark:placeholder:text-[#9CA3AF]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="h-12 w-full rounded-2xl bg-[#FF2E63] [font-family:var(--font-arimo)] text-base font-medium text-white hover:bg-[#FF4F7D]"
             >
-              faça login em sua conta existente
+              {isLoading ? "Creating..." : "Create Account"}
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+          </form>
+
+          <p className="mt-6 text-center [font-family:var(--font-arimo)] text-sm text-[#64748b] dark:text-[#9CA3AF]">
+            Already have an account?{" "}
+            <Link
+              href={signInHref}
+              className="font-medium text-[#d61f57] transition-colors hover:text-[#b4174a] dark:text-[#FF2E63] dark:hover:text-[#FF5A88]"
+            >
+              Log In
             </Link>
           </p>
-        </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="name" className="sr-only">
-                Nome completo
-              </label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                autoComplete="name"
-                required
-                placeholder="Nome completo"
-                value={formData.name}
-                onChange={handleChange}
-                className="border-gray-600 bg-[var(--card-product)] text-white placeholder-gray-400"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleChange}
-                className="border-gray-600 bg-[var(--card-product)] text-white placeholder-gray-400"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="cpf" className="sr-only">
-                CPF
-              </label>
-              <Input
-                id="cpf"
-                name="cpf"
-                type="text"
-                autoComplete="cpf"
-                required
-                placeholder="CPF"
-                value={formData.cpf}
-                onChange={handleCpfChange}
-                className="border-gray-600 bg-[var(--card-product)] text-white placeholder-gray-400"
-              />
-            </div>
-
-            <div className="relative">
-              <label htmlFor="password" className="sr-only">
-                Senha
-              </label>
-              <Input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="new-password"
-                required
-                placeholder="Senha (requisitos abaixo)"
-                value={formData.password}
-                onChange={handleChange}
-                className="border-gray-600 bg-[var(--card-product)] pr-10 text-white placeholder-gray-400"
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 flex items-center pr-3"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4 text-gray-400" />
-                ) : (
-                  <Eye className="h-4 w-4 text-gray-400" />
-                )}
-              </button>
-            </div>
-
-            {/* Requisitos de senha */}
-            <div className="mt-2 text-xs text-gray-400">
-              <p className="mb-1 font-medium">Sua senha deve conter:</p>
-              <div className="grid grid-cols-1 gap-1">
-                <div
-                  className={`flex items-center ${formData.password.length >= 8 ? "text-green-400" : "text-gray-400"}`}
-                >
-                  <span className="mr-1">
-                    {formData.password.length >= 8 ? "✓" : "○"}
-                  </span>
-                  Pelo menos 8 caracteres
-                </div>
-                <div
-                  className={`flex items-center ${/[A-Z]/.test(formData.password) ? "text-green-400" : "text-gray-400"}`}
-                >
-                  <span className="mr-1">
-                    {/[A-Z]/.test(formData.password) ? "✓" : "○"}
-                  </span>
-                  Uma letra maiúscula (A-Z)
-                </div>
-                <div
-                  className={`flex items-center ${/[a-z]/.test(formData.password) ? "text-green-400" : "text-gray-400"}`}
-                >
-                  <span className="mr-1">
-                    {/[a-z]/.test(formData.password) ? "✓" : "○"}
-                  </span>
-                  Uma letra minúscula (a-z)
-                </div>
-                <div
-                  className={`flex items-center ${/\d/.test(formData.password) ? "text-green-400" : "text-gray-400"}`}
-                >
-                  <span className="mr-1">
-                    {/\d/.test(formData.password) ? "✓" : "○"}
-                  </span>
-                  Um número (0-9)
-                </div>
-                <div
-                  className={`flex items-center ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password) ? "text-green-400" : "text-gray-400"}`}
-                >
-                  <span className="mr-1">
-                    {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(
-                      formData.password,
-                    )
-                      ? "✓"
-                      : "○"}
-                  </span>
-                  Um caractere especial (!@#$%^&*)
-                </div>
-              </div>
-            </div>
-
-            <div className="relative">
-              <label htmlFor="confirmPassword" className="sr-only">
-                Confirmar senha
-              </label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                autoComplete="new-password"
-                required
-                placeholder="Confirmar senha"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="border-gray-600 bg-[var(--card-product)] pr-10 text-white placeholder-gray-400"
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 flex items-center pr-3"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-4 w-4 text-gray-400" />
-                ) : (
-                  <Eye className="h-4 w-4 text-gray-400" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-[var(--button-primary)] text-white hover:bg-[var(--text-price-secondary)]"
-          >
-            {isLoading ? "Criando conta..." : "Criar conta"}
-          </Button>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-600" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-[var(--all-black)] px-2 text-gray-400">
-                  Ou continue com
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOAuthSignIn("github")}
-                className="w-full border-gray-600 bg-[var(--card-product)] text-white hover:bg-gray-700"
-              >
-                <Github className="mr-2 h-4 w-4" />
-                GitHub
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOAuthSignIn("google")}
-                className="w-full border-gray-600 bg-[var(--card-product)] text-white hover:bg-gray-700"
-              >
-                <Mail className="mr-2 h-4 w-4" />
-                Google
-              </Button>
-            </div>
-          </div>
-        </form>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

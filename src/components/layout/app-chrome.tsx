@@ -11,17 +11,6 @@ import type {
   NavigationLink,
 } from "@/components/home/types";
 
-const canonicalTopLevelRoutes = new Set([
-  "",
-  "products",
-  "explore",
-  "product",
-  "carrinho",
-  "checkout",
-  "perfil",
-  "wishlist",
-]);
-
 const footerColumns: FooterColumn[] = [
   {
     title: "Shop",
@@ -35,7 +24,7 @@ const footerColumns: FooterColumn[] = [
   {
     title: "Support",
     links: [
-      { label: "Order Status", href: "/perfil" },
+      { label: "Order Status", href: "/orders" },
       { label: "Shipping & Returns", href: "/perfil" },
       { label: "FAQ", href: "/perfil" },
       { label: "Contact Us", href: "/perfil" },
@@ -56,11 +45,6 @@ const legalLinks: FooterLink[] = [
   { label: "Terms of Service", href: "/perfil" },
 ];
 
-function isCanonicalRoute(pathname: string): boolean {
-  const topSegment = pathname.split("/").filter(Boolean)[0] ?? "";
-  return canonicalTopLevelRoutes.has(topSegment);
-}
-
 function buildNavigationLinks(pathname: string): NavigationLink[] {
   const isProductsPath =
     pathname === "/products" ||
@@ -68,19 +52,14 @@ function buildNavigationLinks(pathname: string): NavigationLink[] {
     pathname.startsWith("/products/");
   const isExplorePath =
     pathname === "/explore" || pathname.startsWith("/explore/");
-  const isProfilePath =
-    pathname === "/perfil" || pathname.startsWith("/perfil/");
+  const isOrdersPath =
+    pathname === "/orders" || pathname.startsWith("/orders/");
 
   return [
     { label: "Home", href: "/", isActive: pathname === "/" },
     { label: "Products", href: "/products", isActive: isProductsPath },
     { label: "Explore", href: "/explore", isActive: isExplorePath },
-    {
-      label: "Categories",
-      href: "/products",
-      isActive: pathname.includes("category"),
-    },
-    { label: "Orders", href: "/perfil", isActive: isProfilePath },
+    { label: "Orders", href: "/orders", isActive: isOrdersPath },
   ];
 }
 
@@ -92,13 +71,6 @@ export default function AppChrome({ children }: AppChromeProps) {
   const pathname = usePathname();
   const currentPath = pathname || "/";
 
-  const shouldShowChrome =
-    isCanonicalRoute(currentPath) && !currentPath.startsWith("/auth");
-
-  if (!shouldShowChrome) {
-    return <>{children}</>;
-  }
-
   return (
     <>
       <HomeNavigation
@@ -106,7 +78,7 @@ export default function AppChrome({ children }: AppChromeProps) {
         links={buildNavigationLinks(currentPath)}
         searchHref="/products"
         wishlistHref="/wishlist"
-        cartHref="/carrinho"
+        cartHref="/cart"
         profileHref="/perfil"
       />
 

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Instagram, MessageCircle, Youtube } from "lucide-react";
 
@@ -47,12 +48,17 @@ export function HomeFooter({
       <div className="w-full px-4 pt-12 pb-10 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-4">
           <div className="space-y-4">
-            <Link href="/" className="inline-flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#ff2e63] [font-family:var(--font-space-grotesk)] text-[22px] font-bold text-white dark:text-[#0b0d10]">
-                N
-              </span>
-              <span className="[font-family:var(--font-space-grotesk)] text-2xl font-bold tracking-[0.05em] text-[#0f172a] dark:text-white">
-                NEXUS
+            <Link href="/" className="inline-flex items-center gap-1">
+              <Image
+                src="/Valorant-Academy.png"
+                alt="NeXT logo"
+                width={30}
+                height={30}
+                className="rounded-lg object-contain"
+              />
+              <span className="[font-family:var(--font-space-grotesk)] text-lg font-extrabold text-[#0f172a] italic sm:text-xl dark:text-white">
+                Ne
+                <span className="text-[#ff2e63]">XT</span>
               </span>
             </Link>
 

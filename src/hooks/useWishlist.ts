@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { Product } from "@prisma/client";
+import { buildAccessFeedbackPath } from "@/lib/access-feedback";
 
 function resolveCallbackPath(redirectPath?: string) {
   if (redirectPath && redirectPath.trim().length > 0) {
@@ -81,7 +82,11 @@ export const useWishlist = (redirectPath?: string) => {
     if (!isAuthenticated) {
       const callbackPath = resolveCallbackPath(redirectPath);
       router.push(
-        `/auth/signin?callbackUrl=${encodeURIComponent(callbackPath)}`,
+        buildAccessFeedbackPath({
+          reason: "auth-required",
+          callbackUrl: callbackPath,
+          fromPath: callbackPath,
+        }),
       );
       return;
     }

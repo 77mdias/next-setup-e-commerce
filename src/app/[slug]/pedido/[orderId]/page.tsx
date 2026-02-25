@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import ButtonBack from "@/components/ui/ButtonBack";
+import { buildAccessFeedbackPath } from "@/lib/access-feedback";
 
 interface OrderItem {
   id: string;
@@ -118,7 +119,14 @@ export default function PedidoDetalhesPage() {
   // Redirecionar se não estiver autenticado
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push(`/auth/signin?callbackUrl=/${slug}/pedido/${orderId}`);
+      const callbackPath = `/${slug}/pedido/${orderId}`;
+      router.push(
+        buildAccessFeedbackPath({
+          reason: "auth-required",
+          callbackUrl: callbackPath,
+          fromPath: callbackPath,
+        }),
+      );
     }
   }, [isAuthenticated, router, slug, orderId]);
 
