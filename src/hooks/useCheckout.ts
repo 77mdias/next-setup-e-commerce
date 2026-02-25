@@ -2,30 +2,35 @@ import { useState } from "react";
 import { useCart } from "@/context/cart";
 import { useAuth } from "@/hooks/useAuth";
 
-interface CustomerInfo {
-  name: string;
-  email: string;
-  phone: string;
-  cpf: string;
+type ShippingMethod = "STANDARD" | "EXPRESS" | "PICKUP";
+
+interface CheckoutItem {
+  productId: string;
+  quantity: number;
+  variantId?: string;
 }
 
 interface CheckoutData {
   storeId: string;
-  items: any[];
-  customerInfo: CustomerInfo;
-  shippingMethod: string;
+  items: CheckoutItem[];
+  shippingMethod: ShippingMethod;
+  addressId?: string;
+}
+
+interface CreateCheckoutSessionParams {
+  storeSlug?: string;
+  shippingMethod?: ShippingMethod;
   addressId?: string;
 }
 
 export function useCheckout() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { products, total, clearCart } = useCart();
+  const { products, total } = useCart();
   const { user } = useAuth();
 
   const createCheckoutSession = async (
-    customerInfo: CustomerInfo,
-    addressId?: string,
+    params: CreateCheckoutSessionParams = {},
   ) => {
     setIsLoading(true);
     setError(null);
@@ -37,7 +42,15 @@ export function useCheckout() {
       }
 
       // Buscar informações da loja ativa
-      const storeResponse = await fetch("/api/products?limit=1");
+      const storeParams = new URLSearchParams({
+        limit: "1",
+      });
+      if (params.storeSlug) {
+        storeParams.set("storeSlug", params.storeSlug);
+      }
+      const storeResponse = await fetch(
+        `/api/products?${storeParams.toString()}`,
+      );
       if (!storeResponse.ok) {
         throw new Error("Erro ao buscar informações da loja");
       }
@@ -52,22 +65,13 @@ export function useCheckout() {
       const checkoutData: CheckoutData = {
         storeId: store.id,
         items: products.map((product) => ({
-          id: product.id,
-          name: product.name,
-          description: product.description || product.name,
-          price: product.price,
+          productId: product.id,
           quantity: product.quantity,
-          images: product.images,
-          specifications: product.specifications || {},
+          variantId:
+            (product as { variantId?: string | null }).variantId ?? undefined,
         })),
-        customerInfo: {
-          name: customerInfo.name,
-          email: customerInfo.email,
-          phone: customerInfo.phone,
-          cpf: customerInfo.cpf,
-        },
-        shippingMethod: "STANDARD",
-        addressId,
+        shippingMethod: params.shippingMethod ?? "STANDARD",
+        addressId: params.addressId,
       };
 
       // Criar sessão de checkout
@@ -80,7 +84,9 @@ export function useCheckout() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Erro ao criar checkout" }));
         throw new Error(errorData.error || "Erro ao criar checkout");
       }
 

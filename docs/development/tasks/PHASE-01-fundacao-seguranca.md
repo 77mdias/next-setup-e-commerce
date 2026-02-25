@@ -47,7 +47,7 @@ Remover a confiança em valores vindos do cliente no endpoint de checkout. O ser
 
 #### CHK.1 - Contrato de entrada e validação sem preço do cliente
 
-- [ ] **S01-CHK-001** - Redefinir payload aceito em `POST /api/checkout`
+- [x] **S01-CHK-001** - Redefinir payload aceito em `POST /api/checkout`
 
   **Descrição curta:**
   - Trocar contrato para `{ storeId, items: [{ productId, quantity, variantId? }], addressId, shippingMethod }`.
@@ -61,13 +61,13 @@ Remover a confiança em valores vindos do cliente no endpoint de checkout. O ser
   **Arquivos/áreas afetadas:** `src/app/api/checkout/route.ts`, `src/hooks/useCheckout.ts`, `src/app/[slug]/checkout/page.tsx`
 
   **Critérios de aceitação:**
-  - [ ] Enviar `price` adulterado no payload não altera valor final do pedido.
-  - [ ] Payload inválido retorna 400 com erro claro e sem stack exposta.
+  - [x] Enviar `price` adulterado no payload não altera valor final do pedido.
+  - [x] Payload inválido retorna 400 com erro claro e sem stack exposta.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 4h  
   **Dependências:** nenhuma  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída
 
 - [ ] **S01-CHK-002** - Recalcular preços no servidor com dados canônicos
 

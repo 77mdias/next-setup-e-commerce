@@ -1,47 +1,144 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createStripeCheckoutSession } from "@/lib/stripe-config";
-import { db } from "@/lib/prisma";
+import { Prisma, ShippingMethod } from "@prisma/client";
 import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
 import { authOptions } from "@/lib/auth";
+import { db } from "@/lib/prisma";
+import { createStripeCheckoutSession } from "@/lib/stripe-config";
+
+const checkoutItemSchema = z
+  .object({
+    productId: z.string().trim().min(1),
+    quantity: z.number().int().positive(),
+    variantId: z.string().trim().min(1).optional(),
+  })
+  .strict();
+
+const checkoutPayloadSchema = z
+  .object({
+    storeId: z.string().trim().min(1),
+    items: z.array(checkoutItemSchema).min(1),
+    addressId: z.string().trim().min(1).optional(),
+    shippingMethod: z.nativeEnum(ShippingMethod).default("STANDARD"),
+  })
+  .strict();
+
+type CheckoutItemPayload = z.infer<typeof checkoutItemSchema>;
+
+type CanonicalCheckoutItem = {
+  productId: string;
+  variantId?: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  productName: string;
+  productImage: string;
+  productDescription: string;
+  specifications: Prisma.InputJsonValue;
+};
+
+function badRequest(
+  error: string,
+  issues?: Array<{ field: string; message: string }>,
+) {
+  return NextResponse.json(
+    {
+      error,
+      ...(issues ? { issues } : {}),
+    },
+    { status: 400 },
+  );
+}
+
+function normalizeItems(items: CheckoutItemPayload[]): CheckoutItemPayload[] {
+  const groupedItems = new Map<string, CheckoutItemPayload>();
+
+  for (const item of items) {
+    const variantKey = item.variantId ?? "";
+    const key = `${item.productId}:${variantKey}`;
+    const existing = groupedItems.get(key);
+
+    if (!existing) {
+      groupedItems.set(key, { ...item });
+      continue;
+    }
+
+    groupedItems.set(key, {
+      ...existing,
+      quantity: existing.quantity + item.quantity,
+    });
+  }
+
+  return [...groupedItems.values()];
+}
+
+function resolveItemName(
+  productName: string,
+  variant?: { name: string; value: string },
+): string {
+  if (!variant) {
+    return productName;
+  }
+
+  return `${productName} (${variant.name}: ${variant.value})`;
+}
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email) {
+    if (!session?.user?.id || !session.user.email) {
       return NextResponse.json(
         { error: "Usuário não autenticado" },
         { status: 401 },
       );
     }
 
-    const body = await request.json();
-    const {
-      storeId,
-      items,
-      customerInfo,
-      shippingMethod = "STANDARD",
-      addressId,
-    } = body;
+    let requestBody: unknown;
 
-    if (!storeId || !items || items.length === 0) {
-      return NextResponse.json(
-        { error: "Dados inválidos para checkout" },
-        { status: 400 },
+    try {
+      requestBody = await request.json();
+    } catch {
+      return badRequest("Payload JSON inválido");
+    }
+
+    const parsedPayload = checkoutPayloadSchema.safeParse(requestBody);
+
+    if (!parsedPayload.success) {
+      return badRequest(
+        "Dados inválidos para checkout",
+        parsedPayload.error.issues.map((issue) => ({
+          field: issue.path.join(".") || "payload",
+          message: issue.message,
+        })),
       );
     }
 
-    // Buscar informações da loja
-    const store = await db.store.findUnique({
-      where: { id: storeId },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        shippingFee: true,
-        freeShipping: true,
-      },
-    });
+    const payload = parsedPayload.data;
+    const normalizedItems = normalizeItems(payload.items);
+
+    const [store, customer] = await Promise.all([
+      db.store.findUnique({
+        where: { id: payload.storeId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          shippingFee: true,
+          freeShipping: true,
+        },
+      }),
+      db.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+          email: true,
+          name: true,
+          phone: true,
+          cpf: true,
+        },
+      }),
+    ]);
 
     if (!store) {
       return NextResponse.json(
@@ -50,79 +147,161 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calcular totais
-    const subtotal = items.reduce((sum: number, item: any) => {
-      return sum + item.price * item.quantity;
-    }, 0);
+    if (!customer) {
+      return NextResponse.json(
+        { error: "Usuário autenticado não encontrado" },
+        { status: 401 },
+      );
+    }
 
-    const shippingFee = subtotal >= store.freeShipping ? 0 : store.shippingFee;
+    if (!customer.email) {
+      return badRequest("Email do usuário é obrigatório para checkout");
+    }
+
+    if (payload.addressId) {
+      const address = await db.address.findFirst({
+        where: {
+          id: payload.addressId,
+          userId: session.user.id,
+        },
+        select: { id: true },
+      });
+
+      if (!address) {
+        return badRequest("Endereço inválido para o usuário autenticado");
+      }
+    }
+
+    const productIds = [
+      ...new Set(normalizedItems.map((item) => item.productId)),
+    ];
+
+    const products = await db.product.findMany({
+      where: {
+        id: { in: productIds },
+        storeId: store.id,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        images: true,
+        specifications: true,
+        variants: {
+          where: { isActive: true },
+          select: {
+            id: true,
+            name: true,
+            value: true,
+            price: true,
+          },
+        },
+      },
+    });
+
+    const productById = new Map(
+      products.map((product) => [product.id, product]),
+    );
+
+    const canonicalItems: CanonicalCheckoutItem[] = [];
+
+    for (const item of normalizedItems) {
+      const product = productById.get(item.productId);
+
+      if (!product) {
+        return badRequest(
+          `Produto inválido para a loja selecionada: ${item.productId}`,
+        );
+      }
+
+      const selectedVariant = item.variantId
+        ? product.variants.find((variant) => variant.id === item.variantId)
+        : undefined;
+
+      if (item.variantId && !selectedVariant) {
+        return badRequest(`Variação inválida para o produto ${item.productId}`);
+      }
+
+      const unitPrice = selectedVariant?.price ?? product.price;
+      const itemName = resolveItemName(product.name, selectedVariant);
+
+      canonicalItems.push({
+        productId: product.id,
+        variantId: selectedVariant?.id,
+        quantity: item.quantity,
+        unitPrice,
+        totalPrice: unitPrice * item.quantity,
+        productName: itemName,
+        productImage: product.images[0] ?? "",
+        productDescription: product.description || product.name,
+        specifications: selectedVariant
+          ? ({
+              product: product.specifications,
+              selectedVariant: {
+                id: selectedVariant.id,
+                name: selectedVariant.name,
+                value: selectedVariant.value,
+              },
+            } as Prisma.InputJsonValue)
+          : (product.specifications as Prisma.InputJsonValue),
+      });
+    }
+
+    const subtotal = canonicalItems.reduce(
+      (sum, item) => sum + item.totalPrice,
+      0,
+    );
+    const shippingFee =
+      subtotal >= store.freeShipping ? 0 : Number(store.shippingFee ?? 0);
     const total = subtotal + shippingFee;
 
-    // Criar pedido no banco
     const order = await db.order.create({
       data: {
         userId: session.user.id,
-        storeId,
-        addressId,
-        customerName: customerInfo.name,
-        customerPhone: customerInfo.phone,
-        customerEmail: customerInfo.email,
-        customerCpf: customerInfo.cpf,
+        storeId: store.id,
+        addressId: payload.addressId,
+        customerName: customer.name?.trim() || session.user.name || "Cliente",
+        customerPhone: customer.phone?.trim() || "Não informado",
+        customerEmail: customer.email,
+        customerCpf: customer.cpf?.trim() || null,
         status: "PENDING",
         paymentStatus: "PENDING",
-        shippingMethod,
+        shippingMethod: payload.shippingMethod,
         subtotal,
         shippingFee,
         total,
         paymentMethod: "stripe",
         items: {
-          create: items.map((item: any) => ({
-            productId: item.id,
+          create: canonicalItems.map((item) => ({
+            productId: item.productId,
+            variantId: item.variantId,
             quantity: item.quantity,
-            unitPrice: item.price,
-            totalPrice: item.price * item.quantity,
-            productName: item.name,
-            productImage: item.images[0] || "",
-            specifications: item.specifications || {},
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+            productName: item.productName,
+            productImage: item.productImage,
+            specifications: item.specifications,
           })),
         },
       },
-      include: {
-        items: true,
-        store: { select: { name: true, slug: true } },
-      },
-    });
-
-    // Criar sessão do Stripe
-    console.log("🔧 Criando sessão do Stripe com dados:", {
-      storeId,
-      itemsCount: items.length,
-      subtotal,
-      shippingFee,
-      total,
-      customerEmail: customerInfo.email,
-      baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
     });
 
     const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${store.slug}/pedido/sucesso?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${store.slug}/pedido/falha?session_id={CHECKOUT_SESSION_ID}`;
 
-    console.log("🔧 URLs do Stripe:", {
-      successUrl,
-      cancelUrl,
-    });
-
     const stripeSession = await createStripeCheckoutSession({
       payment_method_types: ["card"],
-      line_items: items.map((item: any) => ({
+      line_items: canonicalItems.map((item) => ({
         price_data: {
           currency: "brl",
           product_data: {
-            name: item.name,
-            images: item.images ? [item.images[0]] : [],
-            description: item.description || item.name,
+            name: item.productName,
+            images: item.productImage ? [item.productImage] : [],
+            description: item.productDescription,
           },
-          unit_amount: Math.round(item.price * 100), // Stripe usa centavos
+          unit_amount: Math.round(item.unitPrice * 100),
         },
         quantity: item.quantity,
       })),
@@ -134,7 +313,7 @@ export async function POST(request: NextRequest) {
         storeId: store.id,
         userId: session.user.id,
       },
-      customer_email: customerInfo.email,
+      customer_email: customer.email,
       shipping_address_collection: {
         allowed_countries: ["BR"],
       },
@@ -175,7 +354,6 @@ export async function POST(request: NextRequest) {
       ],
     });
 
-    // Atualizar pedido com o ID da sessão do Stripe
     await db.order.update({
       where: { id: order.id },
       data: {
@@ -190,28 +368,9 @@ export async function POST(request: NextRequest) {
       orderId: order.id,
     });
   } catch (error) {
-    console.error("❌ Erro ao criar checkout:", error);
-
-    // Log detalhado para debug em produção
-    if (error instanceof Error) {
-      console.error("❌ Mensagem de erro:", error.message);
-      console.error("❌ Stack trace:", error.stack);
-    }
-
-    // Verificar se é erro do Stripe
-    if (error && typeof error === "object" && "type" in error) {
-      console.error("❌ Erro do Stripe:", {
-        type: (error as any).type,
-        message: (error as any).message,
-        code: (error as any).code,
-      });
-    }
-
+    console.error("Erro ao criar checkout:", error);
     return NextResponse.json(
-      {
-        error: "Erro interno do servidor",
-        details: process.env.NODE_ENV === "development" ? error : undefined,
-      },
+      { error: "Erro interno do servidor" },
       { status: 500 },
     );
   }

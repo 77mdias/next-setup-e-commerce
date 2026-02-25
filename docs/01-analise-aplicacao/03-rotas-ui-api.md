@@ -44,6 +44,8 @@
 
 ### Checkout e pedidos
 - `POST /api/checkout`
+  - Payload aceito: `{ storeId, items: [{ productId, quantity, variantId? }], addressId?, shippingMethod }`.
+  - O backend ignora/rejeita preco e metadados de produto vindos do cliente; subtotal/total sao calculados no servidor.
 - `GET /api/orders/user`
 - `GET /api/orders/[orderId]`
 - `GET /api/orders/session/[sessionId]`

@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import type { FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCart } from "@/context/cart";
 import { useAuth } from "@/hooks/useAuth";
 import { useCheckout } from "@/hooks/useCheckout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/helpers/format-currency";
-import { ArrowLeft, CreditCard, User, MapPin, Phone, Mail } from "lucide-react";
-import Link from "next/link";
+import { CreditCard, User } from "lucide-react";
 import ButtonBack from "@/components/ui/ButtonBack";
 import { buildAccessFeedbackPath } from "@/lib/access-feedback";
 
@@ -20,13 +18,6 @@ export default function CheckoutPage() {
   const { products, total, totalQuantity } = useCart();
   const { user, isAuthenticated } = useAuth();
   const { createCheckoutSession, isLoading, error } = useCheckout();
-
-  const [customerInfo, setCustomerInfo] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    phone: String(user?.phone || ""),
-    cpf: user?.cpf || "",
-  });
 
   // Redirecionar se não estiver autenticado
   if (!isAuthenticated) {
@@ -47,62 +38,11 @@ export default function CheckoutPage() {
     return null;
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    let formattedValue = value;
-
-    // Aplicar máscaras
-    if (field === "cpf") {
-      // Máscara para CPF: 000.000.000-00
-      formattedValue = value
-        .replace(/\D/g, "")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    } else if (field === "phone") {
-      // Máscara para telefone: (00) 00000-0000
-      formattedValue = value
-        .replace(/\D/g, "")
-        .replace(/(\d{2})(\d)/, "($1) $2")
-        .replace(/(\d{5})(\d)/, "$1-$2")
-        .replace(/(-\d{4})\d+?$/, "$1");
-    }
-
-    setCustomerInfo((prev) => ({
-      ...prev,
-      [field]: formattedValue,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Validação básica
-    if (
-      !customerInfo.name ||
-      !customerInfo.email ||
-      !customerInfo.phone ||
-      !customerInfo.cpf
-    ) {
-      alert("Por favor, preencha todos os campos obrigatórios");
-      return;
-    }
-
-    // Validação de CPF (formato básico)
-    const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
-    if (!cpfRegex.test(customerInfo.cpf)) {
-      alert("Por favor, insira um CPF válido no formato 000.000.000-00");
-      return;
-    }
-
-    // Validação de telefone (formato básico)
-    const phoneRegex = /^\(\d{2}\) \d{5}-\d{4}$/;
-    if (!phoneRegex.test(customerInfo.phone)) {
-      alert("Por favor, insira um telefone válido no formato (11) 99999-9999");
-      return;
-    }
-
     try {
-      await createCheckoutSession(customerInfo);
+      await createCheckoutSession({ storeSlug: slug });
     } catch (err) {
       console.error("Erro no checkout:", err);
     }
@@ -133,69 +73,30 @@ export default function CheckoutPage() {
             <div className="rounded-lg bg-[var(--card-product)] p-6">
               <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold text-white">
                 <User className="h-5 w-5" />
-                Informações Pessoais
+                Dados da Conta
               </h2>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">
-                    Nome Completo *
-                  </label>
-                  <Input
-                    type="text"
-                    value={customerInfo.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    placeholder="Digite seu nome completo"
-                    className="border-gray-600 bg-gray-800 text-white placeholder-gray-400"
-                    required
-                  />
+              <div className="space-y-4">
+                <div className="rounded-lg bg-gray-800/50 p-4">
+                  <p className="text-sm text-gray-400">Nome</p>
+                  <p className="font-medium text-white">
+                    {user?.name?.trim() || "Não informado"}
+                  </p>
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">
-                    Email *
-                  </label>
-                  <Input
-                    type="email"
-                    value={customerInfo.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    placeholder="seu@email.com"
-                    className="border-gray-600 bg-gray-800 text-white placeholder-gray-400"
-                    required
-                  />
+                <div className="rounded-lg bg-gray-800/50 p-4">
+                  <p className="text-sm text-gray-400">Email</p>
+                  <p className="font-medium text-white">
+                    {user?.email?.trim() || "Não informado"}
+                  </p>
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">
-                    Telefone *
-                  </label>
-                  <Input
-                    type="tel"
-                    value={customerInfo.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="(11) 99999-9999"
-                    maxLength={15}
-                    className="border-gray-600 bg-gray-800 text-white placeholder-gray-400"
-                    required
-                  />
-                </div>
+                <p className="text-sm text-gray-400">
+                  Nome, telefone e CPF poderão ser confirmados durante o
+                  pagamento seguro no Stripe.
+                </p>
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">
-                    CPF *
-                  </label>
-                  <Input
-                    type="text"
-                    value={customerInfo.cpf}
-                    onChange={(e) => handleInputChange("cpf", e.target.value)}
-                    placeholder="000.000.000-00"
-                    maxLength={14}
-                    className="border-gray-600 bg-gray-800 text-white placeholder-gray-400"
-                    required
-                  />
-                </div>
-
-                <div className="pt-4">
+                <form onSubmit={handleSubmit} className="pt-2">
                   <Button
                     type="submit"
                     className="w-full bg-[var(--button-primary)] text-white hover:bg-[var(--text-price-secondary)]"
@@ -213,8 +114,8 @@ export default function CheckoutPage() {
                       </div>
                     )}
                   </Button>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
 
             {/* Informações de segurança */}

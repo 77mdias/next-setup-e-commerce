@@ -3,9 +3,12 @@
 ## Metodologia
 Analise estatica de codigo (rotas API, auth, middleware, checkout, webhook, scripts), execucao de `lint` e `build`.
 
+## Atualizacoes
+- 2026-02-25: `S01-CHK-001` concluida. `POST /api/checkout` agora valida payload minimo com schema estrito e usa dados canônicos do banco para itens/preco.
+
 ## Achados (ordenados por severidade)
 
-### 1) Critico - Preco confiado ao cliente no checkout
+### 1) Critico - Preco confiado ao cliente no checkout *(mitigado em 2026-02-25)*
 - Evidencia:
   - `src/app/api/checkout/route.ts:54-56` calcula subtotal usando `item.price` do request.
   - `src/app/api/checkout/route.ts:79-87` persiste item/preco vindo do cliente.
