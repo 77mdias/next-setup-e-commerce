@@ -68,10 +68,5 @@ export default async function HomePage() {
     }),
   );
 
-  return (
-    <HomePageContent
-      storeSlug={store.slug}
-      featuredProducts={featuredProducts}
-    />
-  );
+  return <HomePageContent featuredProducts={featuredProducts} />;
 }

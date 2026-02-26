@@ -22,6 +22,7 @@ export interface CartProcuct
     | "specifications"
   > {
   quantity: number;
+  storeId?: string | null;
 }
 
 export interface ICartContext {
@@ -133,6 +134,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         // Converter formato do banco para formato do contexto
         const cartProducts: CartProcuct[] = data.cart.map((item: any) => ({
           id: item.product.id,
+          storeId: item.product.storeId,
           name: item.product.name,
           description: item.product.description,
           price: item.product.price,
@@ -184,6 +186,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             // Atualizar com carrinho migrado
             const cartProducts: CartProcuct[] = data.cart.map((item: any) => ({
               id: item.product.id,
+              storeId: item.product.storeId,
               name: item.product.name,
               description: item.product.description,
               price: item.product.price,

@@ -190,7 +190,6 @@ export async function POST(request: NextRequest) {
         select: {
           id: true,
           name: true,
-          slug: true,
           shippingFee: true,
           freeShipping: true,
         },
@@ -540,8 +539,8 @@ export async function POST(request: NextRequest) {
     > | null = null;
 
     try {
-      const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${store.slug}/pedido/sucesso?session_id={CHECKOUT_SESSION_ID}`;
-      const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${store.slug}/pedido/falha?session_id={CHECKOUT_SESSION_ID}`;
+      const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/orders/success?session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/orders/failure?session_id={CHECKOUT_SESSION_ID}`;
 
       stripeSession = await createStripeCheckoutSession({
         payment_method_types: ["card"],

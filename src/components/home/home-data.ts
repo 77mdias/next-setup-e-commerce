@@ -5,17 +5,13 @@ import type {
   HomeFeaturedProductInput,
 } from "@/components/home/types";
 
-function buildBasePath(storeSlug: string) {
-  return `/${storeSlug}`;
-}
-
-function buildFooterColumns(basePath: string): FooterColumn[] {
+function buildFooterColumns(): FooterColumn[] {
   return [
     {
       title: "Shop",
       links: [
         { label: "All Products", href: "/products" },
-        { label: "Peripherals", href: `${basePath}/categorias` },
+        { label: "Peripherals", href: "/products" },
         { label: "Audio", href: "/products" },
         { label: "Accessories", href: "/products" },
       ],
@@ -23,10 +19,10 @@ function buildFooterColumns(basePath: string): FooterColumn[] {
     {
       title: "Support",
       links: [
-        { label: "Order Status", href: `${basePath}/pedido` },
-        { label: "Shipping & Returns", href: `${basePath}/suporte` },
-        { label: "FAQ", href: `${basePath}/suporte` },
-        { label: "Contact Us", href: `${basePath}/suporte` },
+        { label: "Order Status", href: "/orders" },
+        { label: "Shipping & Returns", href: "/status?reason=development" },
+        { label: "FAQ", href: "/status?reason=development" },
+        { label: "Contact Us", href: "/status?reason=development" },
       ],
     },
     {
@@ -40,7 +36,7 @@ function buildFooterColumns(basePath: string): FooterColumn[] {
   ];
 }
 
-function buildFallbackProducts(basePath: string): FeaturedProduct[] {
+function buildFallbackProducts(): FeaturedProduct[] {
   return [
     {
       id: "razer-basilisk-v3-pro",
@@ -99,11 +95,10 @@ function buildFallbackProducts(basePath: string): FeaturedProduct[] {
 }
 
 function mapFeaturedProducts(
-  basePath: string,
   products?: HomeFeaturedProductInput[],
 ): FeaturedProduct[] {
   if (!products || products.length === 0) {
-    return buildFallbackProducts(basePath);
+    return buildFallbackProducts();
   }
 
   return products.map((product) => {
@@ -129,23 +124,20 @@ function mapFeaturedProducts(
 }
 
 export function buildHomeContent(
-  storeSlug: string,
   featuredProducts?: HomeFeaturedProductInput[],
 ): HomeContent {
-  const basePath = buildBasePath(storeSlug);
-
   return {
     navigation: {
       links: [
-        { label: "Home", href: basePath, isActive: true },
+        { label: "Home", href: "/", isActive: true },
         { label: "Products", href: "/products" },
-        { label: "Categories", href: `${basePath}/categorias` },
-        { label: "Orders", href: `${basePath}/pedido` },
+        { label: "Categories", href: "/products" },
+        { label: "Orders", href: "/orders" },
       ],
       searchHref: "/products",
-      wishlistHref: `${basePath}/wishlist`,
-      cartHref: `${basePath}/carrinho`,
-      profileHref: `${basePath}/perfil`,
+      wishlistHref: "/wishlist",
+      cartHref: "/carrinho",
+      profileHref: "/perfil",
     },
     hero: {
       badge: "New Collection 2026",
@@ -163,7 +155,7 @@ export function buildHomeContent(
         },
         {
           label: "View Collections",
-          href: `${basePath}/categorias`,
+          href: "/products",
           variant: "secondary",
         },
       ],
@@ -172,7 +164,7 @@ export function buildHomeContent(
       title: "Featured Gear",
       subtitle: "Curated selection for the elite.",
       viewAllHref: "/products",
-      products: mapFeaturedProducts(basePath, featuredProducts),
+      products: mapFeaturedProducts(featuredProducts),
     },
     story: {
       title: {
@@ -189,7 +181,7 @@ export function buildHomeContent(
       ],
       action: {
         label: "Discover Our Story",
-        href: `${basePath}/suporte`,
+        href: "/status?reason=development",
       },
     },
     promo: {
@@ -204,7 +196,7 @@ export function buildHomeContent(
         },
         {
           label: "Learn More",
-          href: `${basePath}/suporte`,
+          href: "/status?reason=development",
           variant: "secondary",
         },
       ],
@@ -212,11 +204,11 @@ export function buildHomeContent(
     footer: {
       description:
         "Premium gaming gear for the modern player. Elevate your setup with our curated collection of high-performance peripherals.",
-      columns: buildFooterColumns(basePath),
+      columns: buildFooterColumns(),
       copyright: "© 2026 Nexus Gaming. All rights reserved.",
       legalLinks: [
-        { label: "Privacy Policy", href: `${basePath}/suporte` },
-        { label: "Terms of Service", href: `${basePath}/suporte` },
+        { label: "Privacy Policy", href: "/status?reason=development" },
+        { label: "Terms of Service", href: "/status?reason=development" },
       ],
     },
   };

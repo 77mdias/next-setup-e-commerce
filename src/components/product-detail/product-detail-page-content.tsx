@@ -2,16 +2,16 @@
 
 import ButtonBack from "@/components/ui/ButtonBack";
 
-import { ActionButtons } from "@/app/[slug]/product/[productId]/components/action-buttons";
-import { ErrorState } from "@/app/[slug]/product/[productId]/components/error-state";
-import { LoadingState } from "@/app/[slug]/product/[productId]/components/loading-state";
-import { ProductGallery } from "@/app/[slug]/product/[productId]/components/product-gallery";
-import { ProductHeader } from "@/app/[slug]/product/[productId]/components/product-header";
-import { ProductPricing } from "@/app/[slug]/product/[productId]/components/product-pricing";
-import { ProductStats } from "@/app/[slug]/product/[productId]/components/product-stats";
-import { ProductTabs } from "@/app/[slug]/product/[productId]/components/product-tabs";
-import { QuantitySelector } from "@/app/[slug]/product/[productId]/components/quantity-selector";
-import { ShippingInfo } from "@/app/[slug]/product/[productId]/components/shipping-info";
+import { ActionButtons } from "@/components/product-detail/components/action-buttons";
+import { ErrorState } from "@/components/product-detail/components/error-state";
+import { LoadingState } from "@/components/product-detail/components/loading-state";
+import { ProductGallery } from "@/components/product-detail/components/product-gallery";
+import { ProductHeader } from "@/components/product-detail/components/product-header";
+import { ProductPricing } from "@/components/product-detail/components/product-pricing";
+import { ProductStats } from "@/components/product-detail/components/product-stats";
+import { ProductTabs } from "@/components/product-detail/components/product-tabs";
+import { QuantitySelector } from "@/components/product-detail/components/quantity-selector";
+import { ShippingInfo } from "@/components/product-detail/components/shipping-info";
 import { useProductDetailPage } from "@/components/product-detail/use-product-detail-page";
 
 export function ProductDetailPageContent() {

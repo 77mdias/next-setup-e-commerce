@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
-import { resolveStoreBySlugOrActive } from "@/lib/store";
+import { resolveActiveStore } from "@/lib/store";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ categorySlug: string }> },
 ) {
   try {
-    const { searchParams } = new URL(request.url);
-    const storeSlug = searchParams.get("storeSlug");
     const { categorySlug } = await params;
 
     if (!categorySlug) {
@@ -18,15 +16,11 @@ export async function GET(
       );
     }
 
-    const store = await resolveStoreBySlugOrActive(storeSlug);
+    const store = await resolveActiveStore();
 
     if (!store) {
       return NextResponse.json(
-        {
-          error: storeSlug
-            ? "Loja não encontrada"
-            : "Nenhuma loja ativa encontrada",
-        },
+        { error: "Nenhuma loja ativa encontrada" },
         { status: 404 },
       );
     }

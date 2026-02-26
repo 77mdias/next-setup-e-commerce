@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useCart } from "@/context/cart";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  mapCheckoutErrorMessage,
+  normalizeCheckoutItems,
+  resolveStoreIdFromCart,
+} from "@/hooks/useCheckout.helpers";
 
 type ShippingMethod = "STANDARD" | "EXPRESS" | "PICKUP";
 
@@ -18,7 +23,6 @@ interface CheckoutData {
 }
 
 interface CreateCheckoutSessionParams {
-  storeSlug?: string;
   shippingMethod?: ShippingMethod;
   addressId?: string;
 }
@@ -41,35 +45,55 @@ export function useCheckout() {
         throw new Error("Carrinho vazio");
       }
 
-      // Buscar informações da loja ativa
-      const storeParams = new URLSearchParams({
-        limit: "1",
-      });
-      if (params.storeSlug) {
-        storeParams.set("storeSlug", params.storeSlug);
+      const storeResolution = resolveStoreIdFromCart(products);
+      if (storeResolution.hasMixedStores) {
+        throw new Error(
+          "Seu carrinho contém itens de lojas diferentes. Mantenha apenas uma loja por pedido.",
+        );
       }
-      const storeResponse = await fetch(
-        `/api/products?${storeParams.toString()}`,
-      );
-      if (!storeResponse.ok) {
-        throw new Error("Erro ao buscar informações da loja");
-      }
-      const storeData = await storeResponse.json();
-      const store = storeData?.store;
 
-      if (!store?.id) {
+      const normalizedItems = normalizeCheckoutItems(
+        products.map((product) => ({
+          id: product.id,
+          quantity: product.quantity,
+          variantId:
+            (product as { variantId?: string | null }).variantId ?? undefined,
+        })),
+      );
+
+      if (normalizedItems.length === 0) {
+        throw new Error(
+          "Carrinho com itens inválidos. Revise as quantidades e tente novamente.",
+        );
+      }
+
+      let storeId = storeResolution.storeId;
+
+      if (!storeId) {
+        // Fallback para itens legados sem storeId persistido no carrinho.
+        const storeParams = new URLSearchParams({
+          limit: "1",
+          includeTotal: "0",
+          includeFacets: "0",
+        });
+        const storeResponse = await fetch(
+          `/api/products?${storeParams.toString()}`,
+        );
+        if (!storeResponse.ok) {
+          throw new Error("Erro ao buscar informações da loja");
+        }
+        const storeData = await storeResponse.json();
+        storeId = storeData?.store?.id;
+      }
+
+      if (!storeId) {
         throw new Error("Loja ativa não encontrada");
       }
 
       // Preparar dados para checkout
       const checkoutData: CheckoutData = {
-        storeId: store.id,
-        items: products.map((product) => ({
-          productId: product.id,
-          quantity: product.quantity,
-          variantId:
-            (product as { variantId?: string | null }).variantId ?? undefined,
-        })),
+        storeId,
+        items: normalizedItems,
         shippingMethod: params.shippingMethod ?? "STANDARD",
         addressId: params.addressId,
       };
@@ -84,10 +108,8 @@ export function useCheckout() {
       });
 
       if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ error: "Erro ao criar checkout" }));
-        throw new Error(errorData.error || "Erro ao criar checkout");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(mapCheckoutErrorMessage(response.status, errorData));
       }
 
       const { url } = await response.json();

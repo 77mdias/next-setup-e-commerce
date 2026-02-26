@@ -4,7 +4,6 @@ import Image from "next/image";
 import styles from "@/app/[slug]/scss/page.module.scss";
 import { Button } from "./button";
 import { Heart, ShoppingCart } from "lucide-react";
-import Link from "next/link";
 import {
   normalizeProductImageSrc,
   shouldUseUnoptimizedImage,
@@ -17,7 +16,6 @@ const CardProducts = ({
   handleAddToWishlist,
   handleAddToCart,
   loadingCart,
-  slug,
   buttonCardProduct,
   buttonCardProductName,
   displayButtonCart,
@@ -28,7 +26,6 @@ const CardProducts = ({
   handleAddToWishlist: (product: Product) => void;
   handleAddToCart: (product: Product) => void;
   loadingCart: string | null;
-  slug: string;
   buttonCardProduct: (product: Product) => void;
   buttonCardProductName: string;
   displayButtonCart: string;

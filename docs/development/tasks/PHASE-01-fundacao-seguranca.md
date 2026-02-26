@@ -115,7 +115,7 @@ Remover a confiança em valores vindos do cliente no endpoint de checkout. O ser
   **Dependências:** S01-CHK-002  
   **Status:** 🟢 Concluída
 
-- [ ] **S01-CHK-004** - Ajustar consumidor frontend para novo contrato
+- [x] **S01-CHK-004** - Ajustar consumidor frontend para novo contrato
 
   **Descrição curta:**
   - Atualizar hook e páginas para enviar apenas IDs/quantidade/endereço no checkout.
@@ -129,13 +129,13 @@ Remover a confiança em valores vindos do cliente no endpoint de checkout. O ser
   **Arquivos/áreas afetadas:** `src/hooks/useCheckout.ts`, `src/app/[slug]/checkout/page.tsx`, `src/app/checkout/page.tsx`
 
   **Critérios de aceitação:**
-  - [ ] Frontend envia payload compatível com novo contrato.
-  - [ ] Erros de validação aparecem sem quebrar navegação.
+  - [x] Frontend envia payload compatível com novo contrato.
+  - [x] Erros de validação aparecem sem quebrar navegação.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 4h  
   **Dependências:** S01-CHK-001  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída
 
 ### 📦 Autorização de pedidos - Proteção de dados pós-checkout
 

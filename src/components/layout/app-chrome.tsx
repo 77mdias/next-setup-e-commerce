@@ -78,7 +78,7 @@ export default function AppChrome({ children }: AppChromeProps) {
         links={buildNavigationLinks(currentPath)}
         searchHref="/products"
         wishlistHref="/wishlist"
-        cartHref="/cart"
+        cartHref="/carrinho"
         profileHref="/perfil"
       />
 

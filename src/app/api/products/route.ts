@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 
 import { db } from "@/lib/prisma";
-import { resolveStoreBySlugOrActive } from "@/lib/store";
+import { resolveActiveStore } from "@/lib/store";
 
 type ProductFacetCategory = {
   id: string;
@@ -19,12 +19,69 @@ type ProductFacets = {
   };
 };
 
+type ResolvedStore = NonNullable<
+  Awaited<ReturnType<typeof resolveActiveStore>>
+>;
+
+type ProductsApiResponse = {
+  success: true;
+  store: ResolvedStore;
+  products: {
+    id: string;
+    name: string;
+    price: number;
+    originalPrice: number | null;
+    rating: number;
+    images: string[];
+    isOnSale: boolean;
+    isFeatured: boolean;
+    category: {
+      name: string;
+    } | null;
+  }[];
+  total: number | null;
+  page: number;
+  limit: number;
+  totalPages: number | null;
+  hasMore: boolean;
+  filters: {
+    category: string | null;
+    minPrice: number | null;
+    maxPrice: number | null;
+    sort: string;
+  };
+  facets: ProductFacets | null;
+};
+
 const FACETS_CACHE_TTL_MS = 5 * 60 * 1000;
+const PRODUCTS_CACHE_TTL_MS = 30 * 1000;
+const CATEGORY_LOOKUP_CACHE_TTL_MS = 5 * 60 * 1000;
+const PRODUCTS_CACHE_CONTROL = "public, max-age=20, stale-while-revalidate=60";
+const FACETS_CACHE_CONTROL = "public, max-age=60, stale-while-revalidate=180";
 
 const productFacetsCache = new Map<
   string,
   {
     value: ProductFacets;
+    expiresAt: number;
+  }
+>();
+const productFacetsInFlight = new Map<string, Promise<ProductFacets | null>>();
+const productsResponseCache = new Map<
+  string,
+  {
+    value: ProductsApiResponse;
+    expiresAt: number;
+  }
+>();
+const productsResponseInFlight = new Map<
+  string,
+  Promise<ProductsApiResponse>
+>();
+const categoryIdBySlugCache = new Map<
+  string,
+  {
+    value: string | null;
     expiresAt: number;
   }
 >();
@@ -53,6 +110,10 @@ function getCachedFacets(storeId: string): ProductFacets | null {
   return cached.value;
 }
 
+function getStaleCachedFacets(storeId: string): ProductFacets | null {
+  return productFacetsCache.get(storeId)?.value ?? null;
+}
+
 function setCachedFacets(
   storeId: string,
   facets: ProductFacets,
@@ -63,6 +124,124 @@ function setCachedFacets(
   });
 
   return facets;
+}
+
+function normalizeNumberKey(value: number | null): string {
+  return value === null ? "null" : value.toString();
+}
+
+function buildProductsCacheKey(input: {
+  storeId: string;
+  categorySlug: string | null;
+  sort: string;
+  minPrice: number | null;
+  maxPrice: number | null;
+  page: number;
+  limit: number;
+  includeFacets: boolean;
+  includeTotal: boolean;
+}): string {
+  return [
+    input.storeId,
+    input.categorySlug ?? "all",
+    input.sort,
+    normalizeNumberKey(input.minPrice),
+    normalizeNumberKey(input.maxPrice),
+    input.page.toString(),
+    input.limit.toString(),
+    input.includeFacets ? "facets" : "nofacets",
+    input.includeTotal ? "total" : "nototal",
+  ].join("|");
+}
+
+function getCachedProductsResponse(
+  cacheKey: string,
+): ProductsApiResponse | null {
+  const cached = productsResponseCache.get(cacheKey);
+
+  if (!cached) {
+    return null;
+  }
+
+  if (cached.expiresAt < Date.now()) {
+    productsResponseCache.delete(cacheKey);
+    return null;
+  }
+
+  return cached.value;
+}
+
+function getStaleCachedProductsResponse(
+  cacheKey: string,
+): ProductsApiResponse | null {
+  return productsResponseCache.get(cacheKey)?.value ?? null;
+}
+
+function setCachedProductsResponse(
+  cacheKey: string,
+  payload: ProductsApiResponse,
+): ProductsApiResponse {
+  productsResponseCache.set(cacheKey, {
+    value: payload,
+    expiresAt: Date.now() + PRODUCTS_CACHE_TTL_MS,
+  });
+
+  return payload;
+}
+
+async function resolveProductsResponse(
+  cacheKey: string,
+  builder: () => Promise<ProductsApiResponse>,
+): Promise<ProductsApiResponse> {
+  const cached = getCachedProductsResponse(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const inFlight = productsResponseInFlight.get(cacheKey);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const responsePromise = (async () => {
+    try {
+      const payload = await builder();
+      return setCachedProductsResponse(cacheKey, payload);
+    } finally {
+      productsResponseInFlight.delete(cacheKey);
+    }
+  })();
+
+  productsResponseInFlight.set(cacheKey, responsePromise);
+  return responsePromise;
+}
+
+async function resolveCategoryIdBySlug(
+  categorySlug: string,
+): Promise<string | null> {
+  const cached = categoryIdBySlugCache.get(categorySlug);
+
+  if (cached && cached.expiresAt >= Date.now()) {
+    return cached.value;
+  }
+
+  const category = await db.category.findFirst({
+    where: {
+      slug: categorySlug,
+      isActive: true,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  const categoryId = category?.id ?? null;
+  categoryIdBySlugCache.set(categorySlug, {
+    value: categoryId,
+    expiresAt: Date.now() + CATEGORY_LOOKUP_CACHE_TTL_MS,
+  });
+
+  return categoryId;
 }
 
 async function buildStoreFacets(storeId: string): Promise<ProductFacets> {
@@ -128,15 +307,66 @@ async function buildStoreFacets(storeId: string): Promise<ProductFacets> {
   };
 }
 
+function isPoolTimeoutError(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2024"
+  );
+}
+
+async function resolveStoreFacets(
+  storeId: string,
+  shouldIncludeFacets: boolean,
+): Promise<ProductFacets | null> {
+  if (!shouldIncludeFacets) {
+    return getCachedFacets(storeId);
+  }
+
+  const cachedFacets = getCachedFacets(storeId);
+  if (cachedFacets) {
+    return cachedFacets;
+  }
+
+  const inFlight = productFacetsInFlight.get(storeId);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const facetsPromise = (async () => {
+    try {
+      const builtFacets = await buildStoreFacets(storeId);
+      return setCachedFacets(storeId, builtFacets);
+    } catch (error) {
+      if (isPoolTimeoutError(error)) {
+        console.warn(
+          "Pool esgotado ao montar facets; retornando cache stale/null.",
+          { storeId },
+        );
+        return getStaleCachedFacets(storeId);
+      }
+
+      throw error;
+    } finally {
+      productFacetsInFlight.delete(storeId);
+    }
+  })();
+
+  productFacetsInFlight.set(storeId, facetsPromise);
+  return facetsPromise;
+}
+
 export async function GET(request: NextRequest) {
+  let productsCacheKey: string | null = null;
+
   try {
     const { searchParams } = new URL(request.url);
-    const storeSlug = searchParams.get("storeSlug");
     const categorySlug = searchParams.get("category");
     const sort = searchParams.get("sort") ?? "newest";
     const minPrice = parseNumberParam(searchParams.get("minPrice"));
     const maxPrice = parseNumberParam(searchParams.get("maxPrice"));
     const includeFacets = searchParams.get("includeFacets") !== "0";
+    const includeTotal = searchParams.get("includeTotal") === "1";
+    const facetsOnly = searchParams.get("facetsOnly") === "1";
 
     const page = Math.max(
       1,
@@ -148,16 +378,28 @@ export async function GET(request: NextRequest) {
     );
     const skip = (page - 1) * limit;
 
-    const store = await resolveStoreBySlugOrActive(storeSlug);
+    const store = await resolveActiveStore();
 
     if (!store) {
       return NextResponse.json(
-        {
-          error: storeSlug
-            ? "Loja não encontrada"
-            : "Nenhuma loja ativa encontrada",
-        },
+        { error: "Nenhuma loja ativa encontrada" },
         { status: 404 },
+      );
+    }
+
+    if (facetsOnly) {
+      const facets = await resolveStoreFacets(store.id, true);
+      return NextResponse.json(
+        {
+          success: true,
+          store,
+          facets,
+        },
+        {
+          headers: {
+            "Cache-Control": FACETS_CACHE_CONTROL,
+          },
+        },
       );
     }
 
@@ -167,10 +409,16 @@ export async function GET(request: NextRequest) {
     };
 
     if (categorySlug) {
-      where.category = {
-        slug: categorySlug,
-        isActive: true,
-      };
+      const categoryId = await resolveCategoryIdBySlug(categorySlug);
+
+      if (!categoryId) {
+        return NextResponse.json(
+          { error: "Categoria não encontrada" },
+          { status: 404 },
+        );
+      }
+
+      where.categoryId = categoryId;
     }
 
     if (minPrice !== null || maxPrice !== null) {
@@ -206,63 +454,127 @@ export async function GET(request: NextRequest) {
       "best-selling": [{ soldCount: "desc" }, { rating: "desc" }],
     };
 
-    const cachedFacets = getCachedFacets(store.id);
-    const facetsPromise = includeFacets
-      ? cachedFacets
-        ? Promise.resolve(cachedFacets)
-        : buildStoreFacets(store.id).then((facets) =>
-            setCachedFacets(store.id, facets),
-          )
-      : Promise.resolve(cachedFacets);
-
-    const [products, total, facets] = await Promise.all([
-      db.product.findMany({
-        where,
-        select: {
-          id: true,
-          name: true,
-          price: true,
-          originalPrice: true,
-          rating: true,
-          images: true,
-          isOnSale: true,
-          isFeatured: true,
-          category: {
-            select: {
-              name: true,
-            },
-          },
-        },
-        orderBy: orderByMap[sort] ?? orderByMap.newest,
-        skip,
-        take: limit,
-      }),
-      db.product.count({
-        where,
-      }),
-      facetsPromise,
-    ]);
-
-    const totalPages = Math.max(1, Math.ceil(total / limit));
-
-    return NextResponse.json({
-      success: true,
-      store,
-      products,
-      total,
+    productsCacheKey = buildProductsCacheKey({
+      storeId: store.id,
+      categorySlug,
+      sort,
+      minPrice,
+      maxPrice,
       page,
       limit,
-      totalPages,
-      filters: {
-        category: categorySlug,
-        minPrice,
-        maxPrice,
-        sort,
+      includeFacets,
+      includeTotal,
+    });
+
+    const productSelect = {
+      id: true,
+      name: true,
+      price: true,
+      originalPrice: true,
+      rating: true,
+      images: true,
+      isOnSale: true,
+      isFeatured: true,
+      category: {
+        select: {
+          name: true,
+        },
       },
-      facets,
+    } satisfies Prisma.ProductSelect;
+
+    const responsePayload = await resolveProductsResponse(
+      productsCacheKey,
+      async () => {
+        let products: Prisma.ProductGetPayload<{
+          select: typeof productSelect;
+        }>[] = [];
+        let total: number | null = null;
+        let totalPages: number | null = null;
+        let hasMore = false;
+
+        if (includeTotal) {
+          const [productsResult, totalResult] = await db.$transaction([
+            db.product.findMany({
+              where,
+              select: productSelect,
+              orderBy: orderByMap[sort] ?? orderByMap.newest,
+              skip,
+              take: limit,
+            }),
+            db.product.count({
+              where,
+            }),
+          ]);
+
+          products = productsResult;
+          total = totalResult;
+          totalPages = Math.max(1, Math.ceil(totalResult / limit));
+          hasMore = page < totalPages;
+        } else {
+          const productsWithProbe = await db.product.findMany({
+            where,
+            select: productSelect,
+            orderBy: orderByMap[sort] ?? orderByMap.newest,
+            skip,
+            take: limit + 1,
+          });
+
+          hasMore = productsWithProbe.length > limit;
+          products = hasMore
+            ? productsWithProbe.slice(0, limit)
+            : productsWithProbe;
+        }
+
+        const facets = await resolveStoreFacets(store.id, includeFacets);
+
+        return {
+          success: true,
+          store,
+          products,
+          total,
+          page,
+          limit,
+          totalPages,
+          hasMore,
+          filters: {
+            category: categorySlug,
+            minPrice,
+            maxPrice,
+            sort,
+          },
+          facets,
+        };
+      },
+    );
+
+    return NextResponse.json(responsePayload, {
+      headers: {
+        "Cache-Control": PRODUCTS_CACHE_CONTROL,
+      },
     });
   } catch (error) {
     console.error("Erro ao buscar produtos:", error);
+
+    if (isPoolTimeoutError(error)) {
+      if (productsCacheKey) {
+        const staleResponse = getStaleCachedProductsResponse(productsCacheKey);
+
+        if (staleResponse) {
+          return NextResponse.json(staleResponse, {
+            headers: {
+              "Cache-Control": PRODUCTS_CACHE_CONTROL,
+              Warning: '110 - "Response is stale"',
+            },
+          });
+        }
+      }
+
+      return NextResponse.json(
+        { error: "Serviço temporariamente sobrecarregado. Tente novamente." },
+        { status: 503 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 },
