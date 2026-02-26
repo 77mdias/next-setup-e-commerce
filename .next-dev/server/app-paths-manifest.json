@@ -1,8 +1,8 @@
 {
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/addresses/route": "app/api/addresses/route.js",
+  "/api/products/route": "app/api/products/route.js",
+  "/products/page": "app/products/page.js",
+  "/explore/page": "app/explore/page.js",
   "/perfil/page": "app/perfil/page.js",
-  "/status/page": "app/status/page.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/orders/page": "app/orders/page.js"
 }
