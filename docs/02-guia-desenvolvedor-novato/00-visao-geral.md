@@ -20,7 +20,7 @@
 2. Carrinho persiste localmente ou via `/api/cart` quando logado.
 3. Checkout cria pedido e sessao Stripe.
 4. Webhook Stripe confirma pagamento e atualiza pedido.
-5. Usuario consulta pedido em `/orders` ou `/${slug}/pedido`.
+5. Usuario consulta pedido em `/orders` (rotas `/${slug}/*` sao legadas com redirecionamento para rotas canônicas quando aplicável).
 
 ## Importante para quem esta comecando
 - Existem rotas novas (`/products`) e legadas por loja (`/${slug}/product`).

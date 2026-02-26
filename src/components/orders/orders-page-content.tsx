@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
@@ -272,14 +272,16 @@ function DeliveryProgress({ status }: { status: OrderStatus }) {
 
 export function OrdersPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, isLoading } = useAuth();
+  const initialOrderQuery = searchParams.get("orderId")?.trim() ?? "";
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [statusFilter, setStatusFilter] = useState<"ALL" | OrderStatus>("ALL");
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchInput, setSearchInput] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState(initialOrderQuery);
+  const [searchQuery, setSearchQuery] = useState(initialOrderQuery);
   const [isFetching, setIsFetching] = useState(false);
   const [reloadNonce, setReloadNonce] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -616,7 +618,7 @@ export function OrdersPageContent() {
                         variant="outline"
                         className="h-9 rounded-2xl border border-white/10 bg-transparent px-3 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5] hover:bg-white/5"
                       >
-                        <Link href={`/${order.store.slug}/pedido/${order.id}`}>
+                        <Link href={`/orders/${order.id}`}>
                           View Details
                           <ArrowRight className="h-4 w-4" />
                         </Link>

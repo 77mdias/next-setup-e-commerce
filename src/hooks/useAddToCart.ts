@@ -14,7 +14,7 @@ function resolveCartPath(redirectPath?: string) {
     return redirectPath;
   }
 
-  return `/${redirectPath}/carrinho`;
+  return "/carrinho";
 }
 
 export const useAddToCart = (redirectPath?: string) => {

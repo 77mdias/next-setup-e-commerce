@@ -38,7 +38,7 @@
 
 ## 🎯 Sobre
 
-O My Store é uma aplicação fullstack que simula um e-commerce real: multi-lojas (rota `/[slug]`), catálogo completo, categorias/subcategorias, página de produto rica, carrinho, wishlist, checkout com Stripe, autenticação e muito mais.
+O My Store é uma aplicação fullstack que simula um e-commerce real: catálogo completo, categorias/subcategorias, página de produto rica, carrinho, wishlist, checkout com Stripe, autenticação e muito mais. As rotas por slug (`/[slug]`) seguem como legado com redirecionamento para rotas canônicas.
 
 Principais diferenciais:
 
@@ -122,28 +122,22 @@ Principais diferenciais:
 src/
   app/
     [slug]/
-      categorias/
-        [categorySlug]/
-          components/ (product-card, subcategory-card, header, controls, ...)
-          hooks/use-category-page.ts
-          page.tsx
+      page.tsx (redirect legado para /)
+      categorias/ (rotas legadas com redirect para /products)
+        [categorySlug]/page.tsx
         page.tsx
-      product/
-        [productId]/
-          components/ (gallery, header, pricing, tabs, stats, ...)
-          hooks/use-product-page.ts
-          page.tsx
-        hooks/use-product-list.ts
+      product/ (rotas legadas com redirect para /products e /product/[id])
+        [productId]/page.tsx
         page.tsx
-      carrinho/ • wishlist/ • perfil/ • ofertas/ • suporte/
-      checkout/ • pedido/ (sucesso, falha)
-      components/ (Header, Nav, Menu, etc.)
-      context/cart.tsx
+      carrinho/ • wishlist/ • perfil/ • ofertas/ • suporte/ (legado)
+      checkout/ • pedido/ (sucesso, falha - legado)
       layout.tsx
     api/
       products/ • categories/ • cart/ • wishlist/ • remove-bg/
       checkout/ • orders/ • webhooks/stripe/ • test-stripe/
       auth/ (register, signin, verify-email, reset-password)
+  components/product-detail/ (page-content, hooks, components/*)
+  components/products/ (products-catalog)
   components/ui/ (button, input, card-products, navigation-menu, toast, scroll-to-top)
   hooks/ (useAddToCart, useWishlist, useScrollToTop, useCheckout, useAuth)
   lib/ (auth, prisma, stripe, utils, email)
@@ -203,22 +197,22 @@ npm run check-images     # Verificar imagens
 ### **E-commerce**
 
 - `src/components/ui/card-products.tsx` • Card unificado com ações (cart/wishlist)
-- `src/app/[slug]/categorias/[categorySlug]/hooks/use-category-page.ts` • Estado/filtro/sort
-- `src/app/[slug]/product/hooks/use-product-list.ts` • Lista de produtos da loja
-- `src/app/[slug]/product/[productId]/components/*` • Página de produto modular
+- `src/components/products/products-catalog.tsx` • Catálogo canônico de produtos
+- `src/components/product-detail/*` • Página de detalhe de produto (canônica)
 
 ### **Carrinho & Wishlist**
 
 - `src/hooks/useAddToCart.ts` • Ações de carrinho
 - `src/hooks/useWishlist.ts` • Ações de wishlist
-- `src/app/[slug]/context/cart.tsx` • Context do carrinho
+- `src/context/cart.tsx` • Context do carrinho
 
 ### **Checkout & Pagamentos**
 
 - `src/hooks/useCheckout.ts` • Lógica de checkout
 - `src/app/api/checkout/route.ts` • API de checkout
 - `src/app/api/webhooks/stripe/route.ts` • Webhooks do Stripe
-- `src/app/[slug]/pedido/sucesso/page.tsx` • Página de sucesso
+- `src/app/orders/page.tsx` • Página canônica de pedidos
+- `src/app/orders/success/page.tsx` • Callback canônico de sucesso
 
 ### **UX/UI**
 
@@ -336,7 +330,7 @@ GET /api/test-stripe
 ### **Teste de Checkout**
 
 1. Adicione produtos ao carrinho
-2. Vá para checkout (`/[slug]/checkout`)
+2. Vá para checkout (`/checkout`)
 3. Preencha informações pessoais
 4. Use cartão de teste: `4242 4242 4242 4242`
 5. Complete o pagamento

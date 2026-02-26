@@ -17,19 +17,12 @@ export function useProductDetailPage() {
 
   const params = useParams();
   const router = useRouter();
-  const slug = typeof params.slug === "string" ? params.slug : "";
   const productId =
     typeof params.productId === "string" ? params.productId : "";
-  const hasLegacySlug = Boolean(slug);
-  const legacyBasePath = hasLegacySlug ? `/${slug}` : "";
-  const cartPath = hasLegacySlug ? `${legacyBasePath}/carrinho` : "/carrinho";
-  const categoriesPath = hasLegacySlug
-    ? `${legacyBasePath}/categorias`
-    : "/products";
+  const cartPath = "/carrinho";
+  const categoriesPath = "/products";
 
-  const { wishlistItems, loadingWishlist, handleAddToWishlist } = useWishlist(
-    legacyBasePath || undefined,
-  );
+  const { wishlistItems, loadingWishlist, handleAddToWishlist } = useWishlist();
   const { addProductToCart, loading: cartLoading } = useCart();
 
   const isInWishlist = product ? wishlistItems.has(product.id) : false;

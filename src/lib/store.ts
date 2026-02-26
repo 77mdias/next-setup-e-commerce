@@ -16,11 +16,6 @@ const resolvedStoreCache = new Map<
   }
 >();
 
-function buildStoreCacheKey(storeSlug?: string | null): string {
-  const normalizedSlug = storeSlug?.trim();
-  return normalizedSlug ? `slug:${normalizedSlug}` : "active";
-}
-
 function getCachedStore(cacheKey: string): ResolvedStore | null | undefined {
   const cached = resolvedStoreCache.get(cacheKey);
 
@@ -48,31 +43,12 @@ function setCachedStore(
   return store;
 }
 
-export async function resolveStoreBySlugOrActive(
-  storeSlug?: string | null,
-): Promise<ResolvedStore | null> {
-  const normalizedSlug = storeSlug?.trim();
-  const cacheKey = buildStoreCacheKey(normalizedSlug);
+export async function resolveActiveStore(): Promise<ResolvedStore | null> {
+  const cacheKey = "active";
   const cachedStore = getCachedStore(cacheKey);
 
   if (cachedStore !== undefined) {
     return cachedStore;
-  }
-
-  if (normalizedSlug) {
-    const store = await db.store.findFirst({
-      where: {
-        slug: normalizedSlug,
-        isActive: true,
-      },
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-      },
-    });
-
-    return setCachedStore(cacheKey, store);
   }
 
   const store = await db.store.findFirst({
@@ -92,17 +68,11 @@ export async function resolveStoreBySlugOrActive(
   return setCachedStore(cacheKey, store);
 }
 
-export async function requireStore(
-  storeSlug?: string | null,
-): Promise<ResolvedStore> {
-  const store = await resolveStoreBySlugOrActive(storeSlug);
+export async function requireActiveStore(): Promise<ResolvedStore> {
+  const store = await resolveActiveStore();
 
   if (!store) {
-    throw new Error(
-      storeSlug
-        ? `Store "${storeSlug}" não foi encontrada`
-        : "Nenhuma loja ativa encontrada",
-    );
+    throw new Error("Nenhuma loja ativa encontrada");
   }
 
   return store;

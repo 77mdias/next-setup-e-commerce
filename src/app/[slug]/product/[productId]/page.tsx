@@ -1,5 +1,12 @@
-import { ProductDetailPageContent } from "@/components/product-detail/product-detail-page-content";
+import { redirect } from "next/navigation";
 
-export default function LegacyProductDetailPage() {
-  return <ProductDetailPageContent />;
+interface LegacyProductDetailRedirectPageProps {
+  params: Promise<{ productId: string }>;
+}
+
+export default async function LegacyProductDetailRedirectPage({
+  params,
+}: LegacyProductDetailRedirectPageProps) {
+  const { productId } = await params;
+  redirect(`/product/${encodeURIComponent(productId)}`);
 }

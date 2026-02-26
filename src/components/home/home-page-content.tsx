@@ -16,15 +16,11 @@ const fontVariablesStyle = {
 } as CSSProperties;
 
 type HomePageContentProps = {
-  storeSlug: string;
   featuredProducts: HomeFeaturedProductInput[];
 };
 
-export function HomePageContent({
-  storeSlug,
-  featuredProducts,
-}: HomePageContentProps) {
-  const content = buildHomeContent(storeSlug, featuredProducts);
+export function HomePageContent({ featuredProducts }: HomePageContentProps) {
+  const content = buildHomeContent(featuredProducts);
 
   return (
     <div

@@ -38,10 +38,11 @@ type ProductsFacets = {
 
 type ProductsResponse = {
   products: ApiProduct[];
-  total: number;
+  total: number | null;
   page: number;
   limit: number;
-  totalPages: number;
+  totalPages: number | null;
+  hasMore: boolean;
   filters: {
     category: string | null;
     minPrice: number | null;
@@ -49,6 +50,15 @@ type ProductsResponse = {
     sort: string;
   };
   facets?: ProductsFacets | null;
+};
+
+type ProductFacetsResponse = {
+  facets?: ProductsFacets | null;
+};
+
+type SearchParamsLike = {
+  entries(): IterableIterator<[string, string]>;
+  toString(): string;
 };
 
 const SORT_OPTIONS = [
@@ -61,6 +71,9 @@ const SORT_OPTIONS = [
   { value: "best-selling", label: "Best Selling" },
 ];
 
+const CATALOG_QUERY_KEYS = ["category", "sort", "page", "minPrice", "maxPrice"];
+const CATALOG_API_QUERY_KEYS = [...CATALOG_QUERY_KEYS, "limit", "includeTotal"];
+
 function parseNumber(value: string | null): number | null {
   if (!value) {
     return null;
@@ -68,6 +81,22 @@ function parseNumber(value: string | null): number | null {
 
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function pickQueryParams(
+  searchParams: SearchParamsLike,
+  allowedKeys: readonly string[],
+) {
+  const allowed = new Set(allowedKeys);
+  const params = new URLSearchParams();
+
+  for (const [key, value] of searchParams.entries()) {
+    if (allowed.has(key)) {
+      params.append(key, value);
+    }
+  }
+
+  return params;
 }
 
 export function ProductsCatalog() {
@@ -83,7 +112,6 @@ export function ProductsCatalog() {
   const facetsRef = useRef<ProductsFacets | null>(null);
 
   const selectedCategory = searchParams.get("category") ?? "all";
-  const selectedStoreSlug = searchParams.get("storeSlug");
   const selectedSort = searchParams.get("sort") ?? "newest";
   const currentPage = Math.max(
     1,
@@ -94,8 +122,23 @@ export function ProductsCatalog() {
   const queryMax = parseNumber(searchParams.get("maxPrice"));
 
   useEffect(() => {
-    facetsRef.current = null;
-  }, [selectedStoreSlug]);
+    const canonicalQuery = pickQueryParams(
+      searchParams,
+      CATALOG_QUERY_KEYS,
+    ).toString();
+    const currentQuery = searchParams.toString();
+
+    if (currentQuery === canonicalQuery) {
+      return;
+    }
+
+    router.replace(
+      canonicalQuery ? `${pathname}?${canonicalQuery}` : pathname,
+      {
+        scroll: false,
+      },
+    );
+  }, [pathname, router, searchParams]);
 
   const priceBounds = useMemo(
     () => ({
@@ -106,7 +149,7 @@ export function ProductsCatalog() {
   );
 
   const updateQuery = (updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = pickQueryParams(searchParams, CATALOG_QUERY_KEYS);
 
     Object.entries(updates).forEach(([key, value]) => {
       if (!value) {
@@ -128,11 +171,12 @@ export function ProductsCatalog() {
       setError(null);
 
       try {
-        const params = new URLSearchParams(searchParams.toString());
+        const params = pickQueryParams(searchParams, CATALOG_API_QUERY_KEYS);
         if (!params.get("limit")) {
           params.set("limit", "24");
         }
-        params.set("includeFacets", facetsRef.current ? "0" : "1");
+        params.set("includeTotal", "0");
+        params.set("includeFacets", "0");
 
         const response = await fetch(`/api/products?${params.toString()}`, {
           signal: controller.signal,
@@ -143,7 +187,7 @@ export function ProductsCatalog() {
         }
 
         const payload = (await response.json()) as ProductsResponse;
-        const mergedFacets = payload.facets ?? facetsRef.current;
+        const mergedFacets = facetsRef.current ?? payload.facets ?? null;
 
         if (mergedFacets) {
           facetsRef.current = mergedFacets;
@@ -178,6 +222,53 @@ export function ProductsCatalog() {
     fetchProducts();
     return () => controller.abort();
   }, [searchParams, queryMax, queryMin]);
+
+  useEffect(() => {
+    if (loading || !data || facetsRef.current) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const fetchFacets = async () => {
+      try {
+        const response = await fetch("/api/products?facetsOnly=1", {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Erro ao carregar filtros");
+        }
+
+        const payload = (await response.json()) as ProductFacetsResponse;
+        const resolvedFacets = payload.facets ?? null;
+
+        if (!resolvedFacets) {
+          return;
+        }
+
+        facetsRef.current = resolvedFacets;
+        setMinDraft(queryMin ?? resolvedFacets.priceRange.min);
+        setMaxDraft(queryMax ?? resolvedFacets.priceRange.max);
+        setData((currentData) =>
+          currentData
+            ? {
+                ...currentData,
+                facets: resolvedFacets,
+              }
+            : currentData,
+        );
+      } catch (fetchError) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        console.warn("Erro ao carregar facets de produtos:", fetchError);
+      }
+    };
+
+    fetchFacets();
+    return () => controller.abort();
+  }, [data, loading, queryMax, queryMin]);
 
   const mappedProducts: FeaturedProduct[] = useMemo(() => {
     if (!data) {
@@ -251,7 +342,9 @@ export function ProductsCatalog() {
             All Products
           </h1>
           <p className="mt-2 [font-family:var(--font-arimo)] text-base text-[#64748b] dark:text-[#6a7282]">
-            {data?.total ?? 0} items found
+            {typeof data?.total === "number"
+              ? `${data.total} items found`
+              : `${data?.products.length ?? 0} items loaded`}
           </p>
         </div>
 
@@ -424,7 +517,7 @@ export function ProductsCatalog() {
                 ))}
               </div>
 
-              {(data?.totalPages ?? 1) > 1 && (
+              {((data?.totalPages ?? 1) > 1 || Boolean(data?.hasMore)) && (
                 <div className="flex items-center justify-end gap-3">
                   <button
                     type="button"
@@ -442,15 +535,24 @@ export function ProductsCatalog() {
                     Previous
                   </button>
                   <span className="[font-family:var(--font-arimo)] text-sm text-[#64748b] dark:text-[#6a7282]">
-                    Page {data?.page ?? 1} of {data?.totalPages ?? 1}
+                    {typeof data?.totalPages === "number"
+                      ? `Page ${data.page} of ${data.totalPages}`
+                      : `Page ${data?.page ?? 1}`}
                   </span>
                   <button
                     type="button"
-                    disabled={currentPage >= (data?.totalPages ?? 1)}
+                    disabled={
+                      typeof data?.totalPages === "number"
+                        ? currentPage >= data.totalPages
+                        : !data?.hasMore
+                    }
                     onClick={() =>
                       updateQuery({
                         page:
-                          currentPage >= (data?.totalPages ?? 1)
+                          (typeof data?.totalPages === "number" &&
+                            currentPage >= data.totalPages) ||
+                          (typeof data?.totalPages !== "number" &&
+                            !data?.hasMore)
                             ? String(currentPage)
                             : String(currentPage + 1),
                       })

@@ -8,16 +8,20 @@
 - `/product/[productId]`: detalhe de produto.
 - `/explore`: vitrine exploratoria.
 - `/orders`: pedidos do usuario autenticado.
+- `/orders/[orderId]`: atalho para filtro de um pedido específico.
+- `/orders/success` e `/orders/failure`: callbacks canônicos pós-checkout.
 - `/auth/*`: signin, signup, verify-email, reset-password, error, thank-you.
-- `/carrinho`, `/checkout`, `/wishlist`: redirecionam para loja ativa (`/${slug}/...`).
+- `/carrinho`, `/checkout`, `/wishlist`: fluxos canônicos (sem slug).
 
 ### Por loja (`/[slug]`)
-- `/${slug}`: home da loja.
-- `/${slug}/product` e `/${slug}/product/[productId]`: catalogo/detalhe legado.
-- `/${slug}/categorias` e `/${slug}/categorias/[categorySlug]`.
-- `/${slug}/carrinho`, `/${slug}/checkout`, `/${slug}/wishlist`.
-- `/${slug}/pedido`, `/${slug}/pedido/[orderId]`, `/${slug}/pedido/sucesso`, `/${slug}/pedido/falha`.
-- `/${slug}/perfil`, `/${slug}/suporte`, `/${slug}/admin/remove-bg`.
+- `/${slug}`: legado, redireciona para `/`.
+- `/${slug}/product` e `/${slug}/product/[productId]`: legadas, redirecionam para `/products` e `/product/[productId]`.
+- `/${slug}/categorias` e `/${slug}/categorias/[categorySlug]`: legadas, redirecionam para `/products` e `/products?category=...`.
+- `/${slug}/carrinho`, `/${slug}/checkout`, `/${slug}/wishlist`: legadas, redirecionam para rotas fixas.
+- `/${slug}/pedido`, `/${slug}/pedido/[orderId]`, `/${slug}/pedido/sucesso`, `/${slug}/pedido/falha`: legadas, redirecionam para rotas canônicas de `/orders`.
+- `/${slug}/perfil`: legado, redireciona para `/perfil`.
+- `/${slug}/suporte`: legado, redireciona para `/status?reason=development`.
+- `/${slug}/admin/remove-bg`: rota administrativa legada.
 
 ## Rotas API (catalogo resumido)
 
@@ -35,6 +39,12 @@
 - `GET /api/categories`
 - `GET /api/categories/[categorySlug]`
 - `GET /api/stores/[slug]`
+- `GET /api/products` e `GET /api/categories*` usam apenas a loja ativa; `storeSlug` em query nao e mais suportado.
+- `GET /api/products?facetsOnly=1` retorna apenas `facets` (categorias + faixa de preco).
+- `GET /api/products`:
+  - `includeTotal=1` habilita `total` e `totalPages` exatos (consulta mais cara).
+  - Sem `includeTotal=1`, a API prioriza latencia e retorna `total: null`, `totalPages: null` e `hasMore`.
+  - `includeFacets=0` evita custo de facets no payload da listagem.
 
 ### Carrinho e wishlist
 - `GET/POST/PUT/DELETE /api/cart`
@@ -61,5 +71,4 @@
 - Nem todas as APIs sensiveis exigem sessao (ex.: `/api/test-stripe`, `/api/auth/user-info`, `/api/remove-bg`).
 
 ## Inconsistencias funcionais
-- Navegacao principal aponta carrinho para `/cart` em vez de `/carrinho` (`src/components/layout/app-chrome.tsx:81`).
 - Pagina admin remove-bg usa `/api/products/${slug}` com `PUT`, mas a API existente em `/api/products/[productId]` e apenas `GET`.

@@ -188,7 +188,10 @@ export const authOptions: NextAuthOptions = {
       }
 
       // Verificar se é uma URL de callback do Stripe
-      if (url.includes("session_id=") && url.includes("/pedido/")) {
+      if (
+        url.includes("session_id=") &&
+        (url.includes("/pedido/") || url.includes("/orders/"))
+      ) {
         return url;
       }
 
