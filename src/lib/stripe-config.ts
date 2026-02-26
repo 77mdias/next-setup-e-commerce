@@ -34,7 +34,9 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 // Função para criar sessão com logs detalhados
-export const createStripeCheckoutSession = async (sessionData: Stripe.Checkout.SessionCreateParams) => {
+export const createStripeCheckoutSession = async (
+  sessionData: Stripe.Checkout.SessionCreateParams,
+) => {
   try {
     console.log("🔧 Iniciando criação da sessão do Stripe");
     console.log("🔧 Dados da sessão:", {
@@ -65,6 +67,20 @@ export const createStripeCheckoutSession = async (sessionData: Stripe.Checkout.S
       });
     }
 
+    throw error;
+  }
+};
+
+export const expireStripeCheckoutSession = async (sessionId: string) => {
+  try {
+    console.log("🔧 Iniciando expiração da sessão do Stripe:", sessionId);
+    await stripe.checkout.sessions.expire(sessionId);
+    console.log("✅ Sessão do Stripe expirada com sucesso:", sessionId);
+  } catch (error) {
+    console.error("❌ Erro ao expirar sessão do Stripe:", {
+      sessionId,
+      error,
+    });
     throw error;
   }
 };

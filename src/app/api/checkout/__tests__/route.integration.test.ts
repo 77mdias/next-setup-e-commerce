@@ -1,35 +1,42 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockGetServerSession, mockCreateStripeCheckoutSession, mockDb } =
-  vi.hoisted(() => ({
-    mockGetServerSession: vi.fn(),
-    mockCreateStripeCheckoutSession: vi.fn(),
-    mockDb: {
-      store: {
-        findUnique: vi.fn(),
-      },
-      user: {
-        findUnique: vi.fn(),
-      },
-      address: {
-        findFirst: vi.fn(),
-      },
-      product: {
-        findMany: vi.fn(),
-      },
-      productVariant: {
-        findMany: vi.fn(),
-      },
-      inventory: {
-        findMany: vi.fn(),
-      },
-      order: {
-        create: vi.fn(),
-        update: vi.fn(),
-      },
+const {
+  mockGetServerSession,
+  mockCreateStripeCheckoutSession,
+  mockExpireStripeCheckoutSession,
+  mockDb,
+} = vi.hoisted(() => ({
+  mockGetServerSession: vi.fn(),
+  mockCreateStripeCheckoutSession: vi.fn(),
+  mockExpireStripeCheckoutSession: vi.fn(),
+  mockDb: {
+    $transaction: vi.fn(),
+    store: {
+      findUnique: vi.fn(),
     },
-  }));
+    user: {
+      findUnique: vi.fn(),
+    },
+    address: {
+      findFirst: vi.fn(),
+    },
+    product: {
+      findMany: vi.fn(),
+    },
+    productVariant: {
+      findMany: vi.fn(),
+    },
+    inventory: {
+      findMany: vi.fn(),
+    },
+    order: {
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+  },
+}));
 
 vi.mock("next-auth", () => ({
   getServerSession: mockGetServerSession,
@@ -45,6 +52,7 @@ vi.mock("@/lib/prisma", () => ({
 
 vi.mock("@/lib/stripe-config", () => ({
   createStripeCheckoutSession: mockCreateStripeCheckoutSession,
+  expireStripeCheckoutSession: mockExpireStripeCheckoutSession,
 }));
 
 import { POST } from "@/app/api/checkout/route";
@@ -113,11 +121,20 @@ describe("POST /api/checkout integration", () => {
     ]);
     mockDb.order.create.mockResolvedValue({ id: 123 });
     mockDb.order.update.mockResolvedValue({ id: 123 });
+    mockDb.order.delete.mockResolvedValue({ id: 123 });
+    mockDb.$transaction.mockImplementation(async (operation: unknown) => {
+      if (typeof operation === "function") {
+        return operation(mockDb);
+      }
+
+      throw new Error("Unsupported transaction operation in test");
+    });
 
     mockCreateStripeCheckoutSession.mockResolvedValue({
       id: "cs_test_123",
       url: "https://stripe.test/session/cs_test_123",
     });
+    mockExpireStripeCheckoutSession.mockResolvedValue(undefined);
   });
 
   it("rejects adulterated payload with sensitive item fields", async () => {
@@ -237,5 +254,91 @@ describe("POST /api/checkout integration", () => {
     expect(body.error).toContain("estoque mínimo");
     expect(mockDb.order.create).not.toHaveBeenCalled();
     expect(mockCreateStripeCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it("rolls back order and items when Stripe session creation fails", async () => {
+    mockCreateStripeCheckoutSession.mockRejectedValueOnce(
+      new Error("Stripe indisponível"),
+    );
+
+    const response = await POST(
+      createCheckoutRequest({
+        storeId: "store-1",
+        items: [{ productId: "product-1", quantity: 1 }],
+        shippingMethod: "STANDARD",
+      }),
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("Erro interno do servidor");
+    expect(mockDb.order.create).toHaveBeenCalledTimes(1);
+    expect(mockDb.order.update).not.toHaveBeenCalled();
+    expect(mockExpireStripeCheckoutSession).not.toHaveBeenCalled();
+    expect(mockDb.order.delete).toHaveBeenCalledWith({
+      where: { id: 123 },
+    });
+  });
+
+  it("rolls back order when persisting stripePaymentId fails", async () => {
+    mockDb.order.update.mockRejectedValueOnce(
+      new Error("Falha ao atualizar stripePaymentId"),
+    );
+
+    const response = await POST(
+      createCheckoutRequest({
+        storeId: "store-1",
+        items: [{ productId: "product-1", quantity: 1 }],
+        shippingMethod: "STANDARD",
+      }),
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("Erro interno do servidor");
+    expect(mockCreateStripeCheckoutSession).toHaveBeenCalledTimes(1);
+    expect(mockDb.order.update).toHaveBeenCalledTimes(1);
+    expect(mockExpireStripeCheckoutSession).toHaveBeenCalledWith("cs_test_123");
+    expect(mockDb.order.delete).toHaveBeenCalledWith({
+      where: { id: 123 },
+    });
+  });
+
+  it("logs rollback failure when deleting orphan order also fails", async () => {
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    mockDb.order.update.mockRejectedValueOnce(
+      new Error("Falha ao atualizar stripePaymentId"),
+    );
+    mockDb.order.delete.mockRejectedValueOnce(
+      new Error("Falha ao deletar pedido"),
+    );
+
+    const response = await POST(
+      createCheckoutRequest({
+        storeId: "store-1",
+        items: [{ productId: "product-1", quantity: 1 }],
+        shippingMethod: "STANDARD",
+      }),
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("Erro interno do servidor");
+    expect(mockExpireStripeCheckoutSession).toHaveBeenCalledWith("cs_test_123");
+    expect(mockDb.order.delete).toHaveBeenCalledWith({
+      where: { id: 123 },
+    });
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Erro ao executar rollback do pedido 123"),
+      expect.any(Error),
+    );
+
+    consoleErrorSpy.mockRestore();
   });
 });

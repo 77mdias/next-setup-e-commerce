@@ -5,7 +5,10 @@ import { z } from "zod";
 
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/prisma";
-import { createStripeCheckoutSession } from "@/lib/stripe-config";
+import {
+  createStripeCheckoutSession,
+  expireStripeCheckoutSession,
+} from "@/lib/stripe-config";
 
 const MAX_ITEM_QUANTITY = 1000;
 
@@ -499,102 +502,140 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const order = await db.order.create({
-      data: {
-        userId: session.user.id,
-        storeId: store.id,
-        addressId: payload.addressId,
-        customerName: customer.name?.trim() || session.user.name || "Cliente",
-        customerPhone: customer.phone?.trim() || "Não informado",
-        customerEmail: customer.email,
-        customerCpf: customer.cpf?.trim() || null,
-        status: "PENDING",
-        paymentStatus: "PENDING",
-        shippingMethod: payload.shippingMethod,
-        subtotal,
-        shippingFee,
-        total,
-        paymentMethod: "stripe",
-        items: {
-          create: canonicalItems.map((item) => ({
-            productId: item.productId,
-            variantId: item.variantId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            totalPrice: item.totalPrice,
-            productName: item.productName,
-            productImage: item.productImage,
-            specifications: item.specifications,
-          })),
+    const order = await db.$transaction((transaction) =>
+      transaction.order.create({
+        data: {
+          userId: session.user.id,
+          storeId: store.id,
+          addressId: payload.addressId,
+          customerName: customer.name?.trim() || session.user.name || "Cliente",
+          customerPhone: customer.phone?.trim() || "Não informado",
+          customerEmail: customer.email,
+          customerCpf: customer.cpf?.trim() || null,
+          status: "PENDING",
+          paymentStatus: "PENDING",
+          shippingMethod: payload.shippingMethod,
+          subtotal,
+          shippingFee,
+          total,
+          paymentMethod: "stripe",
+          items: {
+            create: canonicalItems.map((item) => ({
+              productId: item.productId,
+              variantId: item.variantId,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              totalPrice: item.totalPrice,
+              productName: item.productName,
+              productImage: item.productImage,
+              specifications: item.specifications,
+            })),
+          },
         },
-      },
-    });
+      }),
+    );
 
-    const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${store.slug}/pedido/sucesso?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${store.slug}/pedido/falha?session_id={CHECKOUT_SESSION_ID}`;
+    let stripeSession: Awaited<
+      ReturnType<typeof createStripeCheckoutSession>
+    > | null = null;
 
-    const stripeSession = await createStripeCheckoutSession({
-      payment_method_types: ["card"],
-      line_items: stripeLineItems,
-      mode: "payment",
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      metadata: {
-        orderId: order.id.toString(),
-        storeId: store.id,
-        userId: session.user.id,
-        subtotalCents: subtotalCents.toString(),
-        shippingFeeCents: shippingFeeCents.toString(),
-        totalCents: totalCents.toString(),
-      },
-      customer_email: customer.email,
-      shipping_address_collection: {
-        allowed_countries: ["BR"],
-      },
-      payment_intent_data: {
+    try {
+      const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${store.slug}/pedido/sucesso?session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${store.slug}/pedido/falha?session_id={CHECKOUT_SESSION_ID}`;
+
+      stripeSession = await createStripeCheckoutSession({
+        payment_method_types: ["card"],
+        line_items: stripeLineItems,
+        mode: "payment",
+        success_url: successUrl,
+        cancel_url: cancelUrl,
         metadata: {
           orderId: order.id.toString(),
           storeId: store.id,
+          userId: session.user.id,
+          subtotalCents: subtotalCents.toString(),
+          shippingFeeCents: shippingFeeCents.toString(),
+          totalCents: totalCents.toString(),
         },
-      },
-      custom_fields: [
-        {
-          key: "customer_name",
-          label: {
-            type: "custom",
-            custom: "Nome completo",
+        customer_email: customer.email,
+        shipping_address_collection: {
+          allowed_countries: ["BR"],
+        },
+        payment_intent_data: {
+          metadata: {
+            orderId: order.id.toString(),
+            storeId: store.id,
           },
-          type: "text",
-          optional: false,
         },
-        {
-          key: "customer_phone",
-          label: {
-            type: "custom",
-            custom: "Telefone",
+        custom_fields: [
+          {
+            key: "customer_name",
+            label: {
+              type: "custom",
+              custom: "Nome completo",
+            },
+            type: "text",
+            optional: false,
           },
-          type: "text",
-          optional: false,
-        },
-        {
-          key: "customer_cpf",
-          label: {
-            type: "custom",
-            custom: "CPF",
+          {
+            key: "customer_phone",
+            label: {
+              type: "custom",
+              custom: "Telefone",
+            },
+            type: "text",
+            optional: false,
           },
-          type: "text",
-          optional: false,
-        },
-      ],
-    });
+          {
+            key: "customer_cpf",
+            label: {
+              type: "custom",
+              custom: "CPF",
+            },
+            type: "text",
+            optional: false,
+          },
+        ],
+      });
 
-    await db.order.update({
-      where: { id: order.id },
-      data: {
-        stripePaymentId: stripeSession.id,
-        paymentMethod: "stripe",
-      },
-    });
+      await db.order.update({
+        where: { id: order.id },
+        data: {
+          stripePaymentId: stripeSession.id,
+          paymentMethod: "stripe",
+        },
+      });
+    } catch (checkoutError) {
+      if (stripeSession?.id) {
+        try {
+          await expireStripeCheckoutSession(stripeSession.id);
+        } catch (expireError) {
+          console.error(
+            `Erro ao expirar sessão Stripe ${stripeSession.id} durante rollback do pedido ${order.id}:`,
+            expireError,
+          );
+        }
+      }
+
+      try {
+        await db.order.delete({
+          where: { id: order.id },
+        });
+      } catch (rollbackError) {
+        console.error(
+          `Erro ao executar rollback do pedido ${order.id}:`,
+          rollbackError,
+        );
+      }
+
+      throw checkoutError;
+    }
+
+    if (!stripeSession) {
+      throw new Error(
+        `Sessão Stripe não foi criada para o pedido ${order.id} após checkout`,
+      );
+    }
 
     return NextResponse.json({
       sessionId: stripeSession.id,

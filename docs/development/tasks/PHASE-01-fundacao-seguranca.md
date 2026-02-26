@@ -93,7 +93,7 @@ Remover a confiança em valores vindos do cliente no endpoint de checkout. O ser
 
 #### CHK.2 - Persistência confiável de pedido
 
-- [ ] **S01-CHK-003** - Persistir `OrderItem` apenas com snapshot do servidor
+- [x] **S01-CHK-003** - Persistir `OrderItem` apenas com snapshot do servidor
 
   **Descrição curta:**
   - Persistir nome, imagem, preço unitário e total por item exclusivamente a partir dos dados canônicos do backend.
@@ -107,13 +107,13 @@ Remover a confiança em valores vindos do cliente no endpoint de checkout. O ser
   **Arquivos/áreas afetadas:** `src/app/api/checkout/route.ts`
 
   **Critérios de aceitação:**
-  - [ ] `order_items.unitPrice` nunca depende de campo enviado pelo cliente.
-  - [ ] Falha parcial não deixa pedido órfão/inconsistente.
+  - [x] `order_items.unitPrice` nunca depende de campo enviado pelo cliente.
+  - [x] Falha parcial não deixa pedido órfão/inconsistente.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 5h  
   **Dependências:** S01-CHK-002  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída
 
 - [ ] **S01-CHK-004** - Ajustar consumidor frontend para novo contrato
 
