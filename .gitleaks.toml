@@ -1,0 +1,14 @@
+title = "Gitleaks config for next-setup-e-commerce"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Ignore generated and vendor artifacts"
+paths = [
+  '''(^|/)\.next/''',
+  '''(^|/)\.next-dev/''',
+  '''(^|/)node_modules/''',
+  '''(^|/)coverage/''',
+  '''(^|/)dist/''',
+]
