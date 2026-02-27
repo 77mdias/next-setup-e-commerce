@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/prisma";
+
+function resolvePaymentIntentId(
+  paymentIntent: string | Stripe.PaymentIntent | null,
+) {
+  if (!paymentIntent) {
+    return null;
+  }
+
+  return typeof paymentIntent === "string" ? paymentIntent : paymentIntent.id;
+}
 
 export async function POST(request: NextRequest) {
   // Verificar se as variáveis de ambiente estão configuradas
@@ -65,11 +74,13 @@ export async function POST(request: NextRequest) {
       case "checkout.session.completed":
         const session = event.data.object as Stripe.Checkout.Session;
         const orderId = session.metadata?.orderId;
+        const checkoutSessionId = session.id;
+        const paymentIntentId = resolvePaymentIntentId(session.payment_intent);
 
         console.log("🔍 ID do pedido:", orderId);
         console.log("📋 Metadata completa:", session.metadata);
         console.log("💰 Status do pagamento:", session.payment_status);
-        console.log("💳 ID do pagamento:", session.payment_intent);
+        console.log("💳 ID do payment intent:", paymentIntentId);
 
         if (!orderId) {
           console.warn("⚠️ ID do pedido não encontrado nos metadados");
@@ -112,7 +123,10 @@ export async function POST(request: NextRequest) {
           data: {
             status: "PAID",
             paymentStatus: "PAID",
-            stripePaymentId: session.payment_intent as string,
+            stripeCheckoutSessionId:
+              existingOrder.stripeCheckoutSessionId ?? checkoutSessionId,
+            stripePaymentIntentId: paymentIntentId,
+            stripePaymentId: paymentIntentId ?? checkoutSessionId,
           },
           include: {
             store: { select: { slug: true } },
@@ -124,7 +138,8 @@ export async function POST(request: NextRequest) {
           orderId: updatedOrder.id,
           newStatus: updatedOrder.status,
           paymentStatus: updatedOrder.paymentStatus,
-          stripePaymentId: updatedOrder.stripePaymentId,
+          stripeCheckoutSessionId: updatedOrder.stripeCheckoutSessionId,
+          stripePaymentIntentId: updatedOrder.stripePaymentIntentId,
         });
 
         // Criar registro de pagamento
@@ -134,7 +149,7 @@ export async function POST(request: NextRequest) {
             method: "stripe",
             amount: updatedOrder.total,
             status: "PAID",
-            stripePaymentId: session.payment_intent as string,
+            stripePaymentId: paymentIntentId ?? undefined,
             paidAt: new Date(),
           },
         });

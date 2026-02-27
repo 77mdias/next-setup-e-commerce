@@ -4,7 +4,7 @@
 1. Reescrever `/api/checkout` para usar preco e dados de produto do banco.
 2. Tornar `/api/orders/session/[sessionId]` estritamente autenticado.
 3. Remover/restringir `/api/test-stripe` em producao.
-4. Separar `stripeCheckoutSessionId` de `stripePaymentIntentId` em `Order`.
+4. ✅ Separar `stripeCheckoutSessionId` de `stripePaymentIntentId` em `Order` (S01-STR-001 e S01-STR-002 concluídas em 2026-02-27).
 
 ## P1 - Alta prioridade
 1. Trocar token de verificacao/reset para `crypto.randomBytes` + hash no banco.

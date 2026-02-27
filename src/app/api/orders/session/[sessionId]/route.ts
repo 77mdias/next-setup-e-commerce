@@ -42,8 +42,12 @@ export async function GET(
 
     const order = await db.order.findFirst({
       where: {
-        stripePaymentId: normalizedSessionId,
         userId: session.user.id,
+        OR: [
+          { stripeCheckoutSessionId: normalizedSessionId },
+          // Compatibilidade temporária durante rollout do schema Stripe separado.
+          { stripePaymentId: normalizedSessionId },
+        ],
       },
       include: {
         items: {
@@ -77,9 +81,6 @@ export async function GET(
           },
         },
         payments: {
-          where: {
-            stripePaymentId: normalizedSessionId,
-          },
           select: {
             id: true,
             status: true,

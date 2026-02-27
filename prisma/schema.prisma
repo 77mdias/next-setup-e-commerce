@@ -243,41 +243,45 @@ model StockMovement {
 }
 
 model Order {
-  id                Int                  @id @default(autoincrement())
-  userId            String?
-  storeId           String
-  addressId         String?
-  customerName      String
-  customerPhone     String
-  customerEmail     String?
-  customerCpf       String?
-  status            OrderStatus
-  shippingMethod    ShippingMethod
-  subtotal          Float
-  shippingFee       Float                @default(0)
-  serviceFee        Float                @default(0)
-  discount          Float                @default(0)
-  total             Float
-  paymentMethod     String?
-  paymentStatus     PaymentStatus        @default(PENDING)
-  stripePaymentId   String?
-  trackingCode      String?
-  notes             String?
-  estimatedDelivery DateTime?
-  shippedAt         DateTime?
-  deliveredAt       DateTime?
-  cancelledAt       DateTime?
-  cancelReason      String?
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  items             OrderItem[]
-  statusHistory     OrderStatusHistory[]
-  address           Address?             @relation(fields: [addressId], references: [id])
-  store             Store                @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  user              User?                @relation(fields: [userId], references: [id])
-  payments          Payment[]
-  reviews           Review[]
+  id                      Int                  @id @default(autoincrement())
+  userId                  String?
+  storeId                 String
+  addressId               String?
+  customerName            String
+  customerPhone           String
+  customerEmail           String?
+  customerCpf             String?
+  status                  OrderStatus
+  shippingMethod          ShippingMethod
+  subtotal                Float
+  shippingFee             Float                @default(0)
+  serviceFee              Float                @default(0)
+  discount                Float                @default(0)
+  total                   Float
+  paymentMethod           String?
+  paymentStatus           PaymentStatus        @default(PENDING)
+  stripePaymentId         String?
+  stripeCheckoutSessionId String?
+  stripePaymentIntentId   String?
+  trackingCode            String?
+  notes                   String?
+  estimatedDelivery       DateTime?
+  shippedAt               DateTime?
+  deliveredAt             DateTime?
+  cancelledAt             DateTime?
+  cancelReason            String?
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+  items                   OrderItem[]
+  statusHistory           OrderStatusHistory[]
+  address                 Address?             @relation(fields: [addressId], references: [id])
+  store                   Store                @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  user                    User?                @relation(fields: [userId], references: [id])
+  payments                Payment[]
+  reviews                 Review[]
 
+  @@index([userId, stripeCheckoutSessionId])
+  @@index([stripePaymentIntentId])
   @@map("orders")
 }
 

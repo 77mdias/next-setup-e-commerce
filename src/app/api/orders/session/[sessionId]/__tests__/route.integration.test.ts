@@ -78,8 +78,11 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
     expect(mockDb.order.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          stripePaymentId: "cs_owner_1",
           userId: "user-owner",
+          OR: [
+            { stripeCheckoutSessionId: "cs_owner_1" },
+            { stripePaymentId: "cs_owner_1" },
+          ],
         },
       }),
     );
@@ -100,8 +103,11 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
     expect(mockDb.order.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          stripePaymentId: "cs_owner_1",
           userId: "user-attacker",
+          OR: [
+            { stripeCheckoutSessionId: "cs_owner_1" },
+            { stripePaymentId: "cs_owner_1" },
+          ],
         },
       }),
     );
@@ -130,8 +136,11 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
     expect(mockDb.order.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          stripePaymentId: "cs_owner_1",
           userId: "user-owner",
+          OR: [
+            { stripeCheckoutSessionId: "cs_owner_1" },
+            { stripePaymentId: "cs_owner_1" },
+          ],
         },
       }),
     );

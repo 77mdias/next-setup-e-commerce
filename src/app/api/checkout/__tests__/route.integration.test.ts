@@ -207,6 +207,15 @@ describe("POST /api/checkout integration", () => {
       shippingFeeCents: "1500",
       totalCents: "11500",
     });
+
+    expect(mockDb.order.update).toHaveBeenCalledWith({
+      where: { id: 123 },
+      data: {
+        stripeCheckoutSessionId: "cs_test_123",
+        stripePaymentId: "cs_test_123",
+        paymentMethod: "stripe",
+      },
+    });
   });
 
   it("returns 404 for missing product and does not create order", async () => {
@@ -281,9 +290,9 @@ describe("POST /api/checkout integration", () => {
     });
   });
 
-  it("rolls back order when persisting stripePaymentId fails", async () => {
+  it("rolls back order when persisting Stripe session identifiers fails", async () => {
     mockDb.order.update.mockRejectedValueOnce(
-      new Error("Falha ao atualizar stripePaymentId"),
+      new Error("Falha ao atualizar identificadores Stripe"),
     );
 
     const response = await POST(
@@ -312,7 +321,7 @@ describe("POST /api/checkout integration", () => {
       .mockImplementation(() => undefined);
 
     mockDb.order.update.mockRejectedValueOnce(
-      new Error("Falha ao atualizar stripePaymentId"),
+      new Error("Falha ao atualizar identificadores Stripe"),
     );
     mockDb.order.delete.mockRejectedValueOnce(
       new Error("Falha ao deletar pedido"),

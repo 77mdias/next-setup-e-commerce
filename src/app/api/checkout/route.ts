@@ -600,6 +600,7 @@ export async function POST(request: NextRequest) {
       await db.order.update({
         where: { id: order.id },
         data: {
+          stripeCheckoutSessionId: stripeSession.id,
           stripePaymentId: stripeSession.id,
           paymentMethod: "stripe",
         },

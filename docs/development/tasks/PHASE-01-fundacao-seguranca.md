@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-02-27
 **Sprint Atual:** Sprint 01
-**Status Geral:** 🟡 42% (5/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 58% (7/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias uteis)
 **Pré-requisito:** Backlog priorizado Sprint 01 (✅ definido)
 
@@ -15,9 +15,9 @@
 | -------------------------------- | ----- | --------- | ------------ | -------- | --------- |
 | Checkout server-authoritative    | 4     | 3         | 0            | 1        | 0         |
 | Autorização de pedidos           | 3     | 2         | 0            | 1        | 0         |
-| Stripe hardening e dados         | 3     | 0         | 0            | 3        | 0         |
+| Stripe hardening e dados         | 3     | 2         | 0            | 1        | 0         |
 | Testes, rollout e governança     | 2     | 0         | 0            | 2        | 0         |
-| **TOTAL**                        | **12**| **5**     | **0**        | **7**    | **0**     |
+| **TOTAL**                        | **12**| **7**     | **0**        | **5**    | **0**     |
 
 ### 🎯 Principais Indicadores
 - ✅ Escopo P0 fechado em 4 frentes críticas (checkout, orders/session, test-stripe, IDs Stripe).
@@ -217,7 +217,7 @@ Separar tecnicamente `checkoutSessionId` e `paymentIntentId` no domínio de pedi
 
 #### STR.1 - Modelo e migração de dados
 
-- [ ] **S01-STR-001** - Introduzir campos Stripe separados no modelo `Order`
+- [x] **S01-STR-001** - Introduzir campos Stripe separados no modelo `Order`
 
   **Descrição curta:**
   - Criar `stripeCheckoutSessionId` e `stripePaymentIntentId`.
@@ -231,15 +231,15 @@ Separar tecnicamente `checkoutSessionId` e `paymentIntentId` no domínio de pedi
   **Arquivos/áreas afetadas:** `prisma/schema.prisma`, `prisma/migrations/*`
 
   **Critérios de aceitação:**
-  - [ ] Schema compila e migration aplica sem perda de dados.
-  - [ ] Campos legados e novos coexistem durante transição controlada.
+  - [x] Schema compila e migration aplica sem perda de dados.
+  - [x] Campos legados e novos coexistem durante transição controlada.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 4h  
   **Dependências:** nenhuma  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída
 
-- [ ] **S01-STR-002** - Atualizar checkout e webhook para gravar IDs corretos
+- [x] **S01-STR-002** - Atualizar checkout e webhook para gravar IDs corretos
 
   **Descrição curta:**
   - `checkout` deve salvar `stripeCheckoutSessionId`.
@@ -253,13 +253,13 @@ Separar tecnicamente `checkoutSessionId` e `paymentIntentId` no domínio de pedi
   **Arquivos/áreas afetadas:** `src/app/api/checkout/route.ts`, `src/app/api/webhooks/stripe/route.ts`, `src/app/api/orders/session/[sessionId]/route.ts`
 
   **Critérios de aceitação:**
-  - [ ] Fluxo sucesso/falha localiza pedido corretamente por `session_id`.
-  - [ ] Payment intent fica registrado separadamente para conciliação.
+  - [x] Fluxo sucesso/falha localiza pedido corretamente por `session_id`.
+  - [x] Payment intent fica registrado separadamente para conciliação.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 5h  
   **Dependências:** S01-STR-001, S01-CHK-003  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída
 
 #### STR.2 - Restrição operacional de endpoint de teste
 

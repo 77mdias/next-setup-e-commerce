@@ -33,6 +33,6 @@ Pontos positivos:
 - Uniques importantes (`email`, `sku`, `wishlist user+product`, `cart user+product`).
 
 Pontos de atencao:
-- `stripePaymentId` em `Order` esta sendo usado para dois significados distintos (session id e payment intent), gerando ambiguidade no fluxo.
+- `Order` agora possui `stripeCheckoutSessionId` e `stripePaymentIntentId`, mas o campo legado `stripePaymentId` ainda coexiste temporariamente para compatibilidade durante rollout.
 - Tokens de verificacao/reset sao persistidos em texto simples.
 - Tipo de `phone` em `next-auth.d.ts` diverge do banco (`string` no banco, `number` no tipo de sessao).
