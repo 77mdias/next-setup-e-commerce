@@ -47,8 +47,18 @@ jobs:
       - name: Prisma generate
         run: npm run prisma:generate
 
+      - name: Prisma migrate status
+        run: npx prisma migrate status
+
       - name: Prisma migrate deploy
+        id: migrate_deploy
         run: npm run prisma:migrate:deploy
+
+      - name: Migration failure hint
+        if: ${{ failure() && steps.migrate_deploy.outcome == 'failure' }}
+        run: |
+          echo "::error::Prisma migrate deploy failed. If you see P3009, inspect _prisma_migrations and resolve the failed migration with 'prisma migrate resolve' before retrying."
+          exit 1
 
       - name: Trigger Vercel production deployment
         run: |

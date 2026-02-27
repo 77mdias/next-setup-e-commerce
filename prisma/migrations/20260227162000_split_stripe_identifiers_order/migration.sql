@@ -11,7 +11,7 @@ SET
   "stripeCheckoutSessionId" = COALESCE(
     "stripeCheckoutSessionId",
     CASE
-      WHEN "stripePaymentId" IS NOT NULL AND "stripePaymentId" NOT LIKE 'pi\_%' ESCAPE '\\'
+      WHEN "stripePaymentId" IS NOT NULL AND LEFT("stripePaymentId", 3) <> 'pi_'
         THEN "stripePaymentId"
       ELSE NULL
     END
@@ -19,7 +19,7 @@ SET
   "stripePaymentIntentId" = COALESCE(
     "stripePaymentIntentId",
     CASE
-      WHEN "stripePaymentId" LIKE 'pi\_%' ESCAPE '\\'
+      WHEN LEFT("stripePaymentId", 3) = 'pi_'
         THEN "stripePaymentId"
       ELSE NULL
     END
