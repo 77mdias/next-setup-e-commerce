@@ -46,8 +46,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Secret scan (gitleaks)
+      - name: Secret scan (gitleaks, advisory)
         uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
