@@ -93,7 +93,15 @@ export async function GET(request: NextRequest) {
         id: true,
         productId: true,
         createdAt: true,
-        product: true,
+        product: {
+          include: {
+            category: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     });

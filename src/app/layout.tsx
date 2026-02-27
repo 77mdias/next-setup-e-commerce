@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { Toaster } from "sonner";
 
 import AppChrome from "@/components/layout/app-chrome";
+import { CartProvider } from "@/context/cart";
 import SessionProvider from "@/components/providers/SessionProvider";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 
@@ -28,7 +29,9 @@ export default function RootLayout({
       <body className="antialiased" style={fontVariablesStyle}>
         <ThemeProvider>
           <SessionProvider>
-            <AppChrome>{children}</AppChrome>
+            <CartProvider>
+              <AppChrome>{children}</AppChrome>
+            </CartProvider>
           </SessionProvider>
         </ThemeProvider>
         <Toaster />

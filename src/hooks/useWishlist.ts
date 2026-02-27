@@ -1,10 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
 import { Product } from "@prisma/client";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+
+import { useAuth } from "@/hooks/useAuth";
 import { buildAccessFeedbackPath } from "@/lib/access-feedback";
+
+type WishlistToggleAction = "added" | "removed";
+
+type WishlistToggleResponse = {
+  action?: WishlistToggleAction;
+};
+
+type WishlistCollectionResponse = {
+  wishlist?: Array<{
+    productId?: string;
+  }>;
+};
 
 function resolveCallbackPath(redirectPath?: string) {
   if (redirectPath && redirectPath.trim().length > 0) {
@@ -27,58 +40,38 @@ export const useWishlist = (redirectPath?: string) => {
   const [loadingWishlist, setLoadingWishlist] = useState<string | null>(null);
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
 
-  // Carregar wishlist inicial do usuário
-  useEffect(() => {
-    const loadWishlist = async () => {
-      // Se o usuário não estiver autenticado, limpa a wishlist e não carrega
-      if (!isAuthenticated) {
-        setWishlistItems(new Set());
+  const loadWishlist = useCallback(async () => {
+    if (!isAuthenticated) {
+      setWishlistItems(new Set());
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/wishlist");
+      if (!response.ok) {
         return;
       }
 
-      try {
-        // Carregar wishlist do usuário
-        const response = await fetch("/api/wishlist");
-        if (response.ok) {
-          const data = await response.json();
-          // Atualizar o estado visual com os IDs dos produtos na wishlist
-          const productIds = new Set<string>(
-            data.wishlist.map((item: any) => item.productId as string),
-          );
-          setWishlistItems(productIds);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar wishlist:", error);
-      }
-    };
-
-    // Carregar wishlist do usuário
-    loadWishlist();
-  }, [isAuthenticated]);
-
-  // Recarregar wishlist quando a autenticação mudar
-  useEffect(() => {
-    if (isAuthenticated) {
-      const loadWishlist = async () => {
-        try {
-          const response = await fetch("/api/wishlist");
-          if (response.ok) {
-            const data = await response.json();
-            const productIds = new Set<string>(
-              data.wishlist.map((item: any) => item.productId as string),
-            );
-            setWishlistItems(productIds);
-          }
-        } catch (error) {
-          console.error("Erro ao recarregar wishlist:", error);
-        }
-      };
-      loadWishlist();
+      const data = (await response.json()) as WishlistCollectionResponse;
+      const productIds = new Set<string>(
+        (data.wishlist ?? [])
+          .map((item) => item.productId)
+          .filter((productId): productId is string => Boolean(productId)),
+      );
+      setWishlistItems(productIds);
+    } catch (error) {
+      console.error("Erro ao carregar wishlist:", error);
     }
   }, [isAuthenticated]);
 
+  useEffect(() => {
+    void loadWishlist();
+  }, [loadWishlist]);
+
   // Adicionar/remover produto da wishlist
-  const handleAddToWishlist = async (product: Product) => {
+  const handleAddToWishlist = async (
+    product: Product,
+  ): Promise<WishlistToggleAction | null> => {
     if (!isAuthenticated) {
       const callbackPath = resolveCallbackPath(redirectPath);
       router.push(
@@ -88,7 +81,7 @@ export const useWishlist = (redirectPath?: string) => {
           fromPath: callbackPath,
         }),
       );
-      return;
+      return null;
     }
 
     setLoadingWishlist(product.id);
@@ -107,10 +100,14 @@ export const useWishlist = (redirectPath?: string) => {
         throw new Error("Erro ao adicionar à wishlist");
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as WishlistToggleResponse;
+      const action = data.action;
+      if (!action) {
+        throw new Error("Resposta inválida ao gerenciar wishlist");
+      }
 
       // Atualizar o estado visual
-      if (data.action === "added") {
+      if (action === "added") {
         // Adicionar o produto à wishlist
         setWishlistItems((prev) => new Set([...prev, product.id]));
       } else {
@@ -121,9 +118,12 @@ export const useWishlist = (redirectPath?: string) => {
           return newSet;
         });
       }
+
+      return action;
     } catch (error) {
       console.error("Erro ao gerenciar wishlist:", error);
       alert("Erro ao gerenciar lista de favoritos");
+      return null;
     } finally {
       setLoadingWishlist(null);
     }

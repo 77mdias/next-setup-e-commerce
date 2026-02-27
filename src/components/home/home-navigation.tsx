@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 import type { NavigationLink } from "@/components/home/types";
+import { useCart } from "@/context/cart";
 import { cn } from "@/lib/utils";
 
 type HomeNavigationProps = {
@@ -32,6 +33,7 @@ export function HomeNavigation({
   const resolvedHomeHref =
     homeHref ?? links.find((link) => link.isActive)?.href ?? "/";
   const { theme, setTheme } = useTheme();
+  const { totalQuantity } = useCart();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -99,9 +101,11 @@ export function HomeNavigation({
             aria-label="Open cart"
           >
             <ShoppingCart size={18} />
-            <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#5c7cfa] [font-family:var(--font-arimo)] text-[10px] text-[#0b0d10]">
-              3
-            </span>
+            {totalQuantity > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#5c7cfa] px-1 [font-family:var(--font-arimo)] text-[10px] text-[#0b0d10]">
+                {totalQuantity > 99 ? "99+" : totalQuantity}
+              </span>
+            )}
           </Link>
 
           <Link
