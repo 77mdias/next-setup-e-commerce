@@ -27,3 +27,9 @@ Fonte principal de verdade:
 2. Cole no agente.
 3. Informe somente o ID, por exemplo: `S01-ORD-001`.
 4. O agente faz discovery e executa ponta a ponta.
+
+## Protocolo de fechamento (todos os niveis)
+
+- salvar a feature nova implementada (commit local objetivo com TASK_ID, quando houver alteracoes)
+- dar check na task no arquivo PHASE correspondente (item, criterios e status)
+- montar log tecnico em `docs/ROADMAP/Logs/<TASK_ID>.md` quando houver necessidade de registro tecnico adicional

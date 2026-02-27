@@ -16,10 +16,16 @@ Modo de trabalho obrigatorio:
 6. validar com:
    - npm run lint
    - npm run build
-7. reportar resultado final com:
+7. finalizar entrega operacional:
+   - salvar a feature nova implementada (commit local objetivo com TASK_ID, quando houver alteracoes)
+   - dar check na task no PHASE correspondente (item da task, criterios de aceite e status)
+   - se necessario, montar log tecnico em docs/ROADMAP/Logs/<TASK_ID>.md
+8. reportar resultado final com:
    - criterios de aceite atendidos (checklist)
    - arquivos alterados
    - resumo objetivo da implementacao
+   - status de check da task no PHASE
+   - referencia de log tecnico criado (se houver)
    - pendencias/riscos residuais (se houver)
 
 Regras:

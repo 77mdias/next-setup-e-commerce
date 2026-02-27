@@ -18,10 +18,16 @@ Modo de trabalho obrigatorio:
    - npm run lint
    - npm run build
    - testes adicionais pertinentes identificados durante o discovery
-8. reportar resultado final com:
+8. finalizar entrega operacional:
+   - salvar a feature nova implementada (commit local objetivo com TASK_ID, quando houver alteracoes)
+   - dar check na task no PHASE correspondente (item da task, criterios de aceite e status)
+   - se necessario, montar log tecnico em docs/ROADMAP/Logs/<TASK_ID>.md
+9. reportar resultado final com:
    - criterios de aceite atendidos (checklist)
    - arquivos alterados
    - resumo tecnico por etapa
+   - status de check da task no PHASE
+   - referencia de log tecnico criado (se houver)
    - riscos residuais e proximos passos
 
 Regras:
