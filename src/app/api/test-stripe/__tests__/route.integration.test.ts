@@ -17,6 +17,8 @@ vi.mock("@/lib/stripe-config", () => ({
 
 import { GET } from "@/app/api/test-stripe/route";
 
+const mutableEnv = process.env as Record<string, string | undefined>;
+
 function createRequest(headers?: Record<string, string>) {
   return new NextRequest("http://localhost:3000/api/test-stripe", {
     method: "GET",
@@ -42,7 +44,7 @@ describe("GET /api/test-stripe integration", () => {
 
   it("blocks endpoint in production and does not create Stripe session", async () => {
     const previousNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "production";
+    mutableEnv.NODE_ENV = "production";
 
     try {
       const response = await GET(createRequest());
@@ -52,13 +54,13 @@ describe("GET /api/test-stripe integration", () => {
       expect(body.error).toBe("Not found");
       expect(mockCreateCheckoutSession).not.toHaveBeenCalled();
     } finally {
-      process.env.NODE_ENV = previousNodeEnv;
+      mutableEnv.NODE_ENV = previousNodeEnv;
     }
   });
 
   it("keeps diagnostic flow working in development", async () => {
     const previousNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    mutableEnv.NODE_ENV = "development";
 
     try {
       const response = await GET(createRequest());
@@ -69,26 +71,26 @@ describe("GET /api/test-stripe integration", () => {
       expect(body.testSession.id).toBe("cs_test_123");
       expect(mockCreateCheckoutSession).toHaveBeenCalledTimes(1);
     } finally {
-      process.env.NODE_ENV = previousNodeEnv;
+      mutableEnv.NODE_ENV = previousNodeEnv;
     }
   });
 
   it("blocks outside development when endpoint is not explicitly enabled", async () => {
     const previousNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "test";
+    mutableEnv.NODE_ENV = "test";
 
     try {
       const response = await GET(createRequest());
       expect(response.status).toBe(404);
       expect(mockCreateCheckoutSession).not.toHaveBeenCalled();
     } finally {
-      process.env.NODE_ENV = previousNodeEnv;
+      mutableEnv.NODE_ENV = previousNodeEnv;
     }
   });
 
   it("requires internal debug key and allowed ip outside development", async () => {
     const previousNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "test";
+    mutableEnv.NODE_ENV = "test";
     process.env.ENABLE_TEST_STRIPE_ENDPOINT = "true";
     process.env.INTERNAL_DEBUG_KEY = "debug-key-123";
     process.env.TEST_STRIPE_ALLOWED_IPS = "10.0.0.1,10.0.0.2";
@@ -122,7 +124,7 @@ describe("GET /api/test-stripe integration", () => {
       expect(allowedResponse.status).toBe(200);
       expect(mockCreateCheckoutSession).toHaveBeenCalledTimes(1);
     } finally {
-      process.env.NODE_ENV = previousNodeEnv;
+      mutableEnv.NODE_ENV = previousNodeEnv;
       delete process.env.ENABLE_TEST_STRIPE_ENDPOINT;
       delete process.env.INTERNAL_DEBUG_KEY;
       delete process.env.TEST_STRIPE_ALLOWED_IPS;

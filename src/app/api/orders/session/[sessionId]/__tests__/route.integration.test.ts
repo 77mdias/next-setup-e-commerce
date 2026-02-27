@@ -24,6 +24,8 @@ vi.mock("@/lib/prisma", () => ({
 
 import { GET } from "@/app/api/orders/session/[sessionId]/route";
 
+const mutableEnv = process.env as Record<string, string | undefined>;
+
 function createRequest(sessionId: string) {
   return {
     request: new NextRequest(
@@ -150,7 +152,7 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
     const previousNodeEnv = process.env.NODE_ENV;
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    process.env.NODE_ENV = "production";
+    mutableEnv.NODE_ENV = "production";
     mockGetServerSession.mockResolvedValue({
       user: { id: "user-owner" },
     });
@@ -171,7 +173,7 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
       expect(serializedLogCalls).not.toContain("cs_owner_1");
       expect(serializedLogCalls).not.toContain("user-owner");
     } finally {
-      process.env.NODE_ENV = previousNodeEnv;
+      mutableEnv.NODE_ENV = previousNodeEnv;
       errorSpy.mockRestore();
     }
   });
