@@ -49,7 +49,7 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
     const body = await response.json();
 
     expect(response.status).toBe(401);
-    expect(body.error).toBe("Usuário não autenticado");
+    expect(body.error).toBe("Não autorizado");
     expect(mockDb.order.findFirst).not.toHaveBeenCalled();
   });
 
@@ -105,5 +105,65 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
         },
       }),
     );
+  });
+
+  it("normalizes sessionId before querying order ownership", async () => {
+    mockGetServerSession.mockResolvedValue({
+      user: { id: "user-owner" },
+    });
+    mockDb.order.findFirst.mockResolvedValue({
+      id: 999,
+      userId: "user-owner",
+      stripePaymentId: "cs_owner_1",
+      status: "PENDING",
+      paymentStatus: "PENDING",
+      items: [],
+      store: { id: "store-1", name: "NeXT Store", slug: "nextstore" },
+      address: null,
+      payments: [],
+    });
+
+    const { request, params } = createRequest("  cs_owner_1  ");
+    const response = await GET(request, { params });
+
+    expect(response.status).toBe(200);
+    expect(mockDb.order.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          stripePaymentId: "cs_owner_1",
+          userId: "user-owner",
+        },
+      }),
+    );
+  });
+
+  it("returns 500 with sanitized logs in production", async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    process.env.NODE_ENV = "production";
+    mockGetServerSession.mockResolvedValue({
+      user: { id: "user-owner" },
+    });
+    mockDb.order.findFirst.mockRejectedValue(
+      new Error("Falha ao consultar cs_owner_1 para user-owner"),
+    );
+
+    try {
+      const { request, params } = createRequest("cs_owner_1");
+      const response = await GET(request, { params });
+      const body = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(body.error).toBe("Erro interno do servidor");
+      expect(errorSpy).toHaveBeenCalledWith("Erro ao buscar pedido por sessão");
+
+      const serializedLogCalls = JSON.stringify(errorSpy.mock.calls);
+      expect(serializedLogCalls).not.toContain("cs_owner_1");
+      expect(serializedLogCalls).not.toContain("user-owner");
+    } finally {
+      process.env.NODE_ENV = previousNodeEnv;
+      errorSpy.mockRestore();
+    }
   });
 });

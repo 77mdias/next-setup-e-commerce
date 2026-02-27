@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 01: Fundacao de Seguranca
 
 **Status:** 🟢 ATIVA
-**Última atualização:** 2026-02-25
+**Última atualização:** 2026-02-27
 **Sprint Atual:** Sprint 01
-**Status Geral:** 🔴 0% (0/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 42% (5/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias uteis)
 **Pré-requisito:** Backlog priorizado Sprint 01 (✅ definido)
 
@@ -13,11 +13,11 @@
 
 | Categoria                        | Total | Concluído | Em Andamento | Pendente | Bloqueado |
 | -------------------------------- | ----- | --------- | ------------ | -------- | --------- |
-| Checkout server-authoritative    | 4     | 0         | 0            | 4        | 0         |
-| Autorização de pedidos           | 3     | 0         | 0            | 3        | 0         |
+| Checkout server-authoritative    | 4     | 3         | 0            | 1        | 0         |
+| Autorização de pedidos           | 3     | 2         | 0            | 1        | 0         |
 | Stripe hardening e dados         | 3     | 0         | 0            | 3        | 0         |
 | Testes, rollout e governança     | 2     | 0         | 0            | 2        | 0         |
-| **TOTAL**                        | **12**| **0**     | **0**        | **12**   | **0**     |
+| **TOTAL**                        | **12**| **5**     | **0**        | **7**    | **0**     |
 
 ### 🎯 Principais Indicadores
 - ✅ Escopo P0 fechado em 4 frentes críticas (checkout, orders/session, test-stripe, IDs Stripe).
@@ -144,7 +144,7 @@ Garantir que o endpoint `/api/orders/session/[sessionId]` não vaze dados para u
 
 #### ORD.1 - Auth obrigatória e ownership
 
-- [ ] **S01-ORD-001** - Exigir autenticação obrigatória em `/api/orders/session/[sessionId]`
+- [x] **S01-ORD-001** - Exigir autenticação obrigatória em `/api/orders/session/[sessionId]`
 
   **Descrição curta:**
   - Hoje o endpoint permite busca sem sessão ativa por ausência de filtro obrigatório de usuário.
@@ -158,15 +158,15 @@ Garantir que o endpoint `/api/orders/session/[sessionId]` não vaze dados para u
   **Arquivos/áreas afetadas:** `src/app/api/orders/session/[sessionId]/route.ts`
 
   **Critérios de aceitação:**
-  - [ ] Requisição sem login sempre retorna 401.
-  - [ ] Não há resposta com dados de pedido para anônimos.
+  - [x] Requisição sem login sempre retorna 401.
+  - [x] Não há resposta com dados de pedido para anônimos.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 2h  
   **Dependências:** nenhuma  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída
 
-- [ ] **S01-ORD-002** - Endurecer consulta e resposta para evitar enumeração
+- [x] **S01-ORD-002** - Endurecer consulta e resposta para evitar enumeração
 
   **Descrição curta:**
   - Garantir que busca use filtro estrito por `sessionId + userId`.
@@ -180,13 +180,13 @@ Garantir que o endpoint `/api/orders/session/[sessionId]` não vaze dados para u
   **Arquivos/áreas afetadas:** `src/app/api/orders/session/[sessionId]/route.ts`
 
   **Critérios de aceitação:**
-  - [ ] Usuário autenticado não acessa pedido de outro usuário.
-  - [ ] Logs de produção não expõem IDs sensíveis desnecessários.
+  - [x] Usuário autenticado não acessa pedido de outro usuário.
+  - [x] Logs de produção não expõem IDs sensíveis desnecessários.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 3h  
   **Dependências:** S01-ORD-001, S01-STR-002  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída
 
 - [ ] **S01-ORD-003** - Ajustar páginas de sucesso/falha para estados 401/403/404
 
@@ -364,5 +364,5 @@ Estabelecer validação mínima para liberar Sprint 01 sem regressões críticas
 - [ ] Validações `lint` e `build` executadas com sucesso.
 - [ ] Fluxo completo de pagamento (sucesso/falha) validado em homologação.
 - [ ] Endpoint `/api/test-stripe` bloqueado em produção.
-- [ ] Endpoint `/api/orders/session/[sessionId]` exige autenticação e ownership.
+- [x] Endpoint `/api/orders/session/[sessionId]` exige autenticação e ownership.
 - [ ] Evidências e changelog técnico registrados na pasta `docs/development`.

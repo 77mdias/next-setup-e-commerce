@@ -3,22 +3,37 @@ import { db } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+function logOrderSessionLookupFailure(error: unknown) {
+  if (process.env.NODE_ENV === "production") {
+    console.error("Erro ao buscar pedido por sessão");
+    return;
+  }
+
+  if (error instanceof Error) {
+    console.error("Erro ao buscar pedido por sessão:", {
+      name: error.name,
+      message: error.message,
+    });
+    return;
+  }
+
+  console.error("Erro ao buscar pedido por sessão:", error);
+}
+
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
     const { sessionId } = await params;
+    const normalizedSessionId = sessionId.trim();
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Usuário não autenticado" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    if (!sessionId) {
+    if (!normalizedSessionId) {
       return NextResponse.json(
         { error: "ID da sessão é obrigatório" },
         { status: 400 },
@@ -27,7 +42,7 @@ export async function GET(
 
     const order = await db.order.findFirst({
       where: {
-        stripePaymentId: sessionId,
+        stripePaymentId: normalizedSessionId,
         userId: session.user.id,
       },
       include: {
@@ -63,7 +78,7 @@ export async function GET(
         },
         payments: {
           where: {
-            stripePaymentId: sessionId,
+            stripePaymentId: normalizedSessionId,
           },
           select: {
             id: true,
@@ -84,7 +99,7 @@ export async function GET(
 
     return NextResponse.json(order);
   } catch (error) {
-    console.error("Erro ao buscar pedido por sessão:", error);
+    logOrderSessionLookupFailure(error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 },
