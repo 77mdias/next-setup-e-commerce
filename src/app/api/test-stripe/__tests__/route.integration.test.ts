@@ -27,7 +27,9 @@ function createRequest(headers?: Record<string, string>) {
 describe("GET /api/test-stripe integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.ENABLE_TEST_STRIPE_ENDPOINT;
     delete process.env.INTERNAL_DEBUG_KEY;
+    delete process.env.TEST_STRIPE_ALLOWED_IPS;
     process.env.STRIPE_SECRET_KEY = "sk_test_123";
     process.env.NEXT_PUBLIC_BASE_URL = "http://localhost:3000";
 
@@ -71,25 +73,59 @@ describe("GET /api/test-stripe integration", () => {
     }
   });
 
-  it("requires internal debug key outside development", async () => {
+  it("blocks outside development when endpoint is not explicitly enabled", async () => {
     const previousNodeEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "test";
-    process.env.INTERNAL_DEBUG_KEY = "debug-key-123";
 
     try {
-      const blockedResponse = await GET(createRequest());
-      expect(blockedResponse.status).toBe(404);
+      const response = await GET(createRequest());
+      expect(response.status).toBe(404);
+      expect(mockCreateCheckoutSession).not.toHaveBeenCalled();
+    } finally {
+      process.env.NODE_ENV = previousNodeEnv;
+    }
+  });
+
+  it("requires internal debug key and allowed ip outside development", async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "test";
+    process.env.ENABLE_TEST_STRIPE_ENDPOINT = "true";
+    process.env.INTERNAL_DEBUG_KEY = "debug-key-123";
+    process.env.TEST_STRIPE_ALLOWED_IPS = "10.0.0.1,10.0.0.2";
+
+    try {
+      const invalidKeyResponse = await GET(
+        createRequest({
+          "x-internal-debug-key": "wrong-key",
+          "x-forwarded-for": "10.0.0.1",
+        }),
+      );
+      expect(invalidKeyResponse.status).toBe(404);
+      expect(mockCreateCheckoutSession).not.toHaveBeenCalled();
+
+      const invalidIpResponse = await GET(
+        createRequest({
+          "x-internal-debug-key": "debug-key-123",
+          "x-forwarded-for": "192.168.1.50",
+        }),
+      );
+      expect(invalidIpResponse.status).toBe(404);
       expect(mockCreateCheckoutSession).not.toHaveBeenCalled();
 
       const allowedResponse = await GET(
-        createRequest({ "x-internal-debug-key": "debug-key-123" }),
+        createRequest({
+          "x-internal-debug-key": "debug-key-123",
+          "x-forwarded-for": "10.0.0.2",
+        }),
       );
 
       expect(allowedResponse.status).toBe(200);
       expect(mockCreateCheckoutSession).toHaveBeenCalledTimes(1);
     } finally {
       process.env.NODE_ENV = previousNodeEnv;
+      delete process.env.ENABLE_TEST_STRIPE_ENDPOINT;
       delete process.env.INTERNAL_DEBUG_KEY;
+      delete process.env.TEST_STRIPE_ALLOWED_IPS;
     }
   });
 });

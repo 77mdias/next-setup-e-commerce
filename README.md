@@ -330,7 +330,11 @@ GET /api/test-stripe
 Restrições operacionais do endpoint:
 
 - `NODE_ENV=production`: sempre bloqueado com `404`.
-- Ambientes fora de `development` (ex.: staging): exige header `X-Internal-Debug-Key` igual a `INTERNAL_DEBUG_KEY`.
+- Ambientes fora de `development` (ex.: staging) ficam bloqueados por padrão.
+- Para habilitar temporariamente fora de dev, é obrigatório configurar:
+  - `ENABLE_TEST_STRIPE_ENDPOINT=true`
+  - `INTERNAL_DEBUG_KEY` e enviar `X-Internal-Debug-Key` com o mesmo valor
+  - `TEST_STRIPE_ALLOWED_IPS` com IPs permitidos (separados por vírgula) e enviar origem via `X-Forwarded-For`
 - Nunca use esse endpoint como parte do fluxo normal de checkout.
 
 ### **Teste de Checkout**

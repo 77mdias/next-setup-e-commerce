@@ -1,20 +1,65 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe-config";
 
+function extractClientIp(request: NextRequest) {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+
+  if (forwardedFor) {
+    const [firstIp] = forwardedFor.split(",");
+    return firstIp?.trim() || null;
+  }
+
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) {
+    return realIp.trim();
+  }
+
+  const cfIp = request.headers.get("cf-connecting-ip");
+  if (cfIp) {
+    return cfIp.trim();
+  }
+
+  return null;
+}
+
+function parseAllowedIps(rawValue: string | undefined) {
+  if (!rawValue) {
+    return new Set<string>();
+  }
+
+  return new Set(
+    rawValue
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean),
+  );
+}
+
 export async function GET(request: NextRequest) {
   const nodeEnv = process.env.NODE_ENV;
+  const enableTestStripeEndpoint = process.env.ENABLE_TEST_STRIPE_ENDPOINT;
   const internalDebugKey = process.env.INTERNAL_DEBUG_KEY;
+  const allowedIps = parseAllowedIps(process.env.TEST_STRIPE_ALLOWED_IPS);
 
   if (nodeEnv === "production") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   if (nodeEnv !== "development") {
+    if (enableTestStripeEndpoint !== "true") {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     const providedDebugKey = request.headers.get("x-internal-debug-key");
     const isAuthorizedDebugAccess =
       !!internalDebugKey && providedDebugKey === internalDebugKey;
 
     if (!isAuthorizedDebugAccess) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const clientIp = extractClientIp(request);
+    if (!clientIp || !allowedIps.has(clientIp)) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
   }
