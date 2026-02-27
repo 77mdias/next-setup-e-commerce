@@ -40,6 +40,10 @@ jobs:
             echo "Missing required secret: PRODUCTION_DATABASE_URL"
             exit 1
           fi
+          if [ -z "$DIRECT_URL" ]; then
+            echo "Missing required secret: PRODUCTION_DIRECT_URL (or fallback DATABASE_URL)"
+            exit 1
+          fi
 
       - name: Install dependencies
         run: npm ci
@@ -50,9 +54,29 @@ jobs:
       - name: Prisma migrate status
         run: npx prisma migrate status
 
-      - name: Prisma migrate deploy
+      - name: Check DB network reachability
+        run: |
+          DB_HOST="$(echo "$DIRECT_URL" | sed -E 's#^[^@]+@([^/:?]+).*$#\1#')"
+          echo "Testing TCP reachability to $DB_HOST:5432"
+          timeout 10 bash -c "cat < /dev/null > /dev/tcp/$DB_HOST/5432"
+
+      - name: Prisma migrate deploy (retry up to 3x)
         id: migrate_deploy
-        run: npm run prisma:migrate:deploy
+        run: |
+          for attempt in 1 2 3; do
+            echo "Running prisma migrate deploy (attempt ${attempt}/3)"
+            if npm run prisma:migrate:deploy; then
+              exit 0
+            fi
+
+            if [ "$attempt" -lt 3 ]; then
+              echo "Migration attempt failed. Waiting before retry..."
+              sleep 20
+            fi
+          done
+
+          echo "::error::Prisma migrate deploy failed after 3 attempts."
+          exit 1
 
       - name: Migration failure hint
         if: ${{ failure() && steps.migrate_deploy.outcome == 'failure' }}
