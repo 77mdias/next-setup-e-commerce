@@ -2,12 +2,29 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe-config";
 
 export async function GET(request: NextRequest) {
+  const nodeEnv = process.env.NODE_ENV;
+  const internalDebugKey = process.env.INTERNAL_DEBUG_KEY;
+
+  if (nodeEnv === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  if (nodeEnv !== "development") {
+    const providedDebugKey = request.headers.get("x-internal-debug-key");
+    const isAuthorizedDebugAccess =
+      !!internalDebugKey && providedDebugKey === internalDebugKey;
+
+    if (!isAuthorizedDebugAccess) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+  }
+
   try {
     // Verificar configurações
     const config = {
       STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
       NEXT_PUBLIC_BASE_URL: !!process.env.NEXT_PUBLIC_BASE_URL,
-      NODE_ENV: process.env.NODE_ENV,
+      NODE_ENV: nodeEnv,
     };
 
     console.log("🔧 Configurações do Stripe:", config);
@@ -67,12 +84,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: "Erro ao testar configuração do Stripe",
-        details: error instanceof Error ? error.message : "Erro desconhecido",
-        config: {
-          STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
-          NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
-          NODE_ENV: process.env.NODE_ENV,
-        },
       },
       { status: 500 },
     );

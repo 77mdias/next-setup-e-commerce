@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-02-27
 **Sprint Atual:** Sprint 01
-**Status Geral:** 🟡 58% (7/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 67% (8/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias uteis)
 **Pré-requisito:** Backlog priorizado Sprint 01 (✅ definido)
 
@@ -15,9 +15,9 @@
 | -------------------------------- | ----- | --------- | ------------ | -------- | --------- |
 | Checkout server-authoritative    | 4     | 3         | 0            | 1        | 0         |
 | Autorização de pedidos           | 3     | 2         | 0            | 1        | 0         |
-| Stripe hardening e dados         | 3     | 2         | 0            | 1        | 0         |
+| Stripe hardening e dados         | 3     | 3         | 0            | 0        | 0         |
 | Testes, rollout e governança     | 2     | 0         | 0            | 2        | 0         |
-| **TOTAL**                        | **12**| **7**     | **0**        | **5**    | **0**     |
+| **TOTAL**                        | **12**| **8**     | **0**        | **4**    | **0**     |
 
 ### 🎯 Principais Indicadores
 - ✅ Escopo P0 fechado em 4 frentes críticas (checkout, orders/session, test-stripe, IDs Stripe).
@@ -263,7 +263,7 @@ Separar tecnicamente `checkoutSessionId` e `paymentIntentId` no domínio de pedi
 
 #### STR.2 - Restrição operacional de endpoint de teste
 
-- [ ] **S01-STR-003** - Desativar/restringir `/api/test-stripe` fora de desenvolvimento
+- [x] **S01-STR-003** - Desativar/restringir `/api/test-stripe` fora de desenvolvimento
 
   **Descrição curta:**
   - Endpoint de teste não deve ficar disponível publicamente em produção.
@@ -277,13 +277,13 @@ Separar tecnicamente `checkoutSessionId` e `paymentIntentId` no domínio de pedi
   **Arquivos/áreas afetadas:** `src/app/api/test-stripe/route.ts`, `README.md` (seção de operações)
 
   **Critérios de aceitação:**
-  - [ ] Em produção, endpoint retorna bloqueio e não cria sessão Stripe.
-  - [ ] Em dev, fluxo de diagnóstico permanece funcional.
+  - [x] Em produção, endpoint retorna bloqueio e não cria sessão Stripe.
+  - [x] Em dev, fluxo de diagnóstico permanece funcional.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 2h  
   **Dependências:** nenhuma  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída
 
 ### 📦 Testes, rollout e governança - Garantia de entrega
 
@@ -363,6 +363,6 @@ Estabelecer validação mínima para liberar Sprint 01 sem regressões críticas
 - [ ] Migration Prisma aplicada e versionada.
 - [ ] Validações `lint` e `build` executadas com sucesso.
 - [ ] Fluxo completo de pagamento (sucesso/falha) validado em homologação.
-- [ ] Endpoint `/api/test-stripe` bloqueado em produção.
+- [x] Endpoint `/api/test-stripe` bloqueado em produção.
 - [x] Endpoint `/api/orders/session/[sessionId]` exige autenticação e ownership.
 - [ ] Evidências e changelog técnico registrados na pasta `docs/development`.

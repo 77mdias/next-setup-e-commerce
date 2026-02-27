@@ -324,8 +324,14 @@ Número: 4000 0000 0000 9995 (saldo insuficiente)
 
 ```bash
 GET /api/test-stripe
-# Testa configuração do Stripe e cria sessão de teste
+# Em desenvolvimento local: testa configuração do Stripe e cria sessão de teste
 ```
+
+Restrições operacionais do endpoint:
+
+- `NODE_ENV=production`: sempre bloqueado com `404`.
+- Ambientes fora de `development` (ex.: staging): exige header `X-Internal-Debug-Key` igual a `INTERNAL_DEBUG_KEY`.
+- Nunca use esse endpoint como parte do fluxo normal de checkout.
 
 ### **Teste de Checkout**
 
