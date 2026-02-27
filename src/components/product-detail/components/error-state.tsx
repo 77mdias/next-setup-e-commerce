@@ -13,17 +13,17 @@ export function ErrorState({
   error,
 }: ErrorStateProps) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--all-black)]">
+    <div className="flex min-h-screen items-center justify-center bg-[#f6f8ff] dark:bg-[#0b0d10]">
       <div className="text-center">
         <div className="mb-4 text-6xl">❌</div>
-        <h1 className="mb-2 text-2xl font-bold text-white">
+        <h1 className="mb-2 text-2xl font-bold text-[#0f172a] dark:text-white">
           Produto não encontrado
         </h1>
-        <p className="mb-6 text-gray-400">
+        <p className="mb-6 text-[#64748b] dark:text-gray-400">
           {error || "O produto solicitado não existe"}
         </p>
         <Link href={categoriesPath}>
-          <Button className="bg-[var(--button-primary)] hover:bg-[var(--text-price-secondary)]">
+          <Button className="bg-[#ff2e63] text-white hover:bg-[#ff4c7a] dark:text-[#0b0d10]">
             Voltar aos produtos
           </Button>
         </Link>

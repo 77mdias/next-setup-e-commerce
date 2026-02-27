@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Minus, Plus } from "lucide-react";
 
 interface QuantitySelectorProps {
   quantity: number;
@@ -24,31 +24,28 @@ export function QuantitySelector({
   };
 
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium text-gray-300">Quantidade:</label>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleDecrease}
-          disabled={quantity <= 1}
-          className="h-10 w-10 p-0 text-[var(--text-primary)]"
-        >
-          -
-        </Button>
-        <span className="w-16 text-center text-lg font-medium text-white">
-          {quantity}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleIncrease}
-          disabled={quantity >= 99}
-          className="h-10 w-10 p-0 text-[var(--text-primary)]"
-        >
-          +
-        </Button>
-      </div>
+    <div className="inline-flex w-fit items-center rounded-2xl border border-[#dbe4ff] bg-white p-1 dark:border-white/10 dark:bg-[#12151a]">
+      <button
+        type="button"
+        onClick={handleDecrease}
+        disabled={quantity <= 1}
+        className="flex h-11 w-11 items-center justify-center rounded-xl text-[#64748b] transition-colors hover:bg-[#edf2ff] hover:text-[#0f172a] disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#99a1af] dark:hover:bg-white/5 dark:hover:text-white"
+      >
+        <Minus className="h-4 w-4" />
+      </button>
+
+      <span className="w-14 text-center text-lg font-semibold text-[#0f172a] dark:text-white">
+        {quantity}
+      </span>
+
+      <button
+        type="button"
+        onClick={handleIncrease}
+        disabled={quantity >= 99}
+        className="flex h-11 w-11 items-center justify-center rounded-xl text-[#64748b] transition-colors hover:bg-[#edf2ff] hover:text-[#0f172a] disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#99a1af] dark:hover:bg-white/5 dark:hover:text-white"
+      >
+        <Plus className="h-4 w-4" />
+      </button>
     </div>
   );
 }
