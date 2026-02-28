@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-02-28
 **Sprint Atual:** Sprint 01
-**Status Geral:** 🟡 92% (11/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟢 100% (12/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias uteis)
 **Pré-requisito:** Backlog priorizado Sprint 01 (✅ definido)
 
@@ -13,17 +13,17 @@
 
 | Categoria                     | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ----------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Checkout server-authoritative | 4      | 3         | 0            | 1        | 0         |
+| Checkout server-authoritative | 4      | 4         | 0            | 0        | 0         |
 | Autorização de pedidos        | 3      | 3         | 0            | 0        | 0         |
 | Stripe hardening e dados      | 3      | 3         | 0            | 0        | 0         |
 | Testes, rollout e governança  | 2      | 2         | 0            | 0        | 0         |
-| **TOTAL**                     | **12** | **11**    | **0**        | **1**    | **0**     |
+| **TOTAL**                     | **12** | **12**    | **0**        | **0**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Escopo P0 fechado em 4 frentes críticas (checkout, orders/session, test-stripe, IDs Stripe).
 - ✅ Sequência de execução definida por dependência técnica.
-- ⚠️ Risco principal: task crítica `S01-CHK-002` ainda pendente para concluir recalculo canônico de preço no backend.
+- ✅ Hardening crítico de checkout concluído com recálculo canônico e bloqueio de produtos inválidos/inativos/fora da loja.
 
 ---
 
@@ -71,7 +71,7 @@ Remover a confiança em valores vindos do cliente no endpoint de checkout. O ser
   **Dependências:** nenhuma  
   **Status:** ✅ Concluída
 
-- [ ] **S01-CHK-002** - Recalcular preços no servidor com dados canônicos
+- [x] **S01-CHK-002** - Recalcular preços no servidor com dados canônicos
 
   **Descrição curta:**
   - Buscar produtos/variações no banco por ID e recalcular `unitPrice`, `subtotal`, `shippingFee` e `total`.
@@ -82,16 +82,16 @@ Remover a confiança em valores vindos do cliente no endpoint de checkout. O ser
   - Validar existência, disponibilidade e vínculo com loja.
   - Montar `line_items` Stripe usando preço do banco (centavos).
 
-  **Arquivos/áreas afetadas:** `src/app/api/checkout/route.ts`, `src/lib/stripe-config.ts`
+  **Arquivos/áreas afetadas:** `src/app/api/checkout/route.ts`, `src/lib/stripe-config.ts`, `src/app/api/checkout/__tests__/route.integration.test.ts`, `docs/ROADMAP/Logs/S01-CHK-002.md`
 
   **Critérios de aceitação:**
-  - [ ] Totais do pedido sempre derivados de dados do banco.
-  - [ ] Produto inválido/inativo/fora da loja retorna 400/404 e não cria pedido.
+  - [x] Totais do pedido sempre derivados de dados do banco.
+  - [x] Produto inválido/inativo/fora da loja retorna 400/404 e não cria pedido.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** S01-CHK-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída
 
 #### CHK.2 - Persistência confiável de pedido
 
@@ -364,7 +364,7 @@ Estabelecer validação mínima para liberar Sprint 01 sem regressões críticas
 
 ## ✅ Checklist de Encerramento da Fase
 
-- [ ] Todas as tarefas críticas (🔴) concluídas e revisadas.
+- [x] Todas as tarefas críticas (🔴) concluídas e revisadas.
 - [ ] Migration Prisma aplicada e versionada.
 - [x] Validações `lint` e `build` executadas com sucesso.
 - [x] Fluxo completo de pagamento (sucesso/falha) validado em homologação.

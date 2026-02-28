@@ -238,6 +238,54 @@ describe("POST /api/checkout integration", () => {
     expect(mockCreateStripeCheckoutSession).not.toHaveBeenCalled();
   });
 
+  it("returns 400 for inactive product and does not create order", async () => {
+    mockDb.product.findMany.mockResolvedValue([
+      {
+        ...baseProduct,
+        isActive: false,
+      },
+    ]);
+
+    const response = await POST(
+      createCheckoutRequest({
+        storeId: "store-1",
+        items: [{ productId: "product-1", quantity: 1 }],
+        shippingMethod: "STANDARD",
+      }),
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toContain("Produto inativo");
+    expect(mockDb.order.create).not.toHaveBeenCalled();
+    expect(mockCreateStripeCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 when product does not belong to selected store", async () => {
+    mockDb.product.findMany.mockResolvedValue([
+      {
+        ...baseProduct,
+        storeId: "store-2",
+      },
+    ]);
+
+    const response = await POST(
+      createCheckoutRequest({
+        storeId: "store-1",
+        items: [{ productId: "product-1", quantity: 1 }],
+        shippingMethod: "STANDARD",
+      }),
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toContain("Produto não pertence à loja selecionada");
+    expect(mockDb.order.create).not.toHaveBeenCalled();
+    expect(mockCreateStripeCheckoutSession).not.toHaveBeenCalled();
+  });
+
   it("returns 409 when requested quantity violates min stock protection", async () => {
     mockDb.inventory.findMany.mockResolvedValue([
       {
