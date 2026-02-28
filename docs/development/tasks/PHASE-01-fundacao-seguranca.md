@@ -188,7 +188,7 @@ Garantir que o endpoint `/api/orders/session/[sessionId]` não vaze dados para u
   **Dependências:** S01-ORD-001, S01-STR-002  
   **Status:** ✅ Concluída
 
-- [ ] **S01-ORD-003** - Ajustar páginas de sucesso/falha para estados 401/403/404
+- [x] **S01-ORD-003** - Ajustar páginas de sucesso/falha para estados 401/403/404
 
   **Descrição curta:**
   - Tratar retorno do endpoint sem loop de redirecionamento ou tela inconsistente.
@@ -202,13 +202,13 @@ Garantir que o endpoint `/api/orders/session/[sessionId]` não vaze dados para u
   **Arquivos/áreas afetadas:** `src/app/[slug]/pedido/sucesso/page.tsx`, `src/app/[slug]/pedido/falha/page.tsx`
 
   **Critérios de aceitação:**
-  - [ ] Usuário sem sessão é direcionado para login sem quebrar fluxo.
-  - [ ] Tela de falha/sucesso não mostra erro técnico bruto.
+  - [x] Usuário sem sessão é direcionado para login sem quebrar fluxo.
+  - [x] Tela de falha/sucesso não mostra erro técnico bruto.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 3h  
   **Dependências:** S01-ORD-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída
 
 ### 📦 Stripe hardening e dados - Separação de IDs e endpoint de teste
 

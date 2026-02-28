@@ -13,7 +13,7 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
-    include: ["src/app/api/**/__tests__/*.integration.test.ts"],
+    include: ["src/app/**/__tests__/*.integration.test.ts"],
     clearMocks: true,
     mockReset: true,
     restoreMocks: true,

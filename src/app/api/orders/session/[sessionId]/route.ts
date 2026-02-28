@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import {
+  buildOrderSessionLookupWhere,
+  normalizeOrderSessionId,
+} from "@/lib/order-session";
 
 function logOrderSessionLookupFailure(error: unknown) {
   if (process.env.NODE_ENV === "production") {
@@ -27,7 +31,7 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions);
     const { sessionId } = await params;
-    const normalizedSessionId = sessionId.trim();
+    const normalizedSessionId = normalizeOrderSessionId(sessionId);
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
@@ -41,14 +45,10 @@ export async function GET(
     }
 
     const order = await db.order.findFirst({
-      where: {
+      where: buildOrderSessionLookupWhere({
         userId: session.user.id,
-        OR: [
-          { stripeCheckoutSessionId: normalizedSessionId },
-          // Compatibilidade temporária durante rollout do schema Stripe separado.
-          { stripePaymentId: normalizedSessionId },
-        ],
-      },
+        sessionId: normalizedSessionId,
+      }),
       include: {
         items: {
           select: {

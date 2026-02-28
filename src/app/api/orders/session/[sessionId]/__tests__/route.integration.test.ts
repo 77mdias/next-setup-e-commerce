@@ -55,6 +55,20 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
     expect(mockDb.order.findFirst).not.toHaveBeenCalled();
   });
 
+  it("returns 400 when sessionId is empty after normalization", async () => {
+    mockGetServerSession.mockResolvedValue({
+      user: { id: "user-owner" },
+    });
+
+    const { request, params } = createRequest("   ");
+    const response = await GET(request, { params });
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("ID da sessão é obrigatório");
+    expect(mockDb.order.findFirst).not.toHaveBeenCalled();
+  });
+
   it("returns order data for the owner session", async () => {
     mockGetServerSession.mockResolvedValue({
       user: { id: "user-owner" },
