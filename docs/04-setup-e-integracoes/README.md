@@ -3,6 +3,7 @@
 Documentacao operacional para configuracao de ambiente e integracoes externas.
 
 ## Conteudo
+
 - `ENVIRONMENT_VARIABLES.md`: variaveis necessarias para rodar local e em producao.
 - `GOOGLE_OAUTH_SETUP.md`: configuracao de OAuth com Google.
 - `STRIPE_PRODUCTION_SETUP.md`: checklist de configuracao Stripe em producao.

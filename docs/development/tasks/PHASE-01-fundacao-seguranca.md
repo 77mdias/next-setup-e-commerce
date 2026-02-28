@@ -11,15 +11,16 @@
 
 ## 📊 Resumo de Progresso
 
-| Categoria                        | Total | Concluído | Em Andamento | Pendente | Bloqueado |
-| -------------------------------- | ----- | --------- | ------------ | -------- | --------- |
-| Checkout server-authoritative    | 4     | 3         | 0            | 1        | 0         |
-| Autorização de pedidos           | 3     | 2         | 0            | 1        | 0         |
-| Stripe hardening e dados         | 3     | 3         | 0            | 0        | 0         |
-| Testes, rollout e governança     | 2     | 0         | 0            | 2        | 0         |
-| **TOTAL**                        | **12**| **8**     | **0**        | **4**    | **0**     |
+| Categoria                     | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
+| ----------------------------- | ------ | --------- | ------------ | -------- | --------- |
+| Checkout server-authoritative | 4      | 3         | 0            | 1        | 0         |
+| Autorização de pedidos        | 3      | 2         | 0            | 1        | 0         |
+| Stripe hardening e dados      | 3      | 3         | 0            | 0        | 0         |
+| Testes, rollout e governança  | 2      | 0         | 0            | 2        | 0         |
+| **TOTAL**                     | **12** | **8**     | **0**        | **4**    | **0**     |
 
 ### 🎯 Principais Indicadores
+
 - ✅ Escopo P0 fechado em 4 frentes críticas (checkout, orders/session, test-stripe, IDs Stripe).
 - ✅ Sequência de execução definida por dependência técnica.
 - ⚠️ Risco principal: ausência de suíte automatizada de integração já configurada no projeto.
@@ -43,6 +44,7 @@
 ### 📦 Checkout server-authoritative - Integridade de preço e itens
 
 #### Objetivo
+
 Remover a confiança em valores vindos do cliente no endpoint de checkout. O servidor deve recalcular subtotal, frete e total com base em dados persistidos e validar rigorosamente produto, estoque mínimo, loja e quantidade.
 
 #### CHK.1 - Contrato de entrada e validação sem preço do cliente
@@ -140,6 +142,7 @@ Remover a confiança em valores vindos do cliente no endpoint de checkout. O ser
 ### 📦 Autorização de pedidos - Proteção de dados pós-checkout
 
 #### Objetivo
+
 Garantir que o endpoint `/api/orders/session/[sessionId]` não vaze dados para usuários anônimos nem para usuários autenticados não proprietários do pedido.
 
 #### ORD.1 - Auth obrigatória e ownership
@@ -213,6 +216,7 @@ Garantir que o endpoint `/api/orders/session/[sessionId]` não vaze dados para u
 ### 📦 Stripe hardening e dados - Separação de IDs e endpoint de teste
 
 #### Objetivo
+
 Separar tecnicamente `checkoutSessionId` e `paymentIntentId` no domínio de pedido/pagamento, eliminando ambiguidades. Paralelamente, impedir uso indevido de `/api/test-stripe` em produção.
 
 #### STR.1 - Modelo e migração de dados
@@ -288,6 +292,7 @@ Separar tecnicamente `checkoutSessionId` e `paymentIntentId` no domínio de pedi
 ### 📦 Testes, rollout e governança - Garantia de entrega
 
 #### Objetivo
+
 Estabelecer validação mínima para liberar Sprint 01 sem regressões críticas no pagamento e no acesso a pedidos.
 
 #### QA.1 - Validação técnica e liberação controlada

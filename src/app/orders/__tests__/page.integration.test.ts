@@ -45,7 +45,10 @@ function makeSearchParams(sessionId?: string) {
   return Promise.resolve({ session_id: sessionId });
 }
 
-async function expectRedirectTo(promise: Promise<unknown>, destination: string) {
+async function expectRedirectTo(
+  promise: Promise<unknown>,
+  destination: string,
+) {
   await expect(promise).rejects.toMatchObject({
     message: "NEXT_REDIRECT_TEST",
     destination,
