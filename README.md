@@ -163,7 +163,7 @@ npm install
 
 # 2) Variáveis de ambiente
 cp .env.example .env.local
-# veja também: ENVIRONMENT_VARIABLES.md
+# veja também: docs/04-setup-e-integracoes/ENVIRONMENT_VARIABLES.md
 
 # 3) Prisma
 npx prisma generate
