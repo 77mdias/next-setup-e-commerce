@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 01: Fundacao de Seguranca
 
 **Status:** 🟢 ATIVA
-**Última atualização:** 2026-02-27
+**Última atualização:** 2026-02-28
 **Sprint Atual:** Sprint 01
-**Status Geral:** 🟡 67% (8/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 92% (11/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias uteis)
 **Pré-requisito:** Backlog priorizado Sprint 01 (✅ definido)
 
@@ -14,16 +14,16 @@
 | Categoria                     | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ----------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Checkout server-authoritative | 4      | 3         | 0            | 1        | 0         |
-| Autorização de pedidos        | 3      | 2         | 0            | 1        | 0         |
+| Autorização de pedidos        | 3      | 3         | 0            | 0        | 0         |
 | Stripe hardening e dados      | 3      | 3         | 0            | 0        | 0         |
-| Testes, rollout e governança  | 2      | 0         | 0            | 2        | 0         |
-| **TOTAL**                     | **12** | **8**     | **0**        | **4**    | **0**     |
+| Testes, rollout e governança  | 2      | 2         | 0            | 0        | 0         |
+| **TOTAL**                     | **12** | **11**    | **0**        | **1**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Escopo P0 fechado em 4 frentes críticas (checkout, orders/session, test-stripe, IDs Stripe).
 - ✅ Sequência de execução definida por dependência técnica.
-- ⚠️ Risco principal: ausência de suíte automatizada de integração já configurada no projeto.
+- ⚠️ Risco principal: task crítica `S01-CHK-002` ainda pendente para concluir recalculo canônico de preço no backend.
 
 ---
 
@@ -319,7 +319,7 @@ Estabelecer validação mínima para liberar Sprint 01 sem regressões críticas
   **Dependências:** S01-CHK-002, S01-ORD-001, S01-STR-002  
   **Status:** ✅ Concluída
 
-- [ ] **S01-QA-002** - Checklist manual de homologação e plano de rollback
+- [x] **S01-QA-002** - Checklist manual de homologação e plano de rollback
 
   **Descrição curta:**
   - Formalizar validações manuais para ambiente de staging antes de produção.
@@ -330,16 +330,16 @@ Estabelecer validação mínima para liberar Sprint 01 sem regressões críticas
   - Definir rollback lógico (feature flag ou reversão de deploy).
   - Registrar responsáveis e janela de deploy.
 
-  **Arquivos/áreas afetadas:** `docs/ROADMAP/SPRINTS/sprint-01-fundacao-seguranca.md`, `docs/development/tasks/PHASE-01-fundacao-seguranca.md`
+  **Arquivos/áreas afetadas:** `docs/ROADMAP/SPRINTS/sprint-01-fundacao-seguranca.md`, `docs/ROADMAP/Logs/S01-QA-002.md`, `docs/development/tasks/PHASE-01-fundacao-seguranca.md`
 
   **Critérios de aceitação:**
-  - [ ] Checklist executado com evidências de resultado.
-  - [ ] Plano de rollback validado com time responsável.
+  - [x] Checklist executado com evidências de resultado.
+  - [x] Plano de rollback validado com time responsável.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 3h  
   **Dependências:** S01-CHK-004, S01-ORD-003, S01-STR-003  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída
 
 ---
 
@@ -366,8 +366,8 @@ Estabelecer validação mínima para liberar Sprint 01 sem regressões críticas
 
 - [ ] Todas as tarefas críticas (🔴) concluídas e revisadas.
 - [ ] Migration Prisma aplicada e versionada.
-- [ ] Validações `lint` e `build` executadas com sucesso.
-- [ ] Fluxo completo de pagamento (sucesso/falha) validado em homologação.
+- [x] Validações `lint` e `build` executadas com sucesso.
+- [x] Fluxo completo de pagamento (sucesso/falha) validado em homologação.
 - [x] Endpoint `/api/test-stripe` bloqueado em produção.
 - [x] Endpoint `/api/orders/session/[sessionId]` exige autenticação e ownership.
-- [ ] Evidências e changelog técnico registrados na pasta `docs/development`.
+- [x] Evidências e changelog técnico registrados na pasta `docs/ROADMAP/Logs`.
