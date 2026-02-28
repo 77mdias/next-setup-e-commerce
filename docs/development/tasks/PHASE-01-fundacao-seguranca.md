@@ -292,7 +292,7 @@ Estabelecer validação mínima para liberar Sprint 01 sem regressões críticas
 
 #### QA.1 - Validação técnica e liberação controlada
 
-- [ ] **S01-QA-001** - Criar suíte de integração mínima para checkout e order-session
+- [x] **S01-QA-001** - Criar suíte de integração mínima para checkout e order-session
 
   **Descrição curta:**
   - Cobrir cenários críticos de segurança e integridade de pedido.
@@ -306,13 +306,13 @@ Estabelecer validação mínima para liberar Sprint 01 sem regressões críticas
   **Arquivos/áreas afetadas:** `src/app/api/**/__tests__/*` (novo), `package.json`
 
   **Critérios de aceitação:**
-  - [ ] Casos críticos P0 com testes automatizados executáveis.
-  - [ ] Falha de segurança quebra execução da suíte.
+  - [x] Casos críticos P0 com testes automatizados executáveis.
+  - [x] Falha de segurança quebra execução da suíte.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 8h  
   **Dependências:** S01-CHK-002, S01-ORD-001, S01-STR-002  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída
 
 - [ ] **S01-QA-002** - Checklist manual de homologação e plano de rollback
 
@@ -344,7 +344,7 @@ Estabelecer validação mínima para liberar Sprint 01 sem regressões críticas
 - **Cobertura alvo:** 100% dos cenários P0 da Sprint 01 cobertos (automatizado + manual).
 - **Comandos de verificação:** `npm run lint`, `npm run build`.
 - **Comandos recomendados (após criar suíte):** `npm run test:integration`.
-- **Estado atual:** ⚠️ Em falha parcial - ainda sem suíte automatizada de integração configurada.
+- **Estado atual:** ✅ Suíte automatizada de integração configurada e executável via `npm run test:integration`.
 
 ---
 
