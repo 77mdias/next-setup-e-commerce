@@ -219,7 +219,7 @@ Remover dependência de `customerEmail` como critério de autorização em pedid
   **Dependências:** S01-ORD-003  
   **Status:** ✅ Concluída (2026-03-01)
 
-- [ ] **S02-ORD-002** - Definir estratégia para pedidos legados sem `userId`
+- [x] **S02-ORD-002** - Definir estratégia para pedidos legados sem `userId`
 
   **Descrição curta:**
   - Tratar pedidos antigos que ainda possam estar sem vínculo `userId`.
@@ -233,13 +233,13 @@ Remover dependência de `customerEmail` como critério de autorização em pedid
   **Arquivos/áreas afetadas:** `scripts/*` (novo, se necessário), `docs/ROADMAP/Logs/*`, `src/app/api/orders/[orderId]/route.ts`
 
   **Critérios de aceitação:**
-  - [ ] Pedidos legados elegíveis ficam vinculados ao `userId` correto.
-  - [ ] Casos sem correspondência não expõem dados e são rastreados para ação manual.
+  - [x] Pedidos legados elegíveis ficam vinculados ao `userId` correto.
+  - [x] Casos sem correspondência não expõem dados e são rastreados para ação manual.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 3h  
   **Dependências:** S02-ORD-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-01)
 
 - [ ] **S02-ORD-003** - Ajustar consumidores frontend para novo contrato de ownership
 

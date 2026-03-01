@@ -20,6 +20,7 @@
     "reprocess-images": "node scripts/auto-reprocess-images.js",
     "check-images": "node scripts/check-processed-images.js",
     "seed": "prisma db seed",
+    "orders:backfill-user-id": "node scripts/backfill-order-user-id.js",
     "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "prisma": {

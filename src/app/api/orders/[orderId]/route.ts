@@ -4,6 +4,66 @@ import { authOptions } from "@/lib/auth";
 import { buildOrderStatusHistory } from "@/lib/order-status-history";
 import { db } from "@/lib/prisma";
 
+function buildOrderDetailsInclude() {
+  return {
+    items: {
+      include: {
+        product: true,
+      },
+    },
+    store: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+    },
+    address: true,
+    payments: {
+      orderBy: {
+        createdAt: "desc" as const,
+      },
+    },
+    statusHistory: {
+      select: {
+        id: true,
+        status: true,
+        notes: true,
+        changedBy: true,
+        createdAt: true,
+      },
+      orderBy: [{ createdAt: "asc" as const }, { id: "asc" as const }],
+    },
+  };
+}
+
+function normalizeEmail(email: string | null | undefined): string | null {
+  if (!email) {
+    return null;
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  return normalizedEmail.length > 0 ? normalizedEmail : null;
+}
+
+function logLegacyOrderNeedsManualReview(payload: {
+  orderId: number;
+  sessionUserId: string;
+  reason:
+    | "missing_session_email"
+    | "missing_order_email"
+    | "email_mismatch_or_unmapped";
+}) {
+  if (process.env.NODE_ENV === "production") {
+    console.warn(
+      `[orders][legacy-ownership] orderId=${payload.orderId} reason=${payload.reason}`,
+    );
+    return;
+  }
+
+  console.warn("[orders][legacy-ownership]", payload);
+}
+
 function normalizeOrderId(rawOrderId: string): number | null {
   const trimmedOrderId = rawOrderId.trim();
 
@@ -40,43 +100,71 @@ export async function GET(
       );
     }
 
-    // Buscar o pedido com todas as informações relacionadas
-    const order = await db.order.findFirst({
+    // Buscar o pedido com ownership canônico por userId.
+    let order = await db.order.findFirst({
       where: {
         id: orderId,
         userId: session.user.id,
       },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-        store: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        address: true,
-        payments: {
-          orderBy: {
-            createdAt: "desc",
-          },
-        },
-        statusHistory: {
-          select: {
-            id: true,
-            status: true,
-            notes: true,
-            changedBy: true,
-            createdAt: true,
-          },
-          orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-        },
-      },
+      include: buildOrderDetailsInclude(),
     });
+
+    // Fallback temporário até conclusão do backfill S02-ORD-002.
+    // Remover até 2026-03-31 após validação do vínculo canônico por userId.
+    if (!order) {
+      const normalizedSessionEmail = normalizeEmail(session.user.email);
+
+      if (normalizedSessionEmail) {
+        const linkedOrder = await db.order.updateMany({
+          where: {
+            id: orderId,
+            userId: null,
+            customerEmail: {
+              equals: normalizedSessionEmail,
+              mode: "insensitive",
+            },
+          },
+          data: {
+            userId: session.user.id,
+          },
+        });
+
+        if (linkedOrder.count > 0) {
+          order = await db.order.findFirst({
+            where: {
+              id: orderId,
+              userId: session.user.id,
+            },
+            include: buildOrderDetailsInclude(),
+          });
+        }
+      }
+
+      if (!order) {
+        const legacyOrder = await db.order.findFirst({
+          where: {
+            id: orderId,
+            userId: null,
+          },
+          select: {
+            id: true,
+            customerEmail: true,
+          },
+        });
+
+        if (legacyOrder) {
+          logLegacyOrderNeedsManualReview({
+            orderId: legacyOrder.id,
+            sessionUserId: session.user.id,
+            reason: !normalizedSessionEmail
+              ? "missing_session_email"
+              : legacyOrder.customerEmail
+                ? "email_mismatch_or_unmapped"
+                : "missing_order_email",
+          });
+        }
+      }
+    }
 
     if (!order) {
       return NextResponse.json(

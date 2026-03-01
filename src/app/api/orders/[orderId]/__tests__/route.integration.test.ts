@@ -6,6 +6,7 @@ const { mockGetServerSession, mockDb } = vi.hoisted(() => ({
   mockDb: {
     order: {
       findFirst: vi.fn(),
+      updateMany: vi.fn(),
     },
   },
 }));
@@ -101,6 +102,7 @@ function createOrder(overrides: Record<string, unknown> = {}) {
 describe("GET /api/orders/[orderId] integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockDb.order.updateMany.mockResolvedValue({ count: 0 });
   });
 
   it("returns 401 when request is anonymous", async () => {
@@ -221,5 +223,67 @@ describe("GET /api/orders/[orderId] integration", () => {
         },
       }),
     );
+  });
+
+  it("links eligible legacy order without userId using customerEmail fallback", async () => {
+    mockGetServerSession.mockResolvedValue({
+      user: { id: "user-owner", email: "Customer@example.com" },
+    });
+    mockDb.order.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(createOrder());
+    mockDb.order.updateMany.mockResolvedValue({ count: 1 });
+
+    const { request, params } = createRequest("123");
+    const response = await GET(request, { params });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.id).toBe(123);
+    expect(mockDb.order.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 123,
+        userId: null,
+        customerEmail: {
+          equals: "customer@example.com",
+          mode: "insensitive",
+        },
+      },
+      data: {
+        userId: "user-owner",
+      },
+    });
+  });
+
+  it("keeps 404 and logs manual review when legacy order cannot be linked", async () => {
+    const warnSpy = vi
+      .spyOn(console, "warn")
+      .mockImplementation(() => undefined);
+
+    mockGetServerSession.mockResolvedValue({
+      user: { id: "user-owner", email: "owner@example.com" },
+    });
+    mockDb.order.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({
+      id: 123,
+      customerEmail: "legacy@example.com",
+    });
+    mockDb.order.updateMany.mockResolvedValue({ count: 0 });
+
+    const { request, params } = createRequest("123");
+    const response = await GET(request, { params });
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body.error).toBe("Pedido não encontrado");
+    expect(warnSpy).toHaveBeenCalledWith(
+      "[orders][legacy-ownership]",
+      expect.objectContaining({
+        orderId: 123,
+        sessionUserId: "user-owner",
+        reason: "email_mismatch_or_unmapped",
+      }),
+    );
+
+    warnSpy.mockRestore();
   });
 });
