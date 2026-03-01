@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { db } from "@/lib/prisma";
 
+type WebhookProcessResult = {
+  completed: boolean;
+  failureReason?: string;
+  response: NextResponse;
+};
+
 function resolvePaymentIntentId(
   paymentIntent: string | Stripe.PaymentIntent | null,
 ) {
@@ -10,6 +16,258 @@ function resolvePaymentIntentId(
   }
 
   return typeof paymentIntent === "string" ? paymentIntent : paymentIntent.id;
+}
+
+function toErrorMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+}
+
+function isPrismaUniqueConstraintError(
+  error: unknown,
+): error is { code: string } {
+  if (!error || typeof error !== "object" || !("code" in error)) {
+    return false;
+  }
+
+  return (error as { code?: string }).code === "P2002";
+}
+
+async function registerOrShortCircuitEvent(
+  event: Stripe.Event,
+  payload: string,
+): Promise<NextResponse | null> {
+  const now = new Date();
+
+  try {
+    await db.stripeWebhookEvent.create({
+      data: {
+        eventId: event.id,
+        eventType: event.type,
+        payload,
+        status: "PROCESSING",
+        lastReceivedAt: now,
+      },
+    });
+
+    return null;
+  } catch (error) {
+    if (!isPrismaUniqueConstraintError(error)) {
+      throw error;
+    }
+
+    const existingEvent = await db.stripeWebhookEvent.findUnique({
+      where: { eventId: event.id },
+      select: { status: true },
+    });
+
+    if (!existingEvent) {
+      throw error;
+    }
+
+    if (existingEvent.status === "COMPLETED") {
+      return NextResponse.json({ received: true, deduplicated: true });
+    }
+
+    if (existingEvent.status === "PROCESSING") {
+      return NextResponse.json({ received: true, processing: true });
+    }
+
+    const retryClaim = await db.stripeWebhookEvent.updateMany({
+      where: {
+        eventId: event.id,
+        status: "FAILED",
+      },
+      data: {
+        status: "PROCESSING",
+        payload,
+        lastReceivedAt: now,
+        processedAt: null,
+        lastError: null,
+        attemptCount: { increment: 1 },
+      },
+    });
+
+    if (retryClaim.count === 0) {
+      return NextResponse.json({ received: true, processing: true });
+    }
+
+    return null;
+  }
+}
+
+async function markWebhookEventCompleted(eventId: string) {
+  await db.stripeWebhookEvent.updateMany({
+    where: { eventId },
+    data: {
+      status: "COMPLETED",
+      processedAt: new Date(),
+      lastError: null,
+    },
+  });
+}
+
+async function markWebhookEventFailed(eventId: string, failureReason: string) {
+  await db.stripeWebhookEvent.updateMany({
+    where: { eventId },
+    data: {
+      status: "FAILED",
+      lastError: failureReason,
+      processedAt: null,
+    },
+  });
+}
+
+async function processWebhookEvent(
+  event: Stripe.Event,
+): Promise<WebhookProcessResult> {
+  switch (event.type) {
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const orderId = session.metadata?.orderId;
+      const checkoutSessionId = session.id;
+      const paymentIntentId = resolvePaymentIntentId(session.payment_intent);
+
+      console.log("🔍 ID do pedido:", orderId);
+      console.log("📋 Metadata completa:", session.metadata);
+      console.log("💰 Status do pagamento:", session.payment_status);
+      console.log("💳 ID do payment intent:", paymentIntentId);
+
+      if (!orderId) {
+        console.warn("⚠️ ID do pedido não encontrado nos metadados");
+        return {
+          completed: true,
+          response: NextResponse.json({
+            received: true,
+            warning: "No order ID found",
+          }),
+        };
+      }
+
+      const existingOrder = await db.order.findUnique({
+        where: {
+          id: Number(orderId),
+        },
+        include: {
+          store: { select: { slug: true } },
+        },
+      });
+
+      if (!existingOrder) {
+        console.error("❌ Pedido não encontrado no banco de dados:", orderId);
+        return {
+          completed: false,
+          failureReason: `Order ${orderId} not found`,
+          response: NextResponse.json(
+            { error: "Order not found", orderId },
+            { status: 404 },
+          ),
+        };
+      }
+
+      console.log(
+        "📊 Pedido encontrado, status atual:",
+        existingOrder.status,
+        "paymentStatus:",
+        existingOrder.paymentStatus,
+      );
+
+      const updatedOrder = await db.order.update({
+        where: {
+          id: Number(orderId),
+        },
+        data: {
+          status: "PAID",
+          paymentStatus: "PAID",
+          stripeCheckoutSessionId:
+            existingOrder.stripeCheckoutSessionId ?? checkoutSessionId,
+          stripePaymentIntentId: paymentIntentId,
+          stripePaymentId: paymentIntentId ?? checkoutSessionId,
+        },
+        include: {
+          store: { select: { slug: true } },
+          items: true,
+        },
+      });
+
+      console.log("✅ Pedido atualizado com sucesso:", {
+        orderId: updatedOrder.id,
+        newStatus: updatedOrder.status,
+        paymentStatus: updatedOrder.paymentStatus,
+        stripeCheckoutSessionId: updatedOrder.stripeCheckoutSessionId,
+        stripePaymentIntentId: updatedOrder.stripePaymentIntentId,
+      });
+
+      const payment = await db.payment.create({
+        data: {
+          orderId: Number(orderId),
+          method: "stripe",
+          amount: updatedOrder.total,
+          status: "PAID",
+          stripePaymentId: paymentIntentId ?? undefined,
+          paidAt: new Date(),
+        },
+      });
+
+      console.log("💰 Registro de pagamento criado com sucesso:", {
+        paymentId: payment.id,
+        amount: payment.amount,
+        status: payment.status,
+      });
+
+      return {
+        completed: true,
+        response: NextResponse.json({ received: true }),
+      };
+    }
+
+    case "checkout.session.async_payment_failed":
+    case "checkout.session.expired":
+    case "charge.failed": {
+      const failedSession = event.data.object as Stripe.Checkout.Session;
+      const failedOrderId = failedSession.metadata?.orderId;
+
+      if (failedOrderId) {
+        const failedOrder = await db.order.findUnique({
+          where: {
+            id: Number(failedOrderId),
+          },
+        });
+
+        if (failedOrder) {
+          await db.order.update({
+            where: { id: Number(failedOrderId) },
+            data: {
+              status: "CANCELLED",
+              paymentStatus: "FAILED",
+              cancelledAt: new Date(),
+              cancelReason: "Pagamento falhou ou expirou",
+            },
+          });
+
+          console.log(
+            "❌ Pedido cancelado devido a falha no pagamento:",
+            failedOrderId,
+          );
+        }
+      }
+
+      return {
+        completed: true,
+        response: NextResponse.json({ received: true }),
+      };
+    }
+
+    default:
+      console.log("ℹ️ Evento não processado:", event.type);
+      return {
+        completed: true,
+        response: NextResponse.json({ received: true }),
+      };
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -67,142 +325,42 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  console.log("🔍 Evento recebido:", event.type);
+  console.log("🔍 Evento recebido:", event.type, "id:", event.id);
 
   try {
-    switch (event.type) {
-      case "checkout.session.completed":
-        const session = event.data.object as Stripe.Checkout.Session;
-        const orderId = session.metadata?.orderId;
-        const checkoutSessionId = session.id;
-        const paymentIntentId = resolvePaymentIntentId(session.payment_intent);
+    const shortCircuitResponse = await registerOrShortCircuitEvent(event, text);
 
-        console.log("🔍 ID do pedido:", orderId);
-        console.log("📋 Metadata completa:", session.metadata);
-        console.log("💰 Status do pagamento:", session.payment_status);
-        console.log("💳 ID do payment intent:", paymentIntentId);
-
-        if (!orderId) {
-          console.warn("⚠️ ID do pedido não encontrado nos metadados");
-          return NextResponse.json({
-            received: true,
-            warning: "No order ID found",
-          });
-        }
-
-        // Verificar se o pedido existe antes de atualizar
-        const existingOrder = await db.order.findUnique({
-          where: {
-            id: Number(orderId),
-          },
-          include: {
-            store: { select: { slug: true } },
-          },
-        });
-
-        if (!existingOrder) {
-          console.error("❌ Pedido não encontrado no banco de dados:", orderId);
-          return NextResponse.json(
-            { error: "Order not found", orderId },
-            { status: 404 },
-          );
-        }
-
-        console.log(
-          "📊 Pedido encontrado, status atual:",
-          existingOrder.status,
-          "paymentStatus:",
-          existingOrder.paymentStatus,
-        );
-
-        // Atualizar o pedido para PAID
-        const updatedOrder = await db.order.update({
-          where: {
-            id: Number(orderId),
-          },
-          data: {
-            status: "PAID",
-            paymentStatus: "PAID",
-            stripeCheckoutSessionId:
-              existingOrder.stripeCheckoutSessionId ?? checkoutSessionId,
-            stripePaymentIntentId: paymentIntentId,
-            stripePaymentId: paymentIntentId ?? checkoutSessionId,
-          },
-          include: {
-            store: { select: { slug: true } },
-            items: true,
-          },
-        });
-
-        console.log("✅ Pedido atualizado com sucesso:", {
-          orderId: updatedOrder.id,
-          newStatus: updatedOrder.status,
-          paymentStatus: updatedOrder.paymentStatus,
-          stripeCheckoutSessionId: updatedOrder.stripeCheckoutSessionId,
-          stripePaymentIntentId: updatedOrder.stripePaymentIntentId,
-        });
-
-        // Criar registro de pagamento
-        const payment = await db.payment.create({
-          data: {
-            orderId: Number(orderId),
-            method: "stripe",
-            amount: updatedOrder.total,
-            status: "PAID",
-            stripePaymentId: paymentIntentId ?? undefined,
-            paidAt: new Date(),
-          },
-        });
-
-        console.log("💰 Registro de pagamento criado com sucesso:", {
-          paymentId: payment.id,
-          amount: payment.amount,
-          status: payment.status,
-        });
-
-        break;
-
-      case "checkout.session.async_payment_failed":
-      case "checkout.session.expired":
-      case "charge.failed":
-        const failedSession = event.data.object as Stripe.Checkout.Session;
-        const failedOrderId = failedSession.metadata?.orderId;
-
-        if (failedOrderId) {
-          // Verificar se o pedido existe
-          const failedOrder = await db.order.findUnique({
-            where: {
-              id: Number(failedOrderId),
-            },
-          });
-
-          if (failedOrder) {
-            // Atualizar o pedido para CANCELLED
-            await db.order.update({
-              where: { id: Number(failedOrderId) },
-              data: {
-                status: "CANCELLED",
-                paymentStatus: "FAILED",
-                cancelledAt: new Date(),
-                cancelReason: "Pagamento falhou ou expirou",
-              },
-            });
-
-            console.log(
-              "❌ Pedido cancelado devido a falha no pagamento:",
-              failedOrderId,
-            );
-          }
-        }
-        break;
-
-      default:
-        console.log("ℹ️ Evento não processado:", event.type);
+    if (shortCircuitResponse) {
+      return shortCircuitResponse;
     }
 
-    return NextResponse.json({ received: true });
+    const result = await processWebhookEvent(event);
+
+    if (result.completed) {
+      await markWebhookEventCompleted(event.id);
+    } else {
+      await markWebhookEventFailed(
+        event.id,
+        result.failureReason ??
+          `Webhook processing failed with status ${result.response.status}`,
+      );
+    }
+
+    return result.response;
   } catch (error) {
+    const errorMessage = toErrorMessage(error);
+
     console.error("❌ Erro ao processar webhook:", error);
+
+    try {
+      await markWebhookEventFailed(event.id, errorMessage);
+    } catch (persistError) {
+      console.error(
+        "❌ Erro ao persistir falha do evento webhook:",
+        persistError,
+      );
+    }
+
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -339,6 +339,23 @@ model Payment {
   @@map("payments")
 }
 
+model StripeWebhookEvent {
+  id             String             @id @default(uuid())
+  eventId        String             @unique
+  eventType      String
+  status         WebhookEventStatus @default(PROCESSING)
+  payload        String?
+  attemptCount   Int                @default(1)
+  lastReceivedAt DateTime           @default(now())
+  processedAt    DateTime?
+  lastError      String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([status, updatedAt])
+  @@map("stripe_webhook_events")
+}
+
 model Address {
   id           String   @id @default(uuid())
   userId       String?
@@ -474,6 +491,12 @@ enum PaymentStatus {
   FAILED
   REFUNDED
   CANCELLED
+}
+
+enum WebhookEventStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 enum CouponType {

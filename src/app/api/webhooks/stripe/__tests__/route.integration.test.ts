@@ -12,6 +12,11 @@ const { mockConstructEvent, mockStripeCtor, mockDb } = vi.hoisted(() => ({
     payment: {
       create: vi.fn(),
     },
+    stripeWebhookEvent: {
+      create: vi.fn(),
+      findUnique: vi.fn(),
+      updateMany: vi.fn(),
+    },
   },
 }));
 
@@ -80,10 +85,15 @@ describe("POST /api/webhooks/stripe integration", () => {
       amount: 115,
       status: "PAID",
     });
+
+    mockDb.stripeWebhookEvent.create.mockResolvedValue({ id: "evt-log-1" });
+    mockDb.stripeWebhookEvent.findUnique.mockResolvedValue(null);
+    mockDb.stripeWebhookEvent.updateMany.mockResolvedValue({ count: 1 });
   });
 
   it("stores checkoutSessionId and paymentIntentId separately for completed checkout", async () => {
     mockConstructEvent.mockReturnValue({
+      id: "evt_test_123",
       type: "checkout.session.completed",
       data: {
         object: {
@@ -102,6 +112,17 @@ describe("POST /api/webhooks/stripe integration", () => {
     expect(body).toEqual({ received: true });
 
     expect(mockStripeCtor).toHaveBeenCalledTimes(1);
+    expect(mockDb.stripeWebhookEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          eventId: "evt_test_123",
+          eventType: "checkout.session.completed",
+          status: "PROCESSING",
+          payload: JSON.stringify({ example: true }),
+        }),
+      }),
+    );
+
     expect(mockDb.order.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 123 },
@@ -125,10 +146,20 @@ describe("POST /api/webhooks/stripe integration", () => {
         paidAt: expect.any(Date),
       },
     });
+
+    expect(mockDb.stripeWebhookEvent.updateMany).toHaveBeenCalledWith({
+      where: { eventId: "evt_test_123" },
+      data: expect.objectContaining({
+        status: "COMPLETED",
+        processedAt: expect.any(Date),
+        lastError: null,
+      }),
+    });
   });
 
   it("keeps checkoutSessionId as fallback when payment intent is unavailable", async () => {
     mockConstructEvent.mockReturnValue({
+      id: "evt_test_124",
       type: "checkout.session.completed",
       data: {
         object: {
@@ -152,5 +183,70 @@ describe("POST /api/webhooks/stripe integration", () => {
         }),
       }),
     );
+  });
+
+  it("does not execute business mutations when the same completed event is delivered again", async () => {
+    mockDb.stripeWebhookEvent.create.mockRejectedValueOnce({ code: "P2002" });
+    mockDb.stripeWebhookEvent.findUnique.mockResolvedValueOnce({
+      status: "COMPLETED",
+    });
+
+    mockConstructEvent.mockReturnValue({
+      id: "evt_duplicate_123",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_test_123",
+          metadata: { orderId: "123" },
+          payment_status: "paid",
+          payment_intent: "pi_test_123",
+        },
+      },
+    });
+
+    const response = await POST(createWebhookRequest({ example: true }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ received: true, deduplicated: true });
+
+    expect(mockDb.order.update).not.toHaveBeenCalled();
+    expect(mockDb.payment.create).not.toHaveBeenCalled();
+    expect(mockDb.stripeWebhookEvent.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("marks webhook event as failed when order is not found", async () => {
+    mockDb.order.findUnique.mockResolvedValueOnce(null);
+
+    mockConstructEvent.mockReturnValue({
+      id: "evt_missing_order_123",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_test_123",
+          metadata: { orderId: "123" },
+          payment_status: "paid",
+          payment_intent: "pi_test_123",
+        },
+      },
+    });
+
+    const response = await POST(createWebhookRequest({ example: true }));
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body).toEqual({ error: "Order not found", orderId: "123" });
+
+    expect(mockDb.order.update).not.toHaveBeenCalled();
+    expect(mockDb.payment.create).not.toHaveBeenCalled();
+
+    expect(mockDb.stripeWebhookEvent.updateMany).toHaveBeenCalledWith({
+      where: { eventId: "evt_missing_order_123" },
+      data: {
+        status: "FAILED",
+        lastError: "Order 123 not found",
+        processedAt: null,
+      },
+    });
   });
 });
