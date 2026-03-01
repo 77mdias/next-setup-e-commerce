@@ -100,6 +100,25 @@ describe("orders success/failure pages integration", () => {
     );
   });
 
+  it("normalizes session_id on success page before ownership lookup", async () => {
+    await expectRedirectTo(
+      OrdersSuccessPage({ searchParams: makeSearchParams("  cs_owner_1  ") }),
+      "/orders?orderId=321",
+    );
+
+    expect(mockDb.order.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId: "user-owner",
+          OR: [
+            { stripeCheckoutSessionId: "cs_owner_1" },
+            { stripePaymentId: "cs_owner_1" },
+          ],
+        },
+      }),
+    );
+  });
+
   it("redirects success page to safe forbidden feedback when order is not found", async () => {
     mockDb.order.findFirst.mockResolvedValue(null);
 
@@ -139,6 +158,25 @@ describe("orders success/failure pages integration", () => {
     await expectRedirectTo(
       OrdersFailurePage({ searchParams: makeSearchParams("cs_owner_1") }),
       "/orders?orderId=321&checkout=failed",
+    );
+  });
+
+  it("normalizes session_id on failure page before ownership lookup", async () => {
+    await expectRedirectTo(
+      OrdersFailurePage({ searchParams: makeSearchParams("  cs_owner_1  ") }),
+      "/orders?orderId=321&checkout=failed",
+    );
+
+    expect(mockDb.order.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId: "user-owner",
+          OR: [
+            { stripeCheckoutSessionId: "cs_owner_1" },
+            { stripePaymentId: "cs_owner_1" },
+          ],
+        },
+      }),
     );
   });
 

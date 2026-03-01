@@ -79,6 +79,11 @@ type OrdersApiResponse = {
   pagination: Pagination;
 };
 
+type OrdersPageError = {
+  message: string;
+  recoveryAction: "retry" | "clear-filter";
+};
+
 type StatusVisualConfig = {
   label: string;
   chipClassName: string;
@@ -218,6 +223,21 @@ function getPaginationRange(currentPage: number, totalPages: number) {
   return Array.from({ length: end - start + 1 }, (_, index) => start + index);
 }
 
+function normalizeOrderIdSearch(rawOrderId: string): string | null {
+  const normalizedOrderId = rawOrderId.trim();
+
+  if (!/^\d+$/.test(normalizedOrderId)) {
+    return null;
+  }
+
+  const parsedOrderId = Number.parseInt(normalizedOrderId, 10);
+  if (!Number.isSafeInteger(parsedOrderId) || parsedOrderId <= 0) {
+    return null;
+  }
+
+  return String(parsedOrderId);
+}
+
 function DeliveryProgress({ status }: { status: OrderStatus }) {
   const stage = getDeliveryStage(status);
   const progress = stage < 0 ? 0 : (stage / (deliverySteps.length - 1)) * 100;
@@ -275,6 +295,10 @@ export function OrdersPageContent() {
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading } = useAuth();
   const initialOrderQuery = searchParams.get("orderId")?.trim() ?? "";
+  const initialOrderIdFilter = useMemo(
+    () => normalizeOrderIdSearch(initialOrderQuery),
+    [initialOrderQuery],
+  );
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
@@ -284,8 +308,10 @@ export function OrdersPageContent() {
   const [searchQuery, setSearchQuery] = useState(initialOrderQuery);
   const [isFetching, setIsFetching] = useState(false);
   const [reloadNonce, setReloadNonce] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<OrdersPageError | null>(null);
   const [buyingItemId, setBuyingItemId] = useState<string | null>(null);
+  const hasOrderIdFilterFromRedirect =
+    Boolean(initialOrderIdFilter) && searchQuery === initialOrderIdFilter;
 
   useEffect(() => {
     if (isLoading || isAuthenticated) {
@@ -323,6 +349,45 @@ export function OrdersPageContent() {
       setError(null);
 
       try {
+        if (hasOrderIdFilterFromRedirect && initialOrderIdFilter) {
+          const targetOrderResponse = await fetch(
+            `/api/orders/${initialOrderIdFilter}`,
+            {
+              signal: controller.signal,
+              cache: "no-store",
+            },
+          );
+
+          if (!targetOrderResponse.ok) {
+            if (targetOrderResponse.status === 401) {
+              router.replace(
+                buildAccessFeedbackPath({
+                  reason: "auth-required",
+                  callbackUrl: "/orders",
+                  fromPath: "/orders",
+                }),
+              );
+              return;
+            }
+
+            if (
+              targetOrderResponse.status === 400 ||
+              targetOrderResponse.status === 404
+            ) {
+              setOrders([]);
+              setPagination(null);
+              setError({
+                message:
+                  "Nao foi possivel acessar o pedido solicitado. Consulte os pedidos disponiveis para a sua conta.",
+                recoveryAction: "clear-filter",
+              });
+              return;
+            }
+
+            throw new Error("Nao foi possivel validar o pedido informado");
+          }
+        }
+
         const params = new URLSearchParams({
           status: statusFilter,
           page: String(currentPage),
@@ -350,6 +415,20 @@ export function OrdersPageContent() {
             return;
           }
 
+          if (
+            (response.status === 400 || response.status === 404) &&
+            searchQuery
+          ) {
+            setOrders([]);
+            setPagination(null);
+            setError({
+              message:
+                "Nao foi possivel acessar o pedido solicitado. Consulte os pedidos disponiveis para a sua conta.",
+              recoveryAction: "clear-filter",
+            });
+            return;
+          }
+
           throw new Error("Nao foi possivel carregar pedidos");
         }
 
@@ -362,7 +441,10 @@ export function OrdersPageContent() {
         }
 
         console.error("Erro ao carregar pedidos:", requestError);
-        setError("Nao foi possivel carregar pedidos. Tente novamente.");
+        setError({
+          message: "Nao foi possivel carregar pedidos. Tente novamente.",
+          recoveryAction: "retry",
+        });
       } finally {
         if (!controller.signal.aborted) {
           setIsFetching(false);
@@ -383,7 +465,26 @@ export function OrdersPageContent() {
     router,
     searchQuery,
     statusFilter,
+    hasOrderIdFilterFromRedirect,
+    initialOrderIdFilter,
   ]);
+
+  function handleErrorRecovery() {
+    if (!error) {
+      return;
+    }
+
+    if (error.recoveryAction === "clear-filter") {
+      setSearchInput("");
+      setSearchQuery("");
+      setCurrentPage(1);
+      setReloadNonce((value) => value + 1);
+      router.replace("/orders");
+      return;
+    }
+
+    setReloadNonce((value) => value + 1);
+  }
 
   const pageNumbers = useMemo(() => {
     if (!pagination?.totalPages || pagination.totalPages <= 1) {
@@ -518,15 +619,19 @@ export function OrdersPageContent() {
           <div className="flex items-start gap-3 rounded-2xl border border-rose-400/35 bg-rose-500/10 p-4 text-rose-300">
             <AlertCircle className="mt-0.5 h-4 w-4" />
             <div className="space-y-2">
-              <p className="[font-family:var(--font-arimo)] text-sm">{error}</p>
+              <p className="[font-family:var(--font-arimo)] text-sm">
+                {error.message}
+              </p>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 className="h-8 border-rose-400/40 bg-transparent [font-family:var(--font-arimo)] text-xs text-rose-300 hover:bg-rose-500/15"
-                onClick={() => setReloadNonce((value) => value + 1)}
+                onClick={handleErrorRecovery}
               >
-                Try again
+                {error.recoveryAction === "clear-filter"
+                  ? "View all orders"
+                  : "Try again"}
               </Button>
             </div>
           </div>

@@ -3,7 +3,9 @@ import { useCart } from "@/context/cart";
 import { useAuth } from "@/hooks/useAuth";
 import {
   mapCheckoutErrorMessage,
+  mapOrderStatusError,
   normalizeCheckoutItems,
+  type OrderStatusRecoveryAction,
   resolveStoreIdFromCart,
 } from "@/hooks/useCheckout.helpers";
 
@@ -26,6 +28,11 @@ interface CreateCheckoutSessionParams {
   shippingMethod?: ShippingMethod;
   addressId?: string;
 }
+
+export type OrderStatusRequestError = Error & {
+  status: number;
+  recoveryAction: OrderStatusRecoveryAction;
+};
 
 export function useCheckout() {
   const [isLoading, setIsLoading] = useState(false);
@@ -130,7 +137,15 @@ export function useCheckout() {
     try {
       const response = await fetch(`/api/orders/${orderId}`);
       if (!response.ok) {
-        throw new Error("Erro ao buscar status do pedido");
+        const errorData = await response.json().catch(() => ({}));
+        const { message, recoveryAction } = mapOrderStatusError(
+          response.status,
+          errorData,
+        );
+        const requestError = new Error(message) as OrderStatusRequestError;
+        requestError.status = response.status;
+        requestError.recoveryAction = recoveryAction;
+        throw requestError;
       }
       return await response.json();
     } catch (err) {

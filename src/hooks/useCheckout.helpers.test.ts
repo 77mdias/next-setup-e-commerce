@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   mapCheckoutErrorMessage,
+  mapOrderStatusError,
   normalizeCheckoutItems,
   resolveStoreIdFromCart,
 } from "./useCheckout.helpers";
@@ -93,5 +94,40 @@ describe("resolveStoreIdFromCart", () => {
         hasMixedStores: false,
       },
     );
+  });
+});
+
+describe("mapOrderStatusError", () => {
+  it("maps 400 with neutral recovery guidance", () => {
+    expect(mapOrderStatusError(400)).toEqual({
+      message:
+        "Nao foi possivel validar o pedido informado. Revise o codigo e tente novamente.",
+      recoveryAction: "open-orders",
+    });
+  });
+
+  it("maps 401 to reauth recovery", () => {
+    expect(mapOrderStatusError(401)).toEqual({
+      message:
+        "Sua sessao expirou. Faca login novamente para acessar o pedido.",
+      recoveryAction: "reauth",
+    });
+  });
+
+  it("maps 404 to ownership-safe response", () => {
+    expect(mapOrderStatusError(404)).toEqual({
+      message:
+        "Esse pedido nao esta disponivel para esta conta. Consulte seus pedidos recentes.",
+      recoveryAction: "open-orders",
+    });
+  });
+
+  it("keeps fallback message for unknown status", () => {
+    expect(
+      mapOrderStatusError(500, { error: "Erro interno do servidor" }),
+    ).toEqual({
+      message: "Erro interno do servidor",
+      recoveryAction: "retry",
+    });
   });
 });

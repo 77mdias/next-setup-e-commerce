@@ -14,6 +14,10 @@ type CheckoutErrorPayload = {
   issues?: CheckoutErrorIssue[];
 };
 
+type OrderStatusErrorPayload = {
+  error?: string;
+};
+
 type CartItemInput = {
   id: string;
   quantity: number;
@@ -91,6 +95,49 @@ export function mapCheckoutErrorMessage(
   }
 
   return fallbackMessage;
+}
+
+export type OrderStatusRecoveryAction = "reauth" | "open-orders" | "retry";
+
+export type OrderStatusErrorResolution = {
+  message: string;
+  recoveryAction: OrderStatusRecoveryAction;
+};
+
+export function mapOrderStatusError(
+  status: number,
+  payload?: OrderStatusErrorPayload,
+): OrderStatusErrorResolution {
+  if (status === 400) {
+    return {
+      message:
+        "Nao foi possivel validar o pedido informado. Revise o codigo e tente novamente.",
+      recoveryAction: "open-orders",
+    };
+  }
+
+  if (status === 401) {
+    return {
+      message:
+        "Sua sessao expirou. Faca login novamente para acessar o pedido.",
+      recoveryAction: "reauth",
+    };
+  }
+
+  if (status === 404) {
+    return {
+      message:
+        "Esse pedido nao esta disponivel para esta conta. Consulte seus pedidos recentes.",
+      recoveryAction: "open-orders",
+    };
+  }
+
+  return {
+    message:
+      payload?.error?.trim() ||
+      "Nao foi possivel consultar este pedido agora. Tente novamente.",
+    recoveryAction: "retry",
+  };
 }
 
 export function resolveStoreIdFromCart(items: CartItemStoreInput[]): {

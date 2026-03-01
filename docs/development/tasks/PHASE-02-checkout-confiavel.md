@@ -241,7 +241,7 @@ Remover dependência de `customerEmail` como critério de autorização em pedid
   **Dependências:** S02-ORD-001  
   **Status:** ✅ Concluída (2026-03-01)
 
-- [ ] **S02-ORD-003** - Ajustar consumidores frontend para novo contrato de ownership
+- [x] **S02-ORD-003** - Ajustar consumidores frontend para novo contrato de ownership
 
   **Descrição curta:**
   - Garantir UX consistente quando pedido não pertence ao usuário atual.
@@ -255,13 +255,13 @@ Remover dependência de `customerEmail` como critério de autorização em pedid
   **Arquivos/áreas afetadas:** `src/hooks/useCheckout.ts`, `src/components/orders/orders-page-content.tsx`, `src/app/orders/__tests__/page.integration.test.ts`
 
   **Critérios de aceitação:**
-  - [ ] Fluxo sucesso/falha mantém redirecionamento sem quebrar quando pedido não é acessível.
-  - [ ] Frontend não exibe dados de pedido para sessão sem ownership válido.
+  - [x] Fluxo sucesso/falha mantém redirecionamento sem quebrar quando pedido não é acessível.
+  - [x] Frontend não exibe dados de pedido para sessão sem ownership válido.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 3h  
   **Dependências:** S02-ORD-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-01)
 
 ### 📦 Testes, rollout e governança - Garantia de liberação da Sprint 02
 
