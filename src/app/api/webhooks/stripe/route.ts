@@ -13,7 +13,7 @@ type WebhookProcessResult = {
 
 type WebhookMutationClient = Pick<
   typeof db,
-  "order" | "payment" | "stripeWebhookEvent"
+  "order" | "payment" | "stripeWebhookEvent" | "orderStatusHistory"
 >;
 
 type EventRegistrationResult =
@@ -75,6 +75,34 @@ function resolveFailureCancelReason(
   }
 
   return "Pagamento falhou ou expirou";
+}
+
+function buildWebhookStatusHistoryNote(params: {
+  event: Stripe.Event;
+  fromOrderStatus: OrderStatus;
+  toOrderStatus: OrderStatus;
+  fromPaymentStatus: PaymentStatus;
+  toPaymentStatus: PaymentStatus;
+  reason?: string;
+  lookupSource?: FailureOrderLookupResult["lookupSource"];
+}) {
+  const noteParts = [
+    "source:webhook",
+    `eventType:${params.event.type}`,
+    `eventId:${params.event.id}`,
+    `orderStatusTransition:${params.fromOrderStatus}->${params.toOrderStatus}`,
+    `paymentStatusTransition:${params.fromPaymentStatus}->${params.toPaymentStatus}`,
+  ];
+
+  if (params.lookupSource) {
+    noteParts.push(`lookupSource:${params.lookupSource}`);
+  }
+
+  if (params.reason?.trim()) {
+    noteParts.push(`reason:${params.reason.trim()}`);
+  }
+
+  return noteParts.join("; ");
 }
 
 function resolveFailureEventContext(event: Stripe.Event): FailureEventContext {
@@ -461,6 +489,21 @@ async function processWebhookEvent(
         stripePaymentIntentId: paymentIntentId,
       });
 
+      await database.orderStatusHistory.create({
+        data: {
+          orderId: existingOrder.id,
+          status: "PAID",
+          notes: buildWebhookStatusHistoryNote({
+            event,
+            fromOrderStatus: existingOrder.status,
+            toOrderStatus: "PAID",
+            fromPaymentStatus: existingOrder.paymentStatus,
+            toPaymentStatus: "PAID",
+            reason: "Pagamento confirmado",
+          }),
+        },
+      });
+
       const payment = await database.payment.create({
         data: {
           orderId: existingOrder.id,
@@ -564,6 +607,22 @@ async function processWebhookEvent(
       });
 
       if (cancellationResult.count === 1) {
+        await database.orderStatusHistory.create({
+          data: {
+            orderId: order.id,
+            status: "CANCELLED",
+            notes: buildWebhookStatusHistoryNote({
+              event,
+              fromOrderStatus: order.status,
+              toOrderStatus: "CANCELLED",
+              fromPaymentStatus: order.paymentStatus,
+              toPaymentStatus: "FAILED",
+              reason: failureContext.cancelReason,
+              lookupSource: failureOrder.lookupSource,
+            }),
+          },
+        });
+
         console.log("❌ Pedido cancelado devido a falha no pagamento", {
           eventId: event.id,
           eventType: event.type,
@@ -603,6 +662,7 @@ async function processWebhookEventAtomically(event: Stripe.Event) {
     const result = await processWebhookEvent(
       {
         order: tx.order,
+        orderStatusHistory: tx.orderStatusHistory,
         payment: tx.payment,
         stripeWebhookEvent: tx.stripeWebhookEvent,
       },

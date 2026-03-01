@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-01
 **Sprint Atual:** Sprint 02
-**Status Geral:** 🟡 25% (3/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 33% (4/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias úteis)
 **Pré-requisito:** Fase 01 - Fundação de Segurança (✅ concluída em 2026-02-28)
 
@@ -14,10 +14,10 @@
 | Categoria                              | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | -------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Webhook idempotente e resiliente       | 3      | 2         | 0            | 1        | 0         |
-| Máquina de estados e histórico         | 3      | 1         | 0            | 2        | 0         |
+| Máquina de estados e histórico         | 3      | 2         | 0            | 1        | 0         |
 | Ownership de pedidos por `userId`      | 3      | 0         | 0            | 3        | 0         |
 | Testes, rollout e governança           | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                              | **12** | **3**     | **0**        | **9**    | **0**     |
+| **TOTAL**                              | **12** | **4**     | **0**        | **8**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
@@ -145,7 +145,7 @@ Estabelecer regras explícitas de transição para `OrderStatus` e `PaymentStatu
   **Dependências:** S02-WHK-001  
   **Status:** ✅ Concluída (2026-03-01)
 
-- [ ] **S02-STM-002** - Persistir `OrderStatusHistory` nas mudanças de status
+- [x] **S02-STM-002** - Persistir `OrderStatusHistory` nas mudanças de status
 
   **Descrição curta:**
   - Registrar toda mudança relevante de status para auditoria e depuração.
@@ -159,13 +159,13 @@ Estabelecer regras explícitas de transição para `OrderStatus` e `PaymentStatu
   **Arquivos/áreas afetadas:** `src/app/api/webhooks/stripe/route.ts`, `src/app/api/checkout/route.ts`, `prisma/schema.prisma` (se ajuste adicional for necessário)
 
   **Critérios de aceitação:**
-  - [ ] Toda mudança de status relevante gera registro em `OrderStatusHistory`.
-  - [ ] Histórico não contém entradas órfãs ou inconsistentes com o estado atual.
+  - [x] Toda mudança de status relevante gera registro em `OrderStatusHistory`.
+  - [x] Histórico não contém entradas órfãs ou inconsistentes com o estado atual.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 5h  
   **Dependências:** S02-STM-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-01)
 
 - [ ] **S02-STM-003** - Expor histórico e estado consistente nas APIs de pedido
 

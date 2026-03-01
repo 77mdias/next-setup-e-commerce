@@ -15,6 +15,9 @@ const { mockConstructEvent, mockStripeCtor, mockDb } = vi.hoisted(() => ({
     payment: {
       create: vi.fn(),
     },
+    orderStatusHistory: {
+      create: vi.fn(),
+    },
     stripeWebhookEvent: {
       create: vi.fn(),
       findUnique: vi.fn(),
@@ -96,6 +99,11 @@ describe("POST /api/webhooks/stripe integration", () => {
       amount: 115,
       status: "PAID",
     });
+    mockDb.orderStatusHistory.create.mockResolvedValue({
+      id: "history-1",
+      orderId: 123,
+      status: "PAID",
+    });
 
     mockDb.stripeWebhookEvent.create.mockResolvedValue({ id: "evt-log-1" });
     mockDb.stripeWebhookEvent.findUnique.mockResolvedValue(null);
@@ -159,6 +167,13 @@ describe("POST /api/webhooks/stripe integration", () => {
         status: "PAID",
         stripePaymentId: "pi_test_123",
         paidAt: expect.any(Date),
+      },
+    });
+    expect(mockDb.orderStatusHistory.create).toHaveBeenCalledWith({
+      data: {
+        orderId: 123,
+        status: "PAID",
+        notes: expect.stringContaining("source:webhook"),
       },
     });
 
@@ -235,6 +250,7 @@ describe("POST /api/webhooks/stripe integration", () => {
     expect(mockDb.$transaction).not.toHaveBeenCalled();
     expect(mockDb.order.updateMany).not.toHaveBeenCalled();
     expect(mockDb.payment.create).not.toHaveBeenCalled();
+    expect(mockDb.orderStatusHistory.create).not.toHaveBeenCalled();
     expect(mockDb.stripeWebhookEvent.updateMany).not.toHaveBeenCalled();
   });
 
@@ -323,6 +339,7 @@ describe("POST /api/webhooks/stripe integration", () => {
 
     expect(mockDb.$transaction).not.toHaveBeenCalled();
     expect(mockDb.order.updateMany).not.toHaveBeenCalled();
+    expect(mockDb.orderStatusHistory.create).not.toHaveBeenCalled();
   });
 
   it("cancels an order only once across distinct failure events for the same order", async () => {
@@ -381,6 +398,14 @@ describe("POST /api/webhooks/stripe integration", () => {
         cancelledAt: expect.any(Date),
       }),
     });
+    expect(mockDb.orderStatusHistory.create).toHaveBeenCalledTimes(1);
+    expect(mockDb.orderStatusHistory.create).toHaveBeenCalledWith({
+      data: {
+        orderId: 123,
+        status: "CANCELLED",
+        notes: expect.stringContaining("source:webhook"),
+      },
+    });
   });
 
   it("ignores failure event when order is already in a non-cancellable state", async () => {
@@ -406,6 +431,7 @@ describe("POST /api/webhooks/stripe integration", () => {
 
     expect(response.status).toBe(200);
     expect(mockDb.order.updateMany).not.toHaveBeenCalled();
+    expect(mockDb.orderStatusHistory.create).not.toHaveBeenCalled();
   });
 
   it("resolves charge.failed by payment intent when orderId metadata is missing", async () => {
@@ -450,6 +476,13 @@ describe("POST /api/webhooks/stripe integration", () => {
         cancelReason: "Pagamento falhou: Cartão recusado",
       }),
     });
+    expect(mockDb.orderStatusHistory.create).toHaveBeenCalledWith({
+      data: {
+        orderId: 123,
+        status: "CANCELLED",
+        notes: expect.stringContaining("source:webhook"),
+      },
+    });
   });
 
   it("blocks invalid checkout success transition and marks webhook event as failed", async () => {
@@ -490,6 +523,7 @@ describe("POST /api/webhooks/stripe integration", () => {
 
     expect(mockDb.order.updateMany).not.toHaveBeenCalled();
     expect(mockDb.payment.create).not.toHaveBeenCalled();
+    expect(mockDb.orderStatusHistory.create).not.toHaveBeenCalled();
     expect(mockDb.stripeWebhookEvent.updateMany).toHaveBeenCalledWith({
       where: {
         eventId: "evt_invalid_transition_123",
@@ -527,6 +561,7 @@ describe("POST /api/webhooks/stripe integration", () => {
     expect(body).toEqual({ error: "Order not found", orderId: "123" });
 
     expect(mockDb.payment.create).not.toHaveBeenCalled();
+    expect(mockDb.orderStatusHistory.create).not.toHaveBeenCalled();
 
     expect(mockDb.stripeWebhookEvent.updateMany).toHaveBeenCalledWith({
       where: {

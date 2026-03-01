@@ -181,6 +181,15 @@ describe("POST /api/checkout integration", () => {
           subtotal: 100,
           shippingFee: 15,
           total: 115,
+          status: "PENDING",
+          paymentStatus: "PENDING",
+          statusHistory: {
+            create: expect.objectContaining({
+              status: "PENDING",
+              changedBy: "user-1",
+              notes: expect.stringContaining("source:checkout"),
+            }),
+          },
         }),
       }),
     );

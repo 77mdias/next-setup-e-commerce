@@ -474,6 +474,12 @@ export async function POST(request: NextRequest) {
     const shippingFee = centsToMoney(shippingFeeCents);
     const total = centsToMoney(totalCents);
     const initialOrderState = INITIAL_ORDER_STATE;
+    const initialStatusHistoryNote = [
+      "source:checkout",
+      "reason:order_created",
+      `orderStatus:${initialOrderState.orderStatus}`,
+      `paymentStatus:${initialOrderState.paymentStatus}`,
+    ].join("; ");
 
     const stripeLineItems = canonicalItems.map((item) => ({
       price_data: {
@@ -520,6 +526,13 @@ export async function POST(request: NextRequest) {
           shippingFee,
           total,
           paymentMethod: "stripe",
+          statusHistory: {
+            create: {
+              status: initialOrderState.orderStatus,
+              notes: initialStatusHistoryNote,
+              changedBy: session.user.id,
+            },
+          },
           items: {
             create: canonicalItems.map((item) => ({
               productId: item.productId,
