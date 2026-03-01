@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { OrderStatus } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
+import { buildOrderStatusHistory } from "@/lib/order-status-history";
 
 const validOrderStatuses = new Set<OrderStatus>(Object.values(OrderStatus));
 
@@ -83,6 +84,16 @@ export async function GET(request: NextRequest) {
               paidAt: true,
             },
           },
+          statusHistory: {
+            select: {
+              id: true,
+              status: true,
+              notes: true,
+              changedBy: true,
+              createdAt: true,
+            },
+            orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+          },
         },
         orderBy: {
           createdAt: "desc",
@@ -95,8 +106,19 @@ export async function GET(request: NextRequest) {
 
     const totalPages = Math.ceil(total / limit);
 
+    const normalizedOrders = orders.map((order) => ({
+      ...order,
+      statusHistory: buildOrderStatusHistory({
+        orderId: order.id,
+        currentStatus: order.status,
+        updatedAt: order.updatedAt,
+        statusHistory: order.statusHistory,
+        fallbackChangedBy: order.userId,
+      }),
+    }));
+
     return NextResponse.json({
-      orders,
+      orders: normalizedOrders,
       pagination: {
         page,
         limit,

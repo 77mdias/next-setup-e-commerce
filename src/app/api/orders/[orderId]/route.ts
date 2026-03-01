@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { buildOrderStatusHistory } from "@/lib/order-status-history";
 import { db } from "@/lib/prisma";
 
 export async function GET(
@@ -39,6 +40,16 @@ export async function GET(
           orderBy: {
             createdAt: "desc",
           },
+        },
+        statusHistory: {
+          select: {
+            id: true,
+            status: true,
+            notes: true,
+            changedBy: true,
+            createdAt: true,
+          },
+          orderBy: [{ createdAt: "asc" }, { id: "asc" }],
         },
       },
     });
@@ -84,6 +95,13 @@ export async function GET(
         amount: payment.amount,
         paidAt: payment.paidAt?.toISOString() || null,
       })),
+      statusHistory: buildOrderStatusHistory({
+        orderId: order.id,
+        currentStatus: order.status,
+        updatedAt: order.updatedAt,
+        statusHistory: order.statusHistory,
+        fallbackChangedBy: order.userId,
+      }),
     };
 
     return NextResponse.json(formattedOrder);

@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-01
 **Sprint Atual:** Sprint 02
-**Status Geral:** 🟡 33% (4/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 50% (6/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias úteis)
 **Pré-requisito:** Fase 01 - Fundação de Segurança (✅ concluída em 2026-02-28)
 
@@ -13,17 +13,17 @@
 
 | Categoria                              | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | -------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Webhook idempotente e resiliente       | 3      | 2         | 0            | 1        | 0         |
-| Máquina de estados e histórico         | 3      | 2         | 0            | 1        | 0         |
+| Webhook idempotente e resiliente       | 3      | 3         | 0            | 0        | 0         |
+| Máquina de estados e histórico         | 3      | 3         | 0            | 0        | 0         |
 | Ownership de pedidos por `userId`      | 3      | 0         | 0            | 3        | 0         |
 | Testes, rollout e governança           | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                              | **12** | **4**     | **0**        | **8**    | **0**     |
+| **TOTAL**                              | **12** | **6**     | **0**        | **6**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Escopo da Sprint 02 estruturado em 4 frentes técnicas.
 - ✅ Dependências críticas da Sprint 01 já concluídas.
-- ⚠️ Risco principal: endpoint `/api/orders/[orderId]` ainda com ownership por `customerEmail` e ausência de matriz explícita de transições de estado.
+- ⚠️ Risco principal: endpoint `/api/orders/[orderId]` ainda com ownership por `customerEmail` (hardening em aberto na trilha ORD).
 
 ---
 
@@ -167,7 +167,7 @@ Estabelecer regras explícitas de transição para `OrderStatus` e `PaymentStatu
   **Dependências:** S02-STM-001  
   **Status:** ✅ Concluída (2026-03-01)
 
-- [ ] **S02-STM-003** - Expor histórico e estado consistente nas APIs de pedido
+- [x] **S02-STM-003** - Expor histórico e estado consistente nas APIs de pedido
 
   **Descrição curta:**
   - Tornar o histórico visível para diagnóstico e UI sem quebrar segurança.
@@ -178,16 +178,16 @@ Estabelecer regras explícitas de transição para `OrderStatus` e `PaymentStatu
   - Normalizar ordenação temporal e shape de resposta para consumo frontend.
   - Cobrir fallback para pedidos legados sem histórico completo.
 
-  **Arquivos/áreas afetadas:** `src/app/api/orders/[orderId]/route.ts`, `src/app/api/orders/session/[sessionId]/route.ts`, `src/app/api/orders/user/route.ts`
+  **Arquivos/áreas afetadas:** `src/app/api/orders/[orderId]/route.ts`, `src/app/api/orders/session/[sessionId]/route.ts`, `src/app/api/orders/user/route.ts`, `src/lib/order-status-history.ts`, `src/app/api/orders/[orderId]/__tests__/route.integration.test.ts`, `src/app/api/orders/session/[sessionId]/__tests__/route.integration.test.ts`, `src/app/api/orders/user/__tests__/route.integration.test.ts`
 
   **Critérios de aceitação:**
-  - [ ] APIs retornam estado atual + histórico ordenado sem inconsistências.
-  - [ ] Estrutura de resposta permanece estável para consumidores atuais.
+  - [x] APIs retornam estado atual + histórico ordenado sem inconsistências.
+  - [x] Estrutura de resposta permanece estável para consumidores atuais.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 4h  
   **Dependências:** S02-STM-001, S02-STM-002  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-01)
 
 ### 📦 Ownership de pedidos por `userId` - Proteção de dados pós-checkout
 

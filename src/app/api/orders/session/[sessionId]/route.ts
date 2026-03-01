@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { buildOrderStatusHistory } from "@/lib/order-status-history";
 import {
   buildOrderSessionLookupWhere,
   normalizeOrderSessionId,
@@ -88,6 +89,16 @@ export async function GET(
             paidAt: true,
           },
         },
+        statusHistory: {
+          select: {
+            id: true,
+            status: true,
+            notes: true,
+            changedBy: true,
+            createdAt: true,
+          },
+          orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        },
       },
     });
 
@@ -98,7 +109,16 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(order);
+    return NextResponse.json({
+      ...order,
+      statusHistory: buildOrderStatusHistory({
+        orderId: order.id,
+        currentStatus: order.status,
+        updatedAt: order.updatedAt,
+        statusHistory: order.statusHistory,
+        fallbackChangedBy: order.userId,
+      }),
+    });
   } catch (error) {
     logOrderSessionLookupFailure(error);
     return NextResponse.json(

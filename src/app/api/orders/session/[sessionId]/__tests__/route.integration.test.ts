@@ -38,6 +38,34 @@ function createRequest(sessionId: string) {
   };
 }
 
+function createOrder(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 321,
+    userId: "user-owner",
+    stripePaymentId: "cs_owner_1",
+    status: "PENDING",
+    paymentStatus: "PENDING",
+    createdAt: new Date("2026-03-01T10:00:00.000Z"),
+    updatedAt: new Date("2026-03-01T10:00:00.000Z"),
+    cancelledAt: null,
+    cancelReason: null,
+    items: [],
+    store: { id: "store-1", name: "NeXT Store", slug: "nextstore" },
+    address: null,
+    payments: [],
+    statusHistory: [
+      {
+        id: "hist-1",
+        status: "PENDING",
+        notes: "source:checkout",
+        changedBy: "user-owner",
+        createdAt: new Date("2026-03-01T10:00:00.000Z"),
+      },
+    ],
+    ...overrides,
+  };
+}
+
 describe("GET /api/orders/session/[sessionId] integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -69,21 +97,11 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
     expect(mockDb.order.findFirst).not.toHaveBeenCalled();
   });
 
-  it("returns order data for the owner session", async () => {
+  it("returns order data for the owner session with normalized statusHistory", async () => {
     mockGetServerSession.mockResolvedValue({
       user: { id: "user-owner" },
     });
-    mockDb.order.findFirst.mockResolvedValue({
-      id: 321,
-      userId: "user-owner",
-      stripePaymentId: "cs_owner_1",
-      status: "PENDING",
-      paymentStatus: "PENDING",
-      items: [],
-      store: { id: "store-1", name: "NeXT Store", slug: "nextstore" },
-      address: null,
-      payments: [],
-    });
+    mockDb.order.findFirst.mockResolvedValue(createOrder());
 
     const { request, params } = createRequest("cs_owner_1");
     const response = await GET(request, { params });
@@ -91,6 +109,14 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
 
     expect(response.status).toBe(200);
     expect(body.id).toBe(321);
+    expect(body.statusHistory).toEqual([
+      expect.objectContaining({
+        id: "hist-1",
+        status: "PENDING",
+        isFallback: false,
+      }),
+    ]);
+
     expect(mockDb.order.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
@@ -100,8 +126,85 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
             { stripePaymentId: "cs_owner_1" },
           ],
         },
+        include: expect.objectContaining({
+          statusHistory: {
+            select: {
+              id: true,
+              status: true,
+              notes: true,
+              changedBy: true,
+              createdAt: true,
+            },
+            orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+          },
+        }),
       }),
     );
+  });
+
+  it("sorts statusHistory and appends fallback snapshot when current state diverges", async () => {
+    mockGetServerSession.mockResolvedValue({
+      user: { id: "user-owner" },
+    });
+    mockDb.order.findFirst.mockResolvedValue(
+      createOrder({
+        status: "PAID",
+        updatedAt: new Date("2026-03-01T12:00:00.000Z"),
+        statusHistory: [
+          {
+            id: "hist-2",
+            status: "PAYMENT_PENDING",
+            notes: "source:webhook",
+            changedBy: null,
+            createdAt: new Date("2026-03-01T11:00:00.000Z"),
+          },
+          {
+            id: "hist-1",
+            status: "PENDING",
+            notes: "source:checkout",
+            changedBy: "user-owner",
+            createdAt: new Date("2026-03-01T10:00:00.000Z"),
+          },
+        ],
+      }),
+    );
+
+    const { request, params } = createRequest("cs_owner_1");
+    const response = await GET(request, { params });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.statusHistory.map((entry: { status: string }) => entry.status)).toEqual(
+      ["PENDING", "PAYMENT_PENDING", "PAID"],
+    );
+    expect(body.statusHistory[2].isFallback).toBe(true);
+    expect(body.statusHistory[2].notes).toContain("reason:state_snapshot_mismatch");
+  });
+
+  it("creates fallback history for legacy orders without persisted statusHistory", async () => {
+    mockGetServerSession.mockResolvedValue({
+      user: { id: "user-owner" },
+    });
+    mockDb.order.findFirst.mockResolvedValue(
+      createOrder({
+        status: "PROCESSING",
+        updatedAt: new Date("2026-03-01T14:00:00.000Z"),
+        statusHistory: [],
+      }),
+    );
+
+    const { request, params } = createRequest("cs_owner_1");
+    const response = await GET(request, { params });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.statusHistory).toEqual([
+      expect.objectContaining({
+        status: "PROCESSING",
+        isFallback: true,
+      }),
+    ]);
+    expect(body.statusHistory[0].notes).toContain("reason:legacy_missing_history");
   });
 
   it("returns 404 for authenticated user that is not the order owner", async () => {
@@ -133,17 +236,7 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
     mockGetServerSession.mockResolvedValue({
       user: { id: "user-owner" },
     });
-    mockDb.order.findFirst.mockResolvedValue({
-      id: 999,
-      userId: "user-owner",
-      stripePaymentId: "cs_owner_1",
-      status: "PENDING",
-      paymentStatus: "PENDING",
-      items: [],
-      store: { id: "store-1", name: "NeXT Store", slug: "nextstore" },
-      address: null,
-      payments: [],
-    });
+    mockDb.order.findFirst.mockResolvedValue(createOrder());
 
     const { request, params } = createRequest("  cs_owner_1  ");
     const response = await GET(request, { params });
