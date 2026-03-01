@@ -93,7 +93,7 @@ Tornar o webhook Stripe seguro para reentregas e falhas transitórias de rede. E
   **Dependências:** S02-WHK-001  
   **Status:** ✅ Concluída (2026-03-01)
 
-- [ ] **S02-WHK-003** - Cobrir eventos de falha/expiração com retry seguro
+- [x] **S02-WHK-003** - Cobrir eventos de falha/expiração com retry seguro
 
   **Descrição curta:**
   - Consolidar tratamento de `checkout.session.async_payment_failed`, `checkout.session.expired` e `charge.failed`.
@@ -107,13 +107,13 @@ Tornar o webhook Stripe seguro para reentregas e falhas transitórias de rede. E
   **Arquivos/áreas afetadas:** `src/app/api/webhooks/stripe/route.ts`, `src/app/api/webhooks/stripe/__tests__/route.integration.test.ts`
 
   **Critérios de aceitação:**
-  - [ ] Eventos de falha duplicados não geram múltiplas mudanças de estado.
-  - [ ] Pedido não volta para estado anterior por reprocessamento indevido.
+  - [x] Eventos de falha duplicados não geram múltiplas mudanças de estado.
+  - [x] Pedido não volta para estado anterior por reprocessamento indevido.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 4h  
   **Dependências:** S02-WHK-001, S02-WHK-002  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-01)
 
 ### 📦 Máquina de estados e histórico - Consistência de pedido e pagamento
 

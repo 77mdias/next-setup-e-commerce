@@ -18,6 +18,27 @@ type EventRegistrationResult =
   | { claimed: false; response: NextResponse };
 
 const DEFAULT_PROCESSING_TIMEOUT_MS = 10 * 60 * 1000;
+const FAILURE_CANCELLABLE_ORDER_STATUSES: Array<"PENDING" | "PAYMENT_PENDING"> =
+  ["PENDING", "PAYMENT_PENDING"];
+const FAILURE_CANCELLABLE_ORDER_STATUS_SET = new Set<string>(
+  FAILURE_CANCELLABLE_ORDER_STATUSES,
+);
+
+type FailureEventContext = {
+  orderId: number | null;
+  paymentIntentId: string | null;
+  checkoutSessionId: string | null;
+  cancelReason: string;
+};
+
+type FailureOrderLookupResult = {
+  lookupSource: "metadata" | "payment_intent" | "checkout_session" | "none";
+  order: {
+    id: number;
+    status: string;
+    paymentStatus: string;
+  } | null;
+};
 
 function resolvePaymentIntentId(
   paymentIntent: string | Stripe.PaymentIntent | null,
@@ -27,6 +48,118 @@ function resolvePaymentIntentId(
   }
 
   return typeof paymentIntent === "string" ? paymentIntent : paymentIntent.id;
+}
+
+function resolveOrderId(rawOrderId: string | undefined) {
+  if (!rawOrderId) {
+    return null;
+  }
+
+  const parsedOrderId = Number(rawOrderId);
+
+  if (!Number.isInteger(parsedOrderId) || parsedOrderId <= 0) {
+    return null;
+  }
+
+  return parsedOrderId;
+}
+
+function resolveFailureCancelReason(
+  eventType: Stripe.Event.Type,
+  failureMessage?: string | null,
+) {
+  if (eventType === "checkout.session.expired") {
+    return "Sessão de checkout expirada";
+  }
+
+  if (failureMessage?.trim()) {
+    return `Pagamento falhou: ${failureMessage.trim()}`;
+  }
+
+  return "Pagamento falhou ou expirou";
+}
+
+function resolveFailureEventContext(event: Stripe.Event): FailureEventContext {
+  if (event.type === "charge.failed") {
+    const failedCharge = event.data.object as Stripe.Charge;
+
+    return {
+      orderId: resolveOrderId(failedCharge.metadata?.orderId),
+      paymentIntentId: resolvePaymentIntentId(failedCharge.payment_intent),
+      checkoutSessionId: null,
+      cancelReason: resolveFailureCancelReason(
+        event.type,
+        failedCharge.failure_message,
+      ),
+    };
+  }
+
+  const failedSession = event.data.object as Stripe.Checkout.Session;
+
+  return {
+    orderId: resolveOrderId(failedSession.metadata?.orderId),
+    paymentIntentId: resolvePaymentIntentId(failedSession.payment_intent),
+    checkoutSessionId: failedSession.id,
+    cancelReason: resolveFailureCancelReason(event.type),
+  };
+}
+
+async function resolveFailureOrder(
+  database: WebhookMutationClient,
+  failureContext: FailureEventContext,
+): Promise<FailureOrderLookupResult> {
+  if (failureContext.orderId !== null) {
+    const orderByMetadata = await database.order.findUnique({
+      where: { id: failureContext.orderId },
+      select: { id: true, status: true, paymentStatus: true },
+    });
+
+    if (orderByMetadata) {
+      return {
+        order: orderByMetadata,
+        lookupSource: "metadata",
+      };
+    }
+  }
+
+  if (failureContext.paymentIntentId) {
+    const orderByPaymentIntent = await database.order.findFirst({
+      where: {
+        stripePaymentIntentId: failureContext.paymentIntentId,
+      },
+      select: { id: true, status: true, paymentStatus: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (orderByPaymentIntent) {
+      return {
+        order: orderByPaymentIntent,
+        lookupSource: "payment_intent",
+      };
+    }
+  }
+
+  if (failureContext.checkoutSessionId) {
+    const orderBySession = await database.order.findFirst({
+      where: {
+        stripeCheckoutSessionId: failureContext.checkoutSessionId,
+      },
+      select: { id: true, status: true, paymentStatus: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (orderBySession) {
+      return {
+        order: orderBySession,
+        lookupSource: "checkout_session",
+      };
+    }
+  }
+
+  return {
+    order: null,
+    lookupSource: "none",
+  };
 }
 
 function toErrorMessage(error: unknown) {
@@ -284,32 +417,72 @@ async function processWebhookEvent(
     case "checkout.session.async_payment_failed":
     case "checkout.session.expired":
     case "charge.failed": {
-      const failedSession = event.data.object as Stripe.Checkout.Session;
-      const failedOrderId = failedSession.metadata?.orderId;
+      const failureContext = resolveFailureEventContext(event);
+      const failureOrder = await resolveFailureOrder(database, failureContext);
 
-      if (failedOrderId) {
-        const failedOrder = await database.order.findUnique({
-          where: {
-            id: Number(failedOrderId),
-          },
+      if (!failureOrder.order) {
+        console.warn("⚠️ Evento de falha sem pedido correlacionado", {
+          eventId: event.id,
+          eventType: event.type,
+          lookupSource: failureOrder.lookupSource,
+          orderId: failureContext.orderId,
+          paymentIntentId: failureContext.paymentIntentId,
+          checkoutSessionId: failureContext.checkoutSessionId,
         });
+        return {
+          completed: true,
+          response: NextResponse.json({ received: true }),
+        };
+      }
 
-        if (failedOrder) {
-          await database.order.update({
-            where: { id: Number(failedOrderId) },
-            data: {
-              status: "CANCELLED",
-              paymentStatus: "FAILED",
-              cancelledAt: new Date(),
-              cancelReason: "Pagamento falhou ou expirou",
-            },
-          });
+      const { order } = failureOrder;
 
-          console.log(
-            "❌ Pedido cancelado devido a falha no pagamento:",
-            failedOrderId,
-          );
-        }
+      if (!FAILURE_CANCELLABLE_ORDER_STATUS_SET.has(order.status)) {
+        console.log("ℹ️ Evento de falha ignorado por transição inválida", {
+          eventId: event.id,
+          eventType: event.type,
+          orderId: order.id,
+          lookupSource: failureOrder.lookupSource,
+          currentOrderStatus: order.status,
+          currentPaymentStatus: order.paymentStatus,
+        });
+        return {
+          completed: true,
+          response: NextResponse.json({ received: true }),
+        };
+      }
+
+      const cancellationResult = await database.order.updateMany({
+        where: {
+          id: order.id,
+          status: { in: FAILURE_CANCELLABLE_ORDER_STATUSES },
+        },
+        data: {
+          status: "CANCELLED",
+          paymentStatus: "FAILED",
+          cancelledAt: new Date(),
+          cancelReason: failureContext.cancelReason,
+        },
+      });
+
+      if (cancellationResult.count === 1) {
+        console.log("❌ Pedido cancelado devido a falha no pagamento", {
+          eventId: event.id,
+          eventType: event.type,
+          orderId: order.id,
+          lookupSource: failureOrder.lookupSource,
+          cancelReason: failureContext.cancelReason,
+        });
+      } else {
+        console.log(
+          "ℹ️ Cancelamento ignorado por mudança concorrente de estado",
+          {
+            eventId: event.id,
+            eventType: event.type,
+            orderId: order.id,
+            lookupSource: failureOrder.lookupSource,
+          },
+        );
       }
 
       return {

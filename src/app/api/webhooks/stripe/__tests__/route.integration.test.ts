@@ -7,8 +7,10 @@ const { mockConstructEvent, mockStripeCtor, mockDb } = vi.hoisted(() => ({
   mockDb: {
     $transaction: vi.fn(),
     order: {
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
     },
     payment: {
       create: vi.fn(),
@@ -63,7 +65,8 @@ describe("POST /api/webhooks/stripe integration", () => {
     delete process.env.STRIPE_WEBHOOK_PROCESSING_TIMEOUT_MS;
 
     mockDb.$transaction.mockImplementation(
-      async (callback: (tx: typeof mockDb) => Promise<unknown>) => callback(mockDb),
+      async (callback: (tx: typeof mockDb) => Promise<unknown>) =>
+        callback(mockDb),
     );
 
     mockDb.order.findUnique.mockResolvedValue({
@@ -74,6 +77,7 @@ describe("POST /api/webhooks/stripe integration", () => {
       stripeCheckoutSessionId: null,
       store: { slug: "nextstore" },
     });
+    mockDb.order.findFirst.mockResolvedValue(null);
 
     mockDb.order.update.mockResolvedValue({
       id: 123,
@@ -85,6 +89,7 @@ describe("POST /api/webhooks/stripe integration", () => {
       items: [],
       store: { slug: "nextstore" },
     });
+    mockDb.order.updateMany.mockResolvedValue({ count: 1 });
 
     mockDb.payment.create.mockResolvedValue({
       id: "pay-1",
@@ -284,6 +289,160 @@ describe("POST /api/webhooks/stripe integration", () => {
         }),
       }),
     );
+  });
+
+  it("does not execute business mutations when the same failure event is delivered again", async () => {
+    mockDb.stripeWebhookEvent.create.mockRejectedValueOnce({ code: "P2002" });
+    mockDb.stripeWebhookEvent.findUnique.mockResolvedValueOnce({
+      status: "COMPLETED",
+      updatedAt: new Date(),
+    });
+
+    mockConstructEvent.mockReturnValue({
+      id: "evt_failure_duplicate_123",
+      type: "checkout.session.expired",
+      data: {
+        object: {
+          id: "cs_test_123",
+          metadata: { orderId: "123" },
+          payment_intent: "pi_test_123",
+        },
+      },
+    });
+
+    const response = await POST(createWebhookRequest({ example: true }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ received: true, deduplicated: true });
+
+    expect(mockDb.$transaction).not.toHaveBeenCalled();
+    expect(mockDb.order.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("cancels an order only once across distinct failure events for the same order", async () => {
+    mockDb.order.findUnique
+      .mockResolvedValueOnce({
+        id: 123,
+        status: "PENDING",
+        paymentStatus: "PENDING",
+      })
+      .mockResolvedValueOnce({
+        id: 123,
+        status: "CANCELLED",
+        paymentStatus: "FAILED",
+      });
+
+    mockConstructEvent
+      .mockReturnValueOnce({
+        id: "evt_failure_first_123",
+        type: "checkout.session.async_payment_failed",
+        data: {
+          object: {
+            id: "cs_test_123",
+            metadata: { orderId: "123" },
+            payment_intent: "pi_test_123",
+          },
+        },
+      })
+      .mockReturnValueOnce({
+        id: "evt_failure_second_123",
+        type: "checkout.session.expired",
+        data: {
+          object: {
+            id: "cs_test_123",
+            metadata: { orderId: "123" },
+            payment_intent: "pi_test_123",
+          },
+        },
+      });
+
+    const firstResponse = await POST(createWebhookRequest({ first: true }));
+    const secondResponse = await POST(createWebhookRequest({ second: true }));
+
+    expect(firstResponse.status).toBe(200);
+    expect(secondResponse.status).toBe(200);
+
+    expect(mockDb.order.updateMany).toHaveBeenCalledTimes(1);
+    expect(mockDb.order.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 123,
+        status: { in: ["PENDING", "PAYMENT_PENDING"] },
+      },
+      data: expect.objectContaining({
+        status: "CANCELLED",
+        paymentStatus: "FAILED",
+        cancelledAt: expect.any(Date),
+      }),
+    });
+  });
+
+  it("ignores failure event when order is already in a non-cancellable state", async () => {
+    mockDb.order.findUnique.mockResolvedValueOnce({
+      id: 123,
+      status: "PAID",
+      paymentStatus: "PAID",
+    });
+
+    mockConstructEvent.mockReturnValue({
+      id: "evt_failure_paid_123",
+      type: "checkout.session.async_payment_failed",
+      data: {
+        object: {
+          id: "cs_test_123",
+          metadata: { orderId: "123" },
+          payment_intent: "pi_test_123",
+        },
+      },
+    });
+
+    const response = await POST(createWebhookRequest({ example: true }));
+
+    expect(response.status).toBe(200);
+    expect(mockDb.order.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("resolves charge.failed by payment intent when orderId metadata is missing", async () => {
+    mockDb.order.findFirst.mockResolvedValueOnce({
+      id: 123,
+      status: "PENDING",
+      paymentStatus: "PENDING",
+    });
+
+    mockConstructEvent.mockReturnValue({
+      id: "evt_charge_failed_123",
+      type: "charge.failed",
+      data: {
+        object: {
+          id: "ch_test_123",
+          metadata: {},
+          payment_intent: "pi_test_123",
+          failure_message: "Cartão recusado",
+        },
+      },
+    });
+
+    const response = await POST(createWebhookRequest({ example: true }));
+
+    expect(response.status).toBe(200);
+    expect(mockDb.order.findFirst).toHaveBeenCalledWith({
+      where: {
+        stripePaymentIntentId: "pi_test_123",
+      },
+      select: { id: true, status: true, paymentStatus: true },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(mockDb.order.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 123,
+        status: { in: ["PENDING", "PAYMENT_PENDING"] },
+      },
+      data: expect.objectContaining({
+        status: "CANCELLED",
+        paymentStatus: "FAILED",
+        cancelReason: "Pagamento falhou: Cartão recusado",
+      }),
+    });
   });
 
   it("marks webhook event as failed when order is not found", async () => {
