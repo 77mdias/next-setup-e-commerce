@@ -271,7 +271,7 @@ Consolidar cobertura automatizada e validação operacional para liberar a Sprin
 
 #### QA.1 - Cobertura crítica e homologação controlada
 
-- [ ] **S02-QA-001** - Expandir integração de webhook para reentrega e duplicidade
+- [x] **S02-QA-001** - Expandir integração de webhook para reentrega e duplicidade
 
   **Descrição curta:**
   - Cobrir cenário de evento Stripe repetido com mesmo `event.id`.
@@ -285,13 +285,13 @@ Consolidar cobertura automatizada e validação operacional para liberar a Sprin
   **Arquivos/áreas afetadas:** `src/app/api/webhooks/stripe/__tests__/route.integration.test.ts`
 
   **Critérios de aceitação:**
-  - [ ] Evento duplicado não cria pagamento duplicado.
-  - [ ] Suite falha quando idempotência é quebrada.
+  - [x] Evento duplicado não cria pagamento duplicado.
+  - [x] Suite falha quando idempotência é quebrada.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 4h  
   **Dependências:** S02-WHK-002, S02-WHK-003  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-01)
 
 - [ ] **S02-QA-002** - Cobrir máquina de estados e histórico em integração
 

@@ -221,13 +221,7 @@ describe("POST /api/webhooks/stripe integration", () => {
     });
   });
 
-  it("does not execute business mutations when the same completed event is delivered again", async () => {
-    mockDb.stripeWebhookEvent.create.mockRejectedValueOnce({ code: "P2002" });
-    mockDb.stripeWebhookEvent.findUnique.mockResolvedValueOnce({
-      status: "COMPLETED",
-      updatedAt: new Date(),
-    });
-
+  it("creates payment only once when checkout.session.completed is redelivered with the same event id", async () => {
     mockConstructEvent.mockReturnValue({
       id: "evt_duplicate_123",
       type: "checkout.session.completed",
@@ -241,17 +235,28 @@ describe("POST /api/webhooks/stripe integration", () => {
       },
     });
 
-    const response = await POST(createWebhookRequest({ example: true }));
-    const body = await response.json();
+    const firstResponse = await POST(createWebhookRequest({ first: true }));
+    const firstBody = await firstResponse.json();
 
-    expect(response.status).toBe(200);
-    expect(body).toEqual({ received: true, deduplicated: true });
+    expect(firstResponse.status).toBe(200);
+    expect(firstBody).toEqual({ received: true });
 
-    expect(mockDb.$transaction).not.toHaveBeenCalled();
-    expect(mockDb.order.updateMany).not.toHaveBeenCalled();
-    expect(mockDb.payment.create).not.toHaveBeenCalled();
-    expect(mockDb.orderStatusHistory.create).not.toHaveBeenCalled();
-    expect(mockDb.stripeWebhookEvent.updateMany).not.toHaveBeenCalled();
+    mockDb.stripeWebhookEvent.create.mockRejectedValueOnce({ code: "P2002" });
+    mockDb.stripeWebhookEvent.findUnique.mockResolvedValueOnce({
+      status: "COMPLETED",
+      updatedAt: new Date(),
+    });
+
+    const secondResponse = await POST(createWebhookRequest({ second: true }));
+    const secondBody = await secondResponse.json();
+
+    expect(secondResponse.status).toBe(200);
+    expect(secondBody).toEqual({ received: true, deduplicated: true });
+
+    expect(mockDb.payment.create).toHaveBeenCalledTimes(1);
+    expect(mockDb.orderStatusHistory.create).toHaveBeenCalledTimes(1);
+    expect(mockDb.order.updateMany).toHaveBeenCalledTimes(1);
+    expect(mockDb.$transaction).toHaveBeenCalledTimes(1);
   });
 
   it("reclaims stale processing events and retries business logic safely", async () => {
@@ -312,13 +317,109 @@ describe("POST /api/webhooks/stripe integration", () => {
     );
   });
 
-  it("does not execute business mutations when the same failure event is delivered again", async () => {
+  it("returns stable processing response when a redelivery arrives while event is still processing", async () => {
     mockDb.stripeWebhookEvent.create.mockRejectedValueOnce({ code: "P2002" });
     mockDb.stripeWebhookEvent.findUnique.mockResolvedValueOnce({
-      status: "COMPLETED",
+      status: "PROCESSING",
+      updatedAt: new Date(),
+    });
+    mockDb.stripeWebhookEvent.updateMany.mockResolvedValueOnce({ count: 0 });
+
+    mockConstructEvent.mockReturnValue({
+      id: "evt_processing_redelivery_123",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_test_123",
+          metadata: { orderId: "123" },
+          payment_status: "paid",
+          payment_intent: "pi_test_123",
+        },
+      },
+    });
+
+    const response = await POST(createWebhookRequest({ example: true }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ received: true, processing: true });
+
+    expect(mockDb.$transaction).not.toHaveBeenCalled();
+    expect(mockDb.order.updateMany).not.toHaveBeenCalled();
+    expect(mockDb.payment.create).not.toHaveBeenCalled();
+    expect(mockDb.orderStatusHistory.create).not.toHaveBeenCalled();
+    expect(mockDb.stripeWebhookEvent.updateMany).toHaveBeenCalledTimes(1);
+    expect(mockDb.stripeWebhookEvent.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          eventId: "evt_processing_redelivery_123",
+          status: "PROCESSING",
+          updatedAt: expect.objectContaining({
+            lte: expect.any(Date),
+          }),
+        }),
+      }),
+    );
+  });
+
+  it("retries a previously failed event redelivery before marking it as completed", async () => {
+    mockDb.stripeWebhookEvent.create.mockRejectedValueOnce({ code: "P2002" });
+    mockDb.stripeWebhookEvent.findUnique.mockResolvedValueOnce({
+      status: "FAILED",
       updatedAt: new Date(),
     });
 
+    mockConstructEvent.mockReturnValue({
+      id: "evt_failed_redelivery_123",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_test_123",
+          metadata: { orderId: "123" },
+          payment_status: "paid",
+          payment_intent: "pi_test_123",
+        },
+      },
+    });
+
+    const response = await POST(createWebhookRequest({ retry: true }));
+
+    expect(response.status).toBe(200);
+    expect(mockDb.$transaction).toHaveBeenCalledTimes(1);
+
+    expect(mockDb.stripeWebhookEvent.updateMany).toHaveBeenCalledTimes(2);
+
+    expect(mockDb.stripeWebhookEvent.updateMany.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        where: {
+          eventId: "evt_failed_redelivery_123",
+          status: "FAILED",
+        },
+        data: expect.objectContaining({
+          status: "PROCESSING",
+          attemptCount: { increment: 1 },
+          processedAt: null,
+          lastError: null,
+          payload: JSON.stringify({ retry: true }),
+        }),
+      }),
+    );
+
+    expect(mockDb.stripeWebhookEvent.updateMany.mock.calls[1][0]).toEqual(
+      expect.objectContaining({
+        where: {
+          eventId: "evt_failed_redelivery_123",
+          status: "PROCESSING",
+        },
+        data: expect.objectContaining({
+          status: "COMPLETED",
+          processedAt: expect.any(Date),
+        }),
+      }),
+    );
+  });
+
+  it("cancels order only once when the same failure event id is redelivered", async () => {
     mockConstructEvent.mockReturnValue({
       id: "evt_failure_duplicate_123",
       type: "checkout.session.expired",
@@ -331,15 +432,27 @@ describe("POST /api/webhooks/stripe integration", () => {
       },
     });
 
-    const response = await POST(createWebhookRequest({ example: true }));
-    const body = await response.json();
+    const firstResponse = await POST(createWebhookRequest({ first: true }));
+    const firstBody = await firstResponse.json();
 
-    expect(response.status).toBe(200);
-    expect(body).toEqual({ received: true, deduplicated: true });
+    expect(firstResponse.status).toBe(200);
+    expect(firstBody).toEqual({ received: true });
 
-    expect(mockDb.$transaction).not.toHaveBeenCalled();
-    expect(mockDb.order.updateMany).not.toHaveBeenCalled();
-    expect(mockDb.orderStatusHistory.create).not.toHaveBeenCalled();
+    mockDb.stripeWebhookEvent.create.mockRejectedValueOnce({ code: "P2002" });
+    mockDb.stripeWebhookEvent.findUnique.mockResolvedValueOnce({
+      status: "COMPLETED",
+      updatedAt: new Date(),
+    });
+
+    const secondResponse = await POST(createWebhookRequest({ second: true }));
+    const secondBody = await secondResponse.json();
+
+    expect(secondResponse.status).toBe(200);
+    expect(secondBody).toEqual({ received: true, deduplicated: true });
+
+    expect(mockDb.order.updateMany).toHaveBeenCalledTimes(1);
+    expect(mockDb.orderStatusHistory.create).toHaveBeenCalledTimes(1);
+    expect(mockDb.$transaction).toHaveBeenCalledTimes(1);
   });
 
   it("cancels an order only once across distinct failure events for the same order", async () => {
