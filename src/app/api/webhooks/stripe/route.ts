@@ -8,6 +8,17 @@ type WebhookProcessResult = {
   response: NextResponse;
 };
 
+type WebhookMutationClient = Pick<
+  typeof db,
+  "order" | "payment" | "stripeWebhookEvent"
+>;
+
+type EventRegistrationResult =
+  | { claimed: true }
+  | { claimed: false; response: NextResponse };
+
+const DEFAULT_PROCESSING_TIMEOUT_MS = 10 * 60 * 1000;
+
 function resolvePaymentIntentId(
   paymentIntent: string | Stripe.PaymentIntent | null,
 ) {
@@ -36,10 +47,30 @@ function isPrismaUniqueConstraintError(
   return (error as { code?: string }).code === "P2002";
 }
 
+function resolveProcessingTimeoutMs() {
+  const timeoutFromEnv = process.env.STRIPE_WEBHOOK_PROCESSING_TIMEOUT_MS;
+
+  if (!timeoutFromEnv) {
+    return DEFAULT_PROCESSING_TIMEOUT_MS;
+  }
+
+  const parsedTimeout = Number(timeoutFromEnv);
+
+  if (!Number.isFinite(parsedTimeout) || parsedTimeout <= 0) {
+    console.warn(
+      "⚠️ STRIPE_WEBHOOK_PROCESSING_TIMEOUT_MS inválido. Usando valor padrão.",
+    );
+
+    return DEFAULT_PROCESSING_TIMEOUT_MS;
+  }
+
+  return parsedTimeout;
+}
+
 async function registerOrShortCircuitEvent(
   event: Stripe.Event,
   payload: string,
-): Promise<NextResponse | null> {
+): Promise<EventRegistrationResult> {
   const now = new Date();
 
   try {
@@ -53,7 +84,7 @@ async function registerOrShortCircuitEvent(
       },
     });
 
-    return null;
+    return { claimed: true };
   } catch (error) {
     if (!isPrismaUniqueConstraintError(error)) {
       throw error;
@@ -61,7 +92,7 @@ async function registerOrShortCircuitEvent(
 
     const existingEvent = await db.stripeWebhookEvent.findUnique({
       where: { eventId: event.id },
-      select: { status: true },
+      select: { status: true, updatedAt: true },
     });
 
     if (!existingEvent) {
@@ -69,20 +100,50 @@ async function registerOrShortCircuitEvent(
     }
 
     if (existingEvent.status === "COMPLETED") {
-      return NextResponse.json({ received: true, deduplicated: true });
+      return {
+        claimed: false,
+        response: NextResponse.json({ received: true, deduplicated: true }),
+      };
     }
 
-    if (existingEvent.status === "PROCESSING") {
-      return NextResponse.json({ received: true, processing: true });
+    if (existingEvent.status === "FAILED") {
+      const retryClaim = await db.stripeWebhookEvent.updateMany({
+        where: {
+          eventId: event.id,
+          status: "FAILED",
+        },
+        data: {
+          status: "PROCESSING",
+          payload,
+          lastReceivedAt: now,
+          processedAt: null,
+          lastError: null,
+          attemptCount: { increment: 1 },
+        },
+      });
+
+      if (retryClaim.count === 1) {
+        return { claimed: true };
+      }
+
+      return {
+        claimed: false,
+        response: NextResponse.json({ received: true, processing: true }),
+      };
     }
 
-    const retryClaim = await db.stripeWebhookEvent.updateMany({
+    const processingTimeoutMs = resolveProcessingTimeoutMs();
+    const staleProcessingBefore = new Date(now.getTime() - processingTimeoutMs);
+
+    const staleClaim = await db.stripeWebhookEvent.updateMany({
       where: {
         eventId: event.id,
-        status: "FAILED",
+        status: "PROCESSING",
+        updatedAt: {
+          lte: staleProcessingBefore,
+        },
       },
       data: {
-        status: "PROCESSING",
         payload,
         lastReceivedAt: now,
         processedAt: null,
@@ -91,28 +152,23 @@ async function registerOrShortCircuitEvent(
       },
     });
 
-    if (retryClaim.count === 0) {
-      return NextResponse.json({ received: true, processing: true });
+    if (staleClaim.count === 1) {
+      return { claimed: true };
     }
 
-    return null;
+    return {
+      claimed: false,
+      response: NextResponse.json({ received: true, processing: true }),
+    };
   }
-}
-
-async function markWebhookEventCompleted(eventId: string) {
-  await db.stripeWebhookEvent.updateMany({
-    where: { eventId },
-    data: {
-      status: "COMPLETED",
-      processedAt: new Date(),
-      lastError: null,
-    },
-  });
 }
 
 async function markWebhookEventFailed(eventId: string, failureReason: string) {
   await db.stripeWebhookEvent.updateMany({
-    where: { eventId },
+    where: {
+      eventId,
+      status: "PROCESSING",
+    },
     data: {
       status: "FAILED",
       lastError: failureReason,
@@ -122,6 +178,7 @@ async function markWebhookEventFailed(eventId: string, failureReason: string) {
 }
 
 async function processWebhookEvent(
+  database: WebhookMutationClient,
   event: Stripe.Event,
 ): Promise<WebhookProcessResult> {
   switch (event.type) {
@@ -147,7 +204,7 @@ async function processWebhookEvent(
         };
       }
 
-      const existingOrder = await db.order.findUnique({
+      const existingOrder = await database.order.findUnique({
         where: {
           id: Number(orderId),
         },
@@ -175,7 +232,7 @@ async function processWebhookEvent(
         existingOrder.paymentStatus,
       );
 
-      const updatedOrder = await db.order.update({
+      const updatedOrder = await database.order.update({
         where: {
           id: Number(orderId),
         },
@@ -201,7 +258,7 @@ async function processWebhookEvent(
         stripePaymentIntentId: updatedOrder.stripePaymentIntentId,
       });
 
-      const payment = await db.payment.create({
+      const payment = await database.payment.create({
         data: {
           orderId: Number(orderId),
           method: "stripe",
@@ -231,14 +288,14 @@ async function processWebhookEvent(
       const failedOrderId = failedSession.metadata?.orderId;
 
       if (failedOrderId) {
-        const failedOrder = await db.order.findUnique({
+        const failedOrder = await database.order.findUnique({
           where: {
             id: Number(failedOrderId),
           },
         });
 
         if (failedOrder) {
-          await db.order.update({
+          await database.order.update({
             where: { id: Number(failedOrderId) },
             data: {
               status: "CANCELLED",
@@ -268,6 +325,49 @@ async function processWebhookEvent(
         response: NextResponse.json({ received: true }),
       };
   }
+}
+
+async function processWebhookEventAtomically(event: Stripe.Event) {
+  return db.$transaction(async (tx) => {
+    const result = await processWebhookEvent(
+      {
+        order: tx.order,
+        payment: tx.payment,
+        stripeWebhookEvent: tx.stripeWebhookEvent,
+      },
+      event,
+    );
+
+    if (result.completed) {
+      await tx.stripeWebhookEvent.updateMany({
+        where: {
+          eventId: event.id,
+          status: "PROCESSING",
+        },
+        data: {
+          status: "COMPLETED",
+          processedAt: new Date(),
+          lastError: null,
+        },
+      });
+    } else {
+      await tx.stripeWebhookEvent.updateMany({
+        where: {
+          eventId: event.id,
+          status: "PROCESSING",
+        },
+        data: {
+          status: "FAILED",
+          lastError:
+            result.failureReason ??
+            `Webhook processing failed with status ${result.response.status}`,
+          processedAt: null,
+        },
+      });
+    }
+
+    return result.response;
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -328,25 +428,13 @@ export async function POST(request: NextRequest) {
   console.log("🔍 Evento recebido:", event.type, "id:", event.id);
 
   try {
-    const shortCircuitResponse = await registerOrShortCircuitEvent(event, text);
+    const eventRegistration = await registerOrShortCircuitEvent(event, text);
 
-    if (shortCircuitResponse) {
-      return shortCircuitResponse;
+    if (!eventRegistration.claimed) {
+      return eventRegistration.response;
     }
 
-    const result = await processWebhookEvent(event);
-
-    if (result.completed) {
-      await markWebhookEventCompleted(event.id);
-    } else {
-      await markWebhookEventFailed(
-        event.id,
-        result.failureReason ??
-          `Webhook processing failed with status ${result.response.status}`,
-      );
-    }
-
-    return result.response;
+    return await processWebhookEventAtomically(event);
   } catch (error) {
     const errorMessage = toErrorMessage(error);
 

@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-01
 **Sprint Atual:** Sprint 02
-**Status Geral:** 🟡 8% (1/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 17% (2/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias úteis)
 **Pré-requisito:** Fase 01 - Fundação de Segurança (✅ concluída em 2026-02-28)
 
@@ -13,17 +13,17 @@
 
 | Categoria                              | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | -------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Webhook idempotente e resiliente       | 3      | 1         | 0            | 2        | 0         |
+| Webhook idempotente e resiliente       | 3      | 2         | 0            | 1        | 0         |
 | Máquina de estados e histórico         | 3      | 0         | 0            | 3        | 0         |
 | Ownership de pedidos por `userId`      | 3      | 0         | 0            | 3        | 0         |
 | Testes, rollout e governança           | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                              | **12** | **1**     | **0**        | **11**   | **0**     |
+| **TOTAL**                              | **12** | **2**     | **0**        | **10**   | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Escopo da Sprint 02 estruturado em 4 frentes técnicas.
 - ✅ Dependências críticas da Sprint 01 já concluídas.
-- ⚠️ Risco principal: webhook Stripe ainda sem transação única em mutações críticas e endpoint `/api/orders/[orderId]` ainda com ownership por `customerEmail`.
+- ⚠️ Risco principal: endpoint `/api/orders/[orderId]` ainda com ownership por `customerEmail` e ausência de matriz explícita de transições de estado.
 
 ---
 
@@ -71,7 +71,7 @@ Tornar o webhook Stripe seguro para reentregas e falhas transitórias de rede. E
   **Dependências:** nenhuma  
   **Status:** ✅ Concluída (2026-03-01)
 
-- [ ] **S02-WHK-002** - Tornar atualização de pedido/pagamento transacional no webhook
+- [x] **S02-WHK-002** - Tornar atualização de pedido/pagamento transacional no webhook
 
   **Descrição curta:**
   - Evitar estado parcial quando houver falha entre update de pedido e criação de pagamento.
@@ -85,13 +85,13 @@ Tornar o webhook Stripe seguro para reentregas e falhas transitórias de rede. E
   **Arquivos/áreas afetadas:** `src/app/api/webhooks/stripe/route.ts`, `src/lib/prisma.ts`
 
   **Critérios de aceitação:**
-  - [ ] Falha intermediária não deixa `order` atualizado sem registro coerente de pagamento.
-  - [ ] Reentrega após falha processa no máximo uma vez o efeito de negócio.
+  - [x] Falha intermediária não deixa `order` atualizado sem registro coerente de pagamento.
+  - [x] Reentrega após falha processa no máximo uma vez o efeito de negócio.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** S02-WHK-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-01)
 
 - [ ] **S02-WHK-003** - Cobrir eventos de falha/expiração com retry seguro
 
