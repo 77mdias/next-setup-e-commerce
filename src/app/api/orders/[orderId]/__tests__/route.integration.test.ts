@@ -117,7 +117,7 @@ describe("GET /api/orders/[orderId] integration", () => {
 
   it("returns order details with stable shape and normalized statusHistory", async () => {
     mockGetServerSession.mockResolvedValue({
-      user: { email: "customer@example.com" },
+      user: { id: "user-owner" },
     });
     mockDb.order.findFirst.mockResolvedValue(createOrder());
 
@@ -147,25 +147,41 @@ describe("GET /api/orders/[orderId] integration", () => {
       ],
     });
 
-    expect(body.statusHistory.map((entry: { status: string }) => entry.status)).toEqual(
-      ["PENDING", "PROCESSING", "SHIPPED"],
-    );
+    expect(
+      body.statusHistory.map((entry: { status: string }) => entry.status),
+    ).toEqual(["PENDING", "PROCESSING", "SHIPPED"]);
     expect(body.statusHistory[2].isFallback).toBe(true);
-    expect(body.statusHistory[2].notes).toContain("reason:state_snapshot_mismatch");
+    expect(body.statusHistory[2].notes).toContain(
+      "reason:state_snapshot_mismatch",
+    );
 
     expect(mockDb.order.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
           id: 123,
-          customerEmail: "customer@example.com",
+          userId: "user-owner",
         },
       }),
     );
   });
 
+  it("returns 400 when orderId is invalid", async () => {
+    mockGetServerSession.mockResolvedValue({
+      user: { id: "user-owner" },
+    });
+
+    const { request, params } = createRequest("abc-123");
+    const response = await GET(request, { params });
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("ID do pedido inválido");
+    expect(mockDb.order.findFirst).not.toHaveBeenCalled();
+  });
+
   it("returns 404 when order is not found", async () => {
     mockGetServerSession.mockResolvedValue({
-      user: { email: "customer@example.com" },
+      user: { id: "user-owner" },
     });
     mockDb.order.findFirst.mockResolvedValue(null);
 
@@ -175,5 +191,35 @@ describe("GET /api/orders/[orderId] integration", () => {
 
     expect(response.status).toBe(404);
     expect(body.error).toBe("Pedido não encontrado");
+    expect(mockDb.order.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: 999,
+          userId: "user-owner",
+        },
+      }),
+    );
+  });
+
+  it("returns 404 when authenticated user is not the owner", async () => {
+    mockGetServerSession.mockResolvedValue({
+      user: { id: "user-attacker" },
+    });
+    mockDb.order.findFirst.mockResolvedValue(null);
+
+    const { request, params } = createRequest("123");
+    const response = await GET(request, { params });
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body.error).toBe("Pedido não encontrado");
+    expect(mockDb.order.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: 123,
+          userId: "user-attacker",
+        },
+      }),
+    );
   });
 });

@@ -197,7 +197,7 @@ Remover dependência de `customerEmail` como critério de autorização em pedid
 
 #### ORD.1 - Leitura segura de pedido com identidade canônica
 
-- [ ] **S02-ORD-001** - Ajustar `/api/orders/[orderId]` para ownership por `userId`
+- [x] **S02-ORD-001** - Ajustar `/api/orders/[orderId]` para ownership por `userId`
 
   **Descrição curta:**
   - Substituir filtro por `customerEmail` por validação com `userId` autenticado.
@@ -211,13 +211,13 @@ Remover dependência de `customerEmail` como critério de autorização em pedid
   **Arquivos/áreas afetadas:** `src/app/api/orders/[orderId]/route.ts`, `src/app/api/orders/[orderId]/__tests__/route.integration.test.ts` (novo)
 
   **Critérios de aceitação:**
-  - [ ] Usuário autenticado acessa apenas pedidos do próprio `userId`.
-  - [ ] Não-owner recebe 404 sem exposição de metadados sensíveis.
+  - [x] Usuário autenticado acessa apenas pedidos do próprio `userId`.
+  - [x] Não-owner recebe 404 sem exposição de metadados sensíveis.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 4h  
   **Dependências:** S01-ORD-003  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-01)
 
 - [ ] **S02-ORD-002** - Definir estratégia para pedidos legados sem `userId`
 

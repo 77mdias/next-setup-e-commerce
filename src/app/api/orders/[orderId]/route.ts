@@ -4,23 +4,47 @@ import { authOptions } from "@/lib/auth";
 import { buildOrderStatusHistory } from "@/lib/order-status-history";
 import { db } from "@/lib/prisma";
 
+function normalizeOrderId(rawOrderId: string): number | null {
+  const trimmedOrderId = rawOrderId.trim();
+
+  if (!/^\d+$/.test(trimmedOrderId)) {
+    return null;
+  }
+
+  const parsedOrderId = Number.parseInt(trimmedOrderId, 10);
+
+  if (!Number.isSafeInteger(parsedOrderId) || parsedOrderId <= 0) {
+    return null;
+  }
+
+  return parsedOrderId;
+}
+
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ orderId: string }> },
 ) {
   try {
-    const { orderId } = await params;
+    const { orderId: rawOrderId } = await params;
     const session = await getServerSession(authOptions);
+    const orderId = normalizeOrderId(rawOrderId);
 
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    if (!orderId) {
+      return NextResponse.json(
+        { error: "ID do pedido inválido" },
+        { status: 400 },
+      );
     }
 
     // Buscar o pedido com todas as informações relacionadas
     const order = await db.order.findFirst({
       where: {
-        id: parseInt(orderId),
-        customerEmail: session.user.email, // Garantir que o usuário só veja seus próprios pedidos
+        id: orderId,
+        userId: session.user.id,
       },
       include: {
         items: {
