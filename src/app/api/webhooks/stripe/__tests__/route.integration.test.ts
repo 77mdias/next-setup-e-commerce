@@ -136,18 +136,20 @@ describe("POST /api/webhooks/stripe integration", () => {
       }),
     );
 
-    expect(mockDb.order.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 123 },
-        data: expect.objectContaining({
-          stripeCheckoutSessionId: "cs_test_123",
-          stripePaymentIntentId: "pi_test_123",
-          stripePaymentId: "pi_test_123",
-          status: "PAID",
-          paymentStatus: "PAID",
-        }),
+    expect(mockDb.order.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 123,
+        status: "PENDING",
+        paymentStatus: "PENDING",
+      },
+      data: expect.objectContaining({
+        stripeCheckoutSessionId: "cs_test_123",
+        stripePaymentIntentId: "pi_test_123",
+        stripePaymentId: "pi_test_123",
+        status: "PAID",
+        paymentStatus: "PAID",
       }),
-    );
+    });
 
     expect(mockDb.payment.create).toHaveBeenCalledWith({
       data: {
@@ -190,15 +192,18 @@ describe("POST /api/webhooks/stripe integration", () => {
     const response = await POST(createWebhookRequest({ example: true }));
 
     expect(response.status).toBe(200);
-    expect(mockDb.order.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          stripeCheckoutSessionId: "cs_test_123",
-          stripePaymentIntentId: null,
-          stripePaymentId: "cs_test_123",
-        }),
+    expect(mockDb.order.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 123,
+        status: "PENDING",
+        paymentStatus: "PENDING",
+      },
+      data: expect.objectContaining({
+        stripeCheckoutSessionId: "cs_test_123",
+        stripePaymentIntentId: null,
+        stripePaymentId: "cs_test_123",
       }),
-    );
+    });
   });
 
   it("does not execute business mutations when the same completed event is delivered again", async () => {
@@ -228,7 +233,7 @@ describe("POST /api/webhooks/stripe integration", () => {
     expect(body).toEqual({ received: true, deduplicated: true });
 
     expect(mockDb.$transaction).not.toHaveBeenCalled();
-    expect(mockDb.order.update).not.toHaveBeenCalled();
+    expect(mockDb.order.updateMany).not.toHaveBeenCalled();
     expect(mockDb.payment.create).not.toHaveBeenCalled();
     expect(mockDb.stripeWebhookEvent.updateMany).not.toHaveBeenCalled();
   });
@@ -367,7 +372,8 @@ describe("POST /api/webhooks/stripe integration", () => {
     expect(mockDb.order.updateMany).toHaveBeenCalledWith({
       where: {
         id: 123,
-        status: { in: ["PENDING", "PAYMENT_PENDING"] },
+        status: "PENDING",
+        paymentStatus: "PENDING",
       },
       data: expect.objectContaining({
         status: "CANCELLED",
@@ -435,12 +441,65 @@ describe("POST /api/webhooks/stripe integration", () => {
     expect(mockDb.order.updateMany).toHaveBeenCalledWith({
       where: {
         id: 123,
-        status: { in: ["PENDING", "PAYMENT_PENDING"] },
+        status: "PENDING",
+        paymentStatus: "PENDING",
       },
       data: expect.objectContaining({
         status: "CANCELLED",
         paymentStatus: "FAILED",
         cancelReason: "Pagamento falhou: Cartão recusado",
+      }),
+    });
+  });
+
+  it("blocks invalid checkout success transition and marks webhook event as failed", async () => {
+    mockDb.order.findUnique.mockResolvedValueOnce({
+      id: 123,
+      status: "CANCELLED",
+      paymentStatus: "FAILED",
+      total: 115,
+      stripeCheckoutSessionId: "cs_test_123",
+      stripePaymentIntentId: "pi_test_123",
+      stripePaymentId: "pi_test_123",
+      store: { slug: "nextstore" },
+    });
+
+    mockConstructEvent.mockReturnValue({
+      id: "evt_invalid_transition_123",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_test_123",
+          metadata: { orderId: "123" },
+          payment_status: "paid",
+          payment_intent: "pi_test_123",
+        },
+      },
+    });
+
+    const response = await POST(createWebhookRequest({ example: true }));
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(body).toEqual(
+      expect.objectContaining({
+        error: "Invalid state transition for order payment confirmation",
+        orderId: 123,
+      }),
+    );
+
+    expect(mockDb.order.updateMany).not.toHaveBeenCalled();
+    expect(mockDb.payment.create).not.toHaveBeenCalled();
+    expect(mockDb.stripeWebhookEvent.updateMany).toHaveBeenCalledWith({
+      where: {
+        eventId: "evt_invalid_transition_123",
+        status: "PROCESSING",
+      },
+      data: expect.objectContaining({
+        status: "FAILED",
+        lastError: expect.stringContaining(
+          "Invalid OrderStatus transition: CANCELLED -> PAID",
+        ),
       }),
     });
   });

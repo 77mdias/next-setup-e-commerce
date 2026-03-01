@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { authOptions } from "@/lib/auth";
+import { INITIAL_ORDER_STATE } from "@/lib/order-state-machine";
 import { db } from "@/lib/prisma";
 import {
   createStripeCheckoutSession,
@@ -472,6 +473,7 @@ export async function POST(request: NextRequest) {
     const subtotal = centsToMoney(subtotalCents);
     const shippingFee = centsToMoney(shippingFeeCents);
     const total = centsToMoney(totalCents);
+    const initialOrderState = INITIAL_ORDER_STATE;
 
     const stripeLineItems = canonicalItems.map((item) => ({
       price_data: {
@@ -511,8 +513,8 @@ export async function POST(request: NextRequest) {
           customerPhone: customer.phone?.trim() || "Não informado",
           customerEmail: customer.email,
           customerCpf: customer.cpf?.trim() || null,
-          status: "PENDING",
-          paymentStatus: "PENDING",
+          status: initialOrderState.orderStatus,
+          paymentStatus: initialOrderState.paymentStatus,
           shippingMethod: payload.shippingMethod,
           subtotal,
           shippingFee,

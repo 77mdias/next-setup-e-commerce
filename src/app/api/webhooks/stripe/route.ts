@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { OrderStatus, PaymentStatus } from "@prisma/client";
 import Stripe from "stripe";
+
+import { validateOrderStateTransition } from "@/lib/order-state-machine";
 import { db } from "@/lib/prisma";
 
 type WebhookProcessResult = {
@@ -18,11 +21,6 @@ type EventRegistrationResult =
   | { claimed: false; response: NextResponse };
 
 const DEFAULT_PROCESSING_TIMEOUT_MS = 10 * 60 * 1000;
-const FAILURE_CANCELLABLE_ORDER_STATUSES: Array<"PENDING" | "PAYMENT_PENDING"> =
-  ["PENDING", "PAYMENT_PENDING"];
-const FAILURE_CANCELLABLE_ORDER_STATUS_SET = new Set<string>(
-  FAILURE_CANCELLABLE_ORDER_STATUSES,
-);
 
 type FailureEventContext = {
   orderId: number | null;
@@ -35,8 +33,8 @@ type FailureOrderLookupResult = {
   lookupSource: "metadata" | "payment_intent" | "checkout_session" | "none";
   order: {
     id: number;
-    status: string;
-    paymentStatus: string;
+    status: OrderStatus;
+    paymentStatus: PaymentStatus;
   } | null;
 };
 
@@ -365,9 +363,66 @@ async function processWebhookEvent(
         existingOrder.paymentStatus,
       );
 
-      const updatedOrder = await database.order.update({
+      const paidTransition = validateOrderStateTransition({
+        from: {
+          orderStatus: existingOrder.status,
+          paymentStatus: existingOrder.paymentStatus,
+        },
+        to: {
+          orderStatus: "PAID",
+          paymentStatus: "PAID",
+        },
+      });
+
+      if (!paidTransition.valid) {
+        const transitionFailureReason = `${paidTransition.reason} (orderId: ${existingOrder.id})`;
+
+        console.warn("⚠️ Transição de sucesso rejeitada pela matriz", {
+          eventId: event.id,
+          eventType: event.type,
+          orderId: existingOrder.id,
+          currentOrderStatus: existingOrder.status,
+          currentPaymentStatus: existingOrder.paymentStatus,
+          targetOrderStatus: "PAID",
+          targetPaymentStatus: "PAID",
+          reason: paidTransition.reason,
+        });
+
+        return {
+          completed: false,
+          failureReason: transitionFailureReason,
+          response: NextResponse.json(
+            {
+              error: "Invalid state transition for order payment confirmation",
+              orderId: existingOrder.id,
+              reason: paidTransition.reason,
+            },
+            { status: 409 },
+          ),
+        };
+      }
+
+      if (paidTransition.isNoop) {
+        console.log("ℹ️ Evento de sucesso ignorado por transição noop", {
+          eventId: event.id,
+          eventType: event.type,
+          orderId: existingOrder.id,
+          currentOrderStatus: existingOrder.status,
+          currentPaymentStatus: existingOrder.paymentStatus,
+        });
+
+        return {
+          completed: true,
+          response: NextResponse.json({ received: true }),
+        };
+      }
+
+      const paymentReference = paymentIntentId ?? checkoutSessionId;
+      const paidResult = await database.order.updateMany({
         where: {
-          id: Number(orderId),
+          id: existingOrder.id,
+          status: existingOrder.status,
+          paymentStatus: existingOrder.paymentStatus,
         },
         data: {
           status: "PAID",
@@ -375,27 +430,42 @@ async function processWebhookEvent(
           stripeCheckoutSessionId:
             existingOrder.stripeCheckoutSessionId ?? checkoutSessionId,
           stripePaymentIntentId: paymentIntentId,
-          stripePaymentId: paymentIntentId ?? checkoutSessionId,
-        },
-        include: {
-          store: { select: { slug: true } },
-          items: true,
+          stripePaymentId: paymentReference,
         },
       });
 
+      if (paidResult.count === 0) {
+        console.log(
+          "ℹ️ Confirmação de pagamento ignorada por mudança concorrente de estado",
+          {
+            eventId: event.id,
+            eventType: event.type,
+            orderId: existingOrder.id,
+            currentOrderStatus: existingOrder.status,
+            currentPaymentStatus: existingOrder.paymentStatus,
+          },
+        );
+
+        return {
+          completed: true,
+          response: NextResponse.json({ received: true }),
+        };
+      }
+
       console.log("✅ Pedido atualizado com sucesso:", {
-        orderId: updatedOrder.id,
-        newStatus: updatedOrder.status,
-        paymentStatus: updatedOrder.paymentStatus,
-        stripeCheckoutSessionId: updatedOrder.stripeCheckoutSessionId,
-        stripePaymentIntentId: updatedOrder.stripePaymentIntentId,
+        orderId: existingOrder.id,
+        newStatus: "PAID",
+        paymentStatus: "PAID",
+        stripeCheckoutSessionId:
+          existingOrder.stripeCheckoutSessionId ?? checkoutSessionId,
+        stripePaymentIntentId: paymentIntentId,
       });
 
       const payment = await database.payment.create({
         data: {
-          orderId: Number(orderId),
+          orderId: existingOrder.id,
           method: "stripe",
-          amount: updatedOrder.total,
+          amount: existingOrder.total,
           status: "PAID",
           stripePaymentId: paymentIntentId ?? undefined,
           paidAt: new Date(),
@@ -437,7 +507,18 @@ async function processWebhookEvent(
 
       const { order } = failureOrder;
 
-      if (!FAILURE_CANCELLABLE_ORDER_STATUS_SET.has(order.status)) {
+      const cancellationTransition = validateOrderStateTransition({
+        from: {
+          orderStatus: order.status,
+          paymentStatus: order.paymentStatus,
+        },
+        to: {
+          orderStatus: "CANCELLED",
+          paymentStatus: "FAILED",
+        },
+      });
+
+      if (!cancellationTransition.valid) {
         console.log("ℹ️ Evento de falha ignorado por transição inválida", {
           eventId: event.id,
           eventType: event.type,
@@ -452,10 +533,27 @@ async function processWebhookEvent(
         };
       }
 
+      if (cancellationTransition.isNoop) {
+        console.log("ℹ️ Evento de falha ignorado por transição noop", {
+          eventId: event.id,
+          eventType: event.type,
+          orderId: order.id,
+          lookupSource: failureOrder.lookupSource,
+          currentOrderStatus: order.status,
+          currentPaymentStatus: order.paymentStatus,
+        });
+
+        return {
+          completed: true,
+          response: NextResponse.json({ received: true }),
+        };
+      }
+
       const cancellationResult = await database.order.updateMany({
         where: {
           id: order.id,
-          status: { in: FAILURE_CANCELLABLE_ORDER_STATUSES },
+          status: order.status,
+          paymentStatus: order.paymentStatus,
         },
         data: {
           status: "CANCELLED",

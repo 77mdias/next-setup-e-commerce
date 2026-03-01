@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-01
 **Sprint Atual:** Sprint 02
-**Status Geral:** 🟡 17% (2/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 25% (3/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias úteis)
 **Pré-requisito:** Fase 01 - Fundação de Segurança (✅ concluída em 2026-02-28)
 
@@ -14,10 +14,10 @@
 | Categoria                              | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | -------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Webhook idempotente e resiliente       | 3      | 2         | 0            | 1        | 0         |
-| Máquina de estados e histórico         | 3      | 0         | 0            | 3        | 0         |
+| Máquina de estados e histórico         | 3      | 1         | 0            | 2        | 0         |
 | Ownership de pedidos por `userId`      | 3      | 0         | 0            | 3        | 0         |
 | Testes, rollout e governança           | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                              | **12** | **2**     | **0**        | **10**   | **0**     |
+| **TOTAL**                              | **12** | **3**     | **0**        | **9**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
@@ -123,7 +123,7 @@ Estabelecer regras explícitas de transição para `OrderStatus` e `PaymentStatu
 
 #### STM.1 - Definição e aplicação de transições válidas
 
-- [ ] **S02-STM-001** - Definir matriz de transição para `OrderStatus` e `PaymentStatus`
+- [x] **S02-STM-001** - Definir matriz de transição para `OrderStatus` e `PaymentStatus`
 
   **Descrição curta:**
   - Formalizar transições permitidas entre estados de pedido e pagamento.
@@ -137,13 +137,13 @@ Estabelecer regras explícitas de transição para `OrderStatus` e `PaymentStatu
   **Arquivos/áreas afetadas:** `src/app/api/webhooks/stripe/route.ts`, `src/app/api/checkout/route.ts`, `src/lib/order-session.ts`, `src/lib/order-state-machine.ts` (novo)
 
   **Critérios de aceitação:**
-  - [ ] Transições inválidas são bloqueadas e não persistem no banco.
-  - [ ] Fluxos de sucesso/falha seguem sequência consistente de estados.
+  - [x] Transições inválidas são bloqueadas e não persistem no banco.
+  - [x] Fluxos de sucesso/falha seguem sequência consistente de estados.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 5h  
   **Dependências:** S02-WHK-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-01)
 
 - [ ] **S02-STM-002** - Persistir `OrderStatusHistory` nas mudanças de status
 
