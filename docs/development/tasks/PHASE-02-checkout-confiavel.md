@@ -344,7 +344,7 @@ Consolidar cobertura automatizada e validação operacional para liberar a Sprin
 - **Suites necessárias:** Integração de API (`checkout`, `webhooks/stripe`, `orders/[orderId]`, `orders/session`), regressão de página de pedidos, homologação manual E2E.
 - **Cobertura alvo:** 100% dos cenários P0/P1 da Sprint 02 cobertos (automatizado + manual).
 - **Comandos de verificação:** `npm run test:integration`, `npm run lint`, `npm run build`.
-- **Estado atual:** ⚠️ Cobertura parcial herdada da Sprint 01; cenários de deduplicação por `event.id` e ownership canônico por `userId` ainda pendentes.
+- **Estado atual:** 🟡 Cobertura automatizada consolidada (deduplicação e ownership cobertos); pendente execução manual E2E em staging e validação final de rollback.
 
 ---
 
