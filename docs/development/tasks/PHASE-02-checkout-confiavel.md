@@ -11,13 +11,13 @@
 
 ## 📊 Resumo de Progresso
 
-| Categoria                              | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
-| -------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Webhook idempotente e resiliente       | 3      | 3         | 0            | 0        | 0         |
-| Máquina de estados e histórico         | 3      | 3         | 0            | 0        | 0         |
-| Ownership de pedidos por `userId`      | 3      | 3         | 0            | 0        | 0         |
-| Testes, rollout e governança           | 3      | 3         | 0            | 0        | 0         |
-| **TOTAL**                              | **12** | **12**    | **0**        | **0**    | **0**     |
+| Categoria                         | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
+| --------------------------------- | ------ | --------- | ------------ | -------- | --------- |
+| Webhook idempotente e resiliente  | 3      | 3         | 0            | 0        | 0         |
+| Máquina de estados e histórico    | 3      | 3         | 0            | 0        | 0         |
+| Ownership de pedidos por `userId` | 3      | 3         | 0            | 0        | 0         |
+| Testes, rollout e governança      | 3      | 3         | 0            | 0        | 0         |
+| **TOTAL**                         | **12** | **12**    | **0**        | **0**    | **0**     |
 
 ### 🎯 Principais Indicadores
 

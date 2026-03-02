@@ -51,8 +51,23 @@ jobs:
       - name: Prisma generate
         run: npm run prisma:generate
 
-      - name: Prisma migrate status
-        run: npx prisma migrate status
+      - name: Prisma migrate status (allow pending migrations)
+        run: |
+          set +e
+          STATUS_OUTPUT="$(npx prisma migrate status 2>&1)"
+          STATUS_EXIT=$?
+          set -e
+
+          echo "$STATUS_OUTPUT"
+
+          if [ "$STATUS_EXIT" -ne 0 ]; then
+            if echo "$STATUS_OUTPUT" | grep -qi "have not yet been applied"; then
+              echo "Pending migrations detected. Proceeding to prisma migrate deploy."
+            else
+              echo "::error::Prisma migrate status failed before deploy."
+              exit "$STATUS_EXIT"
+            fi
+          fi
 
       - name: Check DB network reachability
         run: |
