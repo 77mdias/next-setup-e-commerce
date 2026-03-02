@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-02
 **Sprint Atual:** Sprint 03
-**Status Geral:** 🔴 0% (0/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 8% (1/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias úteis)
 **Pré-requisito:** Fase 02 - Checkout Confiável e Integridade de Pedido (✅ concluída em 2026-03-02)
 
@@ -13,11 +13,11 @@
 
 | Categoria                          | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ---------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Conta e endereços no perfil        | 3      | 0         | 0            | 3        | 0         |
+| Conta e endereços no perfil        | 3      | 1         | 0            | 2        | 0         |
 | Navegação e convergência de rotas  | 3      | 0         | 0            | 3        | 0         |
 | Admin remove-bg seguro e funcional | 3      | 0         | 0            | 3        | 0         |
 | Testes, homologação e governança   | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                          | **12** | **0**     | **0**        | **12**   | **0**     |
+| **TOTAL**                          | **12** | **1**     | **0**        | **11**   | **0**     |
 
 ### 🎯 Principais Indicadores
 
@@ -49,7 +49,7 @@ Fechar a lacuna funcional de perfil onde hoje há listagem de endereços, mas se
 
 #### ADR.1 - API de endereços e regras de consistência
 
-- [ ] **S03-ADR-001** - Completar `GET/POST/PUT/DELETE` em `/api/addresses` com ownership estrito
+- [x] **S03-ADR-001** - Completar `GET/POST/PUT/DELETE` em `/api/addresses` com ownership estrito
 
   **Descrição curta:**
   - Hoje a API de endereços oferece apenas leitura (`GET`) para o usuário autenticado.
@@ -63,13 +63,13 @@ Fechar a lacuna funcional de perfil onde hoje há listagem de endereços, mas se
   **Arquivos/áreas afetadas:** `src/app/api/addresses/route.ts`, `src/lib/prisma.ts`, `src/lib/auth.ts`
 
   **Critérios de aceitação:**
-  - [ ] Usuário autenticado cria, edita e remove apenas os próprios endereços.
-  - [ ] Regra de endereço padrão único é mantida sem inconsistência entre registros.
+  - [x] Usuário autenticado cria, edita e remove apenas os próprios endereços.
+  - [x] Regra de endereço padrão único é mantida sem inconsistência entre registros.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** nenhuma  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-02)
 
 - [ ] **S03-ADR-002** - Integrar CRUD de endereços na tela de perfil (`/perfil`)
 
@@ -346,7 +346,7 @@ Assegurar cobertura mínima automatizada e validação operacional antes de go-l
 - **Suites necessárias:** Integração de API (`addresses`, `admin/remove-bg`, `orders redirects`), regressão de páginas (`/perfil`, `/checkout`, `/orders`, `/cart`), homologação manual E2E.
 - **Cobertura alvo:** 100% dos cenários P1/P2 da Sprint 03 cobertos (automatizado + manual).
 - **Comandos de verificação:** `npm run test:integration`, `npm run lint`, `npm run build`.
-- **Estado atual:** 🔴 Fase em planejamento; execução técnica das tasks ainda não iniciada.
+- **Estado atual:** 🟡 Execução técnica iniciada; `S03-ADR-001` concluída com validações de lint/build e integração.
 
 ---
 
