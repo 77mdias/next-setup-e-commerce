@@ -17,7 +17,7 @@
 | Navegação e convergência de rotas  | 3      | 0         | 0            | 3        | 0         |
 | Admin remove-bg seguro e funcional | 3      | 0         | 0            | 3        | 0         |
 | Testes, homologação e governança   | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                          | **12** | **2**     | **0**        | **10**   | **0**     |
+| **TOTAL**                          | **12** | **3**     | **0**        | **9**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
