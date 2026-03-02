@@ -293,7 +293,7 @@ Consolidar cobertura automatizada e validação operacional para liberar a Sprin
   **Dependências:** S02-WHK-002, S02-WHK-003  
   **Status:** ✅ Concluída (2026-03-01)
 
-- [ ] **S02-QA-002** - Cobrir máquina de estados e histórico em integração
+- [x] **S02-QA-002** - Cobrir máquina de estados e histórico em integração
 
   **Descrição curta:**
   - Validar coerência entre estado final e histórico persistido.
@@ -307,13 +307,13 @@ Consolidar cobertura automatizada e validação operacional para liberar a Sprin
   **Arquivos/áreas afetadas:** `src/app/api/webhooks/stripe/__tests__/route.integration.test.ts`, `src/app/api/orders/[orderId]/__tests__/route.integration.test.ts` (novo), `src/app/api/orders/session/[sessionId]/__tests__/route.integration.test.ts`
 
   **Critérios de aceitação:**
-  - [ ] Transição inválida é bloqueada e testada.
-  - [ ] Histórico retornado reflete mudanças aplicadas no backend.
+  - [x] Transição inválida é bloqueada e testada.
+  - [x] Histórico retornado reflete mudanças aplicadas no backend.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 4h  
   **Dependências:** S02-STM-002, S02-STM-003  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-02)
 
 - [ ] **S02-QA-003** - Checklist manual de homologação e plano de rollback da Sprint 02
 

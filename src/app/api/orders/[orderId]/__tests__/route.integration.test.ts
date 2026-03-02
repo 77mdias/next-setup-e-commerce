@@ -167,6 +167,58 @@ describe("GET /api/orders/[orderId] integration", () => {
     );
   });
 
+  it("returns persisted webhook history without fallback when latest status matches state snapshot", async () => {
+    mockGetServerSession.mockResolvedValue({
+      user: { id: "user-owner" },
+    });
+    mockDb.order.findFirst.mockResolvedValue(
+      createOrder({
+        status: "PAID",
+        paymentStatus: "PAID",
+        updatedAt: new Date("2026-03-01T14:10:00.000Z"),
+        statusHistory: [
+          {
+            id: "hist-1",
+            status: "PENDING",
+            notes: "source:checkout",
+            changedBy: "user-owner",
+            createdAt: new Date("2026-03-01T10:00:00.000Z"),
+          },
+          {
+            id: "hist-2",
+            status: "PAID",
+            notes:
+              "source:webhook; eventType:checkout.session.completed; eventId:evt_paid_123",
+            changedBy: null,
+            createdAt: new Date("2026-03-01T14:00:00.000Z"),
+          },
+        ],
+      }),
+    );
+
+    const { request, params } = createRequest("123");
+    const response = await GET(request, { params });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.status).toBe("PAID");
+    expect(body.paymentStatus).toBe("PAID");
+    expect(body.statusHistory).toEqual([
+      expect.objectContaining({
+        id: "hist-1",
+        status: "PENDING",
+        isFallback: false,
+      }),
+      expect.objectContaining({
+        id: "hist-2",
+        status: "PAID",
+        isFallback: false,
+      }),
+    ]);
+    expect(body.statusHistory[1].notes).toContain("source:webhook");
+    expect(body.statusHistory[1].notes).toContain("eventId:evt_paid_123");
+  });
+
   it("returns 400 when orderId is invalid", async () => {
     mockGetServerSession.mockResolvedValue({
       user: { id: "user-owner" },

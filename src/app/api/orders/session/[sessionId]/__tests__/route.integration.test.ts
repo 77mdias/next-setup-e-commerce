@@ -142,6 +142,54 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
     );
   });
 
+  it("returns persisted webhook history as-is when backend state and history are consistent", async () => {
+    mockGetServerSession.mockResolvedValue({
+      user: { id: "user-owner" },
+    });
+    mockDb.order.findFirst.mockResolvedValue(
+      createOrder({
+        status: "PAID",
+        paymentStatus: "PAID",
+        updatedAt: new Date("2026-03-01T14:10:00.000Z"),
+        statusHistory: [
+          {
+            id: "hist-1",
+            status: "PENDING",
+            notes: "source:checkout",
+            changedBy: "user-owner",
+            createdAt: new Date("2026-03-01T10:00:00.000Z"),
+          },
+          {
+            id: "hist-2",
+            status: "PAID",
+            notes:
+              "source:webhook; eventType:checkout.session.completed; eventId:evt_paid_321",
+            changedBy: null,
+            createdAt: new Date("2026-03-01T14:00:00.000Z"),
+          },
+        ],
+      }),
+    );
+
+    const { request, params } = createRequest("cs_owner_1");
+    const response = await GET(request, { params });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.status).toBe("PAID");
+    expect(body.paymentStatus).toBe("PAID");
+    expect(
+      body.statusHistory.map((entry: { status: string }) => entry.status),
+    ).toEqual(["PENDING", "PAID"]);
+    expect(
+      body.statusHistory.every(
+        (entry: { isFallback: boolean }) => !entry.isFallback,
+      ),
+    ).toBe(true);
+    expect(body.statusHistory[1].notes).toContain("source:webhook");
+    expect(body.statusHistory[1].notes).toContain("eventId:evt_paid_321");
+  });
+
   it("sorts statusHistory and appends fallback snapshot when current state diverges", async () => {
     mockGetServerSession.mockResolvedValue({
       user: { id: "user-owner" },
@@ -174,11 +222,13 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body.statusHistory.map((entry: { status: string }) => entry.status)).toEqual(
-      ["PENDING", "PAYMENT_PENDING", "PAID"],
-    );
+    expect(
+      body.statusHistory.map((entry: { status: string }) => entry.status),
+    ).toEqual(["PENDING", "PAYMENT_PENDING", "PAID"]);
     expect(body.statusHistory[2].isFallback).toBe(true);
-    expect(body.statusHistory[2].notes).toContain("reason:state_snapshot_mismatch");
+    expect(body.statusHistory[2].notes).toContain(
+      "reason:state_snapshot_mismatch",
+    );
   });
 
   it("creates fallback history for legacy orders without persisted statusHistory", async () => {
@@ -204,7 +254,9 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
         isFallback: true,
       }),
     ]);
-    expect(body.statusHistory[0].notes).toContain("reason:legacy_missing_history");
+    expect(body.statusHistory[0].notes).toContain(
+      "reason:legacy_missing_history",
+    );
   });
 
   it("returns 404 for authenticated user that is not the order owner", async () => {

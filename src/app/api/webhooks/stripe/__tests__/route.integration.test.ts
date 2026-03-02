@@ -176,6 +176,13 @@ describe("POST /api/webhooks/stripe integration", () => {
         notes: expect.stringContaining("source:webhook"),
       },
     });
+    const paidHistoryNote = mockDb.orderStatusHistory.create.mock.calls[0][0]
+      .data.notes as string;
+    expect(paidHistoryNote).toContain("eventType:checkout.session.completed");
+    expect(paidHistoryNote).toContain("eventId:evt_test_123");
+    expect(paidHistoryNote).toContain("orderStatusTransition:PENDING->PAID");
+    expect(paidHistoryNote).toContain("paymentStatusTransition:PENDING->PAID");
+    expect(paidHistoryNote).toContain("reason:Pagamento confirmado");
 
     expect(mockDb.stripeWebhookEvent.updateMany).toHaveBeenCalledWith({
       where: {
@@ -545,6 +552,17 @@ describe("POST /api/webhooks/stripe integration", () => {
     expect(response.status).toBe(200);
     expect(mockDb.order.updateMany).not.toHaveBeenCalled();
     expect(mockDb.orderStatusHistory.create).not.toHaveBeenCalled();
+    expect(mockDb.stripeWebhookEvent.updateMany).toHaveBeenCalledWith({
+      where: {
+        eventId: "evt_failure_paid_123",
+        status: "PROCESSING",
+      },
+      data: expect.objectContaining({
+        status: "COMPLETED",
+        processedAt: expect.any(Date),
+        lastError: null,
+      }),
+    });
   });
 
   it("resolves charge.failed by payment intent when orderId metadata is missing", async () => {
@@ -596,6 +614,20 @@ describe("POST /api/webhooks/stripe integration", () => {
         notes: expect.stringContaining("source:webhook"),
       },
     });
+    const cancelledHistoryNote = mockDb.orderStatusHistory.create.mock
+      .calls[0][0].data.notes as string;
+    expect(cancelledHistoryNote).toContain("eventType:charge.failed");
+    expect(cancelledHistoryNote).toContain("eventId:evt_charge_failed_123");
+    expect(cancelledHistoryNote).toContain(
+      "orderStatusTransition:PENDING->CANCELLED",
+    );
+    expect(cancelledHistoryNote).toContain(
+      "paymentStatusTransition:PENDING->FAILED",
+    );
+    expect(cancelledHistoryNote).toContain("lookupSource:payment_intent");
+    expect(cancelledHistoryNote).toContain(
+      "reason:Pagamento falhou: Cartão recusado",
+    );
   });
 
   it("blocks invalid checkout success transition and marks webhook event as failed", async () => {
