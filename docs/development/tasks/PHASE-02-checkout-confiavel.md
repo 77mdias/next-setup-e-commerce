@@ -1,10 +1,10 @@
 # 🚀 Tasks - Fase 02: Checkout Confiável e Integridade de Pedido
 
-**Status:** 🟢 ATIVA
-**Última atualização:** 2026-03-01
+**Status:** 🟡 EM ENCERRAMENTO
+**Última atualização:** 2026-03-02
 **Sprint Atual:** Sprint 02
-**Status Geral:** 🟡 50% (6/12 tarefas completas) - FASE ATIVA
-**ETA:** 1 sprint (5-7 dias úteis)
+**Status Geral:** 🟡 100% (12/12 tarefas completas) - ENCERRAMENTO OPERACIONAL PENDENTE
+**ETA:** Aguardando fechamento operacional (migrations em ambiente alvo e aprovação final)
 **Pré-requisito:** Fase 01 - Fundação de Segurança (✅ concluída em 2026-02-28)
 
 ---
@@ -15,15 +15,15 @@
 | -------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Webhook idempotente e resiliente       | 3      | 3         | 0            | 0        | 0         |
 | Máquina de estados e histórico         | 3      | 3         | 0            | 0        | 0         |
-| Ownership de pedidos por `userId`      | 3      | 0         | 0            | 3        | 0         |
-| Testes, rollout e governança           | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                              | **12** | **6**     | **0**        | **6**    | **0**     |
+| Ownership de pedidos por `userId`      | 3      | 3         | 0            | 0        | 0         |
+| Testes, rollout e governança           | 3      | 3         | 0            | 0        | 0         |
+| **TOTAL**                              | **12** | **12**    | **0**        | **0**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Escopo da Sprint 02 estruturado em 4 frentes técnicas.
 - ✅ Dependências críticas da Sprint 01 já concluídas.
-- ⚠️ Risco principal: endpoint `/api/orders/[orderId]` ainda com ownership por `customerEmail` (hardening em aberto na trilha ORD).
+- ⚠️ Pendências de encerramento: evidência de aplicação das migrations de webhook/ownership no ambiente alvo e aprovação final do time responsável.
 
 ---
 
@@ -359,9 +359,14 @@ Consolidar cobertura automatizada e validação operacional para liberar a Sprin
 
 ## ✅ Checklist de Encerramento da Fase
 
-- [ ] Todas as tarefas da Fase 02 marcadas como concluídas.
+- [x] Todas as tarefas da Fase 02 marcadas como concluídas.
 - [ ] Migrations Prisma de webhook/ownership aplicadas e versionadas.
-- [ ] Validações `npm run test:integration`, `npm run lint` e `npm run build` executadas com sucesso.
-- [ ] Fluxos de webhook duplicado + sucesso/falha + ownership de pedido validados em homologação.
-- [ ] Evidências e logs técnicos da Sprint 02 registrados em `docs/ROADMAP/Logs`.
+- [x] Validações `npm run test:integration`, `npm run lint` e `npm run build` executadas com sucesso.
+- [x] Fluxos de webhook duplicado + sucesso/falha + ownership de pedido validados em homologação.
+- [x] Evidências e logs técnicos da Sprint 02 registrados em `docs/ROADMAP/Logs`.
 - [ ] Aprovação final da Sprint 02 registrada pelo time responsável.
+
+### Pendências para encerramento oficial
+
+- Registrar evidência de aplicação das migrations Prisma de webhook/ownership no ambiente alvo.
+- Registrar aprovação final da Sprint 02 por engenharia, QA e produto.
