@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
@@ -35,40 +35,55 @@ export default function VerifyEmailContent() {
     }
   }, [emailParam]);
 
+  const getThankYouUrl = useCallback(
+    (targetEmail: string) =>
+      `/auth/thank-you?verified=true&email=${encodeURIComponent(targetEmail)}&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+    [callbackUrl],
+  );
+
+  const verifyEmail = useCallback(
+    async (verificationToken: string) => {
+      setIsVerifying(true);
+      try {
+        const response = await fetch(
+          `/api/auth/verify-email?token=${verificationToken}`,
+        );
+        const data = await response.json();
+
+        if (response.ok) {
+          const resolvedEmail =
+            typeof data?.email === "string" && data.email.trim().length > 0
+              ? data.email.trim()
+              : (emailParam?.trim() ?? "");
+
+          if (resolvedEmail) {
+            setEmail(resolvedEmail);
+          }
+
+          setVerificationStatus("success");
+          toast.success("Email verificado com sucesso!");
+          setTimeout(() => {
+            router.push(getThankYouUrl(resolvedEmail));
+          }, 3000);
+        } else {
+          setVerificationStatus("error");
+          toast.error(data.message || "Erro ao verificar email");
+        }
+      } catch {
+        setVerificationStatus("error");
+        toast.error("Erro ao verificar email");
+      } finally {
+        setIsVerifying(false);
+      }
+    },
+    [emailParam, getThankYouUrl, router],
+  );
+
   useEffect(() => {
     if (token) {
-      verifyEmail(token);
+      void verifyEmail(token);
     }
-  }, [token]);
-
-  const getThankYouUrl = () =>
-    `/auth/thank-you?verified=true&email=${encodeURIComponent(email)}&callbackUrl=${encodeURIComponent(callbackUrl)}`;
-
-  const verifyEmail = async (verificationToken: string) => {
-    setIsVerifying(true);
-    try {
-      const response = await fetch(
-        `/api/auth/verify-email?token=${verificationToken}`,
-      );
-      const data = await response.json();
-
-      if (response.ok) {
-        setVerificationStatus("success");
-        toast.success("Email verificado com sucesso!");
-        setTimeout(() => {
-          router.push(getThankYouUrl());
-        }, 3000);
-      } else {
-        setVerificationStatus("error");
-        toast.error(data.message || "Erro ao verificar email");
-      }
-    } catch {
-      setVerificationStatus("error");
-      toast.error("Erro ao verificar email");
-    } finally {
-      setIsVerifying(false);
-    }
-  };
+  }, [token, verifyEmail]);
 
   const resendVerificationEmail = async () => {
     if (!email) {
@@ -141,7 +156,7 @@ export default function VerifyEmailContent() {
           <CardContent className="text-center">
             <Button
               onClick={() => {
-                router.push(getThankYouUrl());
+                router.push(getThankYouUrl(email));
               }}
               className="bg-[var(--button-primary)] text-white hover:bg-[var(--text-price-secondary)]"
             >

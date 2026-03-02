@@ -335,7 +335,7 @@ Consolidar cobertura automatizada e validação operacional para liberar a Sprin
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 3h  
   **Dependências:** S02-QA-001, S02-QA-002  
-  **Status:** 🔴 Pendente
+  **Status:** 🟡 Em andamento (2026-03-02)
 
 ---
 

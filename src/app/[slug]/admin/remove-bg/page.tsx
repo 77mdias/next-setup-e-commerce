@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import RemoveBgProcessor from "@/components/RemoveBgProcessor";
 
@@ -18,11 +18,7 @@ export default function RemoveBgPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [slug]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const response = await fetch(`/api/products/${slug}`);
       const data = await response.json();
@@ -37,7 +33,11 @@ export default function RemoveBgPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug]);
+
+  useEffect(() => {
+    void fetchProducts();
+  }, [fetchProducts]);
 
   const handleImagesProcessed = async (processedImages: string[]) => {
     if (!selectedProduct) return;

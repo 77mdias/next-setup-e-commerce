@@ -4,6 +4,7 @@ import { Product } from "@prisma/client";
 import {
   createContext,
   useContext,
+  useCallback,
   useState,
   useEffect,
   ReactNode,
@@ -79,6 +80,55 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     0,
   );
 
+  // Migrar carrinho do localStorage para o banco
+  const migrateFromLocalStorage = useCallback(async () => {
+    if (hasMigrated || !isAuthenticated) return;
+
+    try {
+      setLoading(true);
+      const savedCart = localStorage.getItem("cart");
+
+      if (savedCart) {
+        const localCartItems = JSON.parse(savedCart) as CartProcuct[];
+
+        if (localCartItems.length > 0) {
+          const response = await fetch("/api/cart/migrate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cartItems: localCartItems }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            // Atualizar com carrinho migrado
+            const cartProducts: CartProcuct[] = data.cart.map((item: any) => ({
+              id: item.product.id,
+              storeId: item.product.storeId,
+              name: item.product.name,
+              description: item.product.description,
+              price: item.product.price,
+              originalPrice: item.product.originalPrice,
+              images: item.product.images,
+              specifications: item.product.specifications,
+              quantity: item.quantity,
+            }));
+            setProducts(cartProducts);
+
+            // Limpar localStorage após migração bem-sucedida
+            localStorage.removeItem("cart");
+          }
+        }
+      }
+
+      setHasMigrated(true);
+    } catch (error) {
+      console.error("Erro na migração do carrinho:", error);
+      setError("Erro ao migrar carrinho");
+    } finally {
+      setLoading(false);
+    }
+  }, [hasMigrated, isAuthenticated]);
+
   // Carregar carrinho baseado no status de autenticação
   useEffect(() => {
     if (authLoading) return; // Aguarda autenticação carregar
@@ -107,9 +157,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Migrar carrinho quando usuário fizer login
   useEffect(() => {
     if (isAuthenticated && !hasMigrated && !authLoading) {
-      migrateFromLocalStorage();
+      void migrateFromLocalStorage();
     }
-  }, [isAuthenticated, hasMigrated, authLoading]);
+  }, [isAuthenticated, hasMigrated, authLoading, migrateFromLocalStorage]);
 
   // Carregar carrinho do localStorage (usuário não logado)
   const loadCartFromLocalStorage = () => {
@@ -160,55 +210,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         console.error("Erro ao salvar carrinho no localStorage:", error);
         setError("Erro ao salvar carrinho");
       }
-    }
-  };
-
-  // Migrar carrinho do localStorage para o banco
-  const migrateFromLocalStorage = async () => {
-    if (hasMigrated || !isAuthenticated) return;
-
-    try {
-      setLoading(true);
-      const savedCart = localStorage.getItem("cart");
-
-      if (savedCart) {
-        const localCartItems = JSON.parse(savedCart) as CartProcuct[];
-
-        if (localCartItems.length > 0) {
-          const response = await fetch("/api/cart/migrate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cartItems: localCartItems }),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            // Atualizar com carrinho migrado
-            const cartProducts: CartProcuct[] = data.cart.map((item: any) => ({
-              id: item.product.id,
-              storeId: item.product.storeId,
-              name: item.product.name,
-              description: item.product.description,
-              price: item.product.price,
-              originalPrice: item.product.originalPrice,
-              images: item.product.images,
-              specifications: item.product.specifications,
-              quantity: item.quantity,
-            }));
-            setProducts(cartProducts);
-
-            // Limpar localStorage após migração bem-sucedida
-            localStorage.removeItem("cart");
-          }
-        }
-      }
-
-      setHasMigrated(true);
-    } catch (error) {
-      console.error("Erro na migração do carrinho:", error);
-      setError("Erro ao migrar carrinho");
-    } finally {
-      setLoading(false);
     }
   };
 
