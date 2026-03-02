@@ -28,6 +28,14 @@ type CartItemStoreInput = {
   storeId?: string | null;
 };
 
+type CheckoutAddressCandidate = {
+  id: string;
+  isDefault?: boolean;
+};
+
+const ADDRESS_SELECTION_ERROR_MESSAGE =
+  "O endereço selecionado não está mais disponível. Escolha outro endereço e tente novamente.";
+
 function normalizeVariantId(variantId?: string | null): string | undefined {
   const trimmedVariantId = variantId?.trim();
   return trimmedVariantId ? trimmedVariantId : undefined;
@@ -67,6 +75,39 @@ function getIssueMessage(payload?: CheckoutErrorPayload): string | null {
   return issueMessage?.trim() ? issueMessage : null;
 }
 
+function hasAddressErrorContext(payload?: CheckoutErrorPayload): boolean {
+  const normalizedError = payload?.error?.toLowerCase() ?? "";
+
+  if (normalizedError.includes("endere")) {
+    return true;
+  }
+
+  return (
+    payload?.issues?.some((issue) => {
+      const normalizedField = issue.field?.toLowerCase() ?? "";
+      const normalizedMessage = issue.message?.toLowerCase() ?? "";
+
+      return (
+        normalizedField.includes("address") ||
+        normalizedField.includes("endere") ||
+        normalizedMessage.includes("address") ||
+        normalizedMessage.includes("endere")
+      );
+    }) ?? false
+  );
+}
+
+export function isAddressCheckoutError(
+  status: number,
+  payload?: CheckoutErrorPayload,
+): boolean {
+  if (status !== 400 && status !== 404) {
+    return false;
+  }
+
+  return hasAddressErrorContext(payload);
+}
+
 export function mapCheckoutErrorMessage(
   status: number,
   payload?: CheckoutErrorPayload,
@@ -75,6 +116,10 @@ export function mapCheckoutErrorMessage(
     payload?.error?.trim() || "Erro ao criar checkout. Tente novamente.";
 
   if (status === 400) {
+    if (isAddressCheckoutError(status, payload)) {
+      return ADDRESS_SELECTION_ERROR_MESSAGE;
+    }
+
     return (
       getIssueMessage(payload) ||
       payload?.error ||
@@ -87,6 +132,10 @@ export function mapCheckoutErrorMessage(
   }
 
   if (status === 404) {
+    if (isAddressCheckoutError(status, payload)) {
+      return ADDRESS_SELECTION_ERROR_MESSAGE;
+    }
+
     return "Algum item não foi encontrado. Atualize o carrinho e tente novamente.";
   }
 
@@ -164,4 +213,25 @@ export function resolveStoreIdFromCart(items: CartItemStoreInput[]): {
     storeId: [...uniqueStoreIds][0] ?? null,
     hasMixedStores: false,
   };
+}
+
+export function selectPreferredAddressId(
+  addresses: CheckoutAddressCandidate[],
+  currentAddressId?: string | null,
+): string | null {
+  const normalizedCurrentAddressId = currentAddressId?.trim();
+
+  if (
+    normalizedCurrentAddressId &&
+    addresses.some((address) => address.id === normalizedCurrentAddressId)
+  ) {
+    return normalizedCurrentAddressId;
+  }
+
+  const defaultAddressId = addresses.find((address) => address.isDefault)?.id;
+  if (defaultAddressId) {
+    return defaultAddressId;
+  }
+
+  return addresses[0]?.id ?? null;
 }

@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-02
 **Sprint Atual:** Sprint 03
-**Status Geral:** 🟡 17% (2/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 25% (3/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias úteis)
 **Pré-requisito:** Fase 02 - Checkout Confiável e Integridade de Pedido (✅ concluída em 2026-03-02)
 
@@ -13,7 +13,7 @@
 
 | Categoria                          | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ---------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Conta e endereços no perfil        | 3      | 2         | 0            | 1        | 0         |
+| Conta e endereços no perfil        | 3      | 3         | 0            | 0        | 0         |
 | Navegação e convergência de rotas  | 3      | 0         | 0            | 3        | 0         |
 | Admin remove-bg seguro e funcional | 3      | 0         | 0            | 3        | 0         |
 | Testes, homologação e governança   | 3      | 0         | 0            | 3        | 0         |
@@ -95,7 +95,7 @@ Fechar a lacuna funcional de perfil onde hoje há listagem de endereços, mas se
 
 #### ADR.2 - Consumo de endereço no checkout
 
-- [ ] **S03-ADR-003** - Conectar endereço padrão/selecionado ao fluxo de checkout
+- [x] **S03-ADR-003** - Conectar endereço padrão/selecionado ao fluxo de checkout
 
   **Descrição curta:**
   - Checkout já aceita `addressId`, mas a experiência de seleção e fallback precisa ser consolidada com os dados do perfil.
@@ -109,13 +109,13 @@ Fechar a lacuna funcional de perfil onde hoje há listagem de endereços, mas se
   **Arquivos/áreas afetadas:** `src/app/checkout/page.tsx`, `src/hooks/useCheckout.ts`, `src/hooks/useCheckout.helpers.ts`
 
   **Critérios de aceitação:**
-  - [ ] Checkout usa endereço válido do usuário e envia `addressId` correto para API.
-  - [ ] Erro de endereço não interrompe a navegação com estado inconsistente.
+  - [x] Checkout usa endereço válido do usuário e envia `addressId` correto para API.
+  - [x] Erro de endereço não interrompe a navegação com estado inconsistente.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 4h  
   **Dependências:** S03-ADR-001, S03-ADR-002  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-02)
 
 ### 📦 Navegação e convergência de rotas - Compatibilidade legada sem fricção
 
@@ -346,7 +346,7 @@ Assegurar cobertura mínima automatizada e validação operacional antes de go-l
 - **Suites necessárias:** Integração de API (`addresses`, `admin/remove-bg`, `orders redirects`), regressão de páginas (`/perfil`, `/checkout`, `/orders`, `/cart`), homologação manual E2E.
 - **Cobertura alvo:** 100% dos cenários P1/P2 da Sprint 03 cobertos (automatizado + manual).
 - **Comandos de verificação:** `npm run test:integration`, `npm run lint`, `npm run build`.
-- **Estado atual:** 🟡 Execução técnica em andamento; `S03-ADR-001` e `S03-ADR-002` concluídas com validações de lint/build e integração.
+- **Estado atual:** 🟡 Execução técnica em andamento; `S03-ADR-001`, `S03-ADR-002` e `S03-ADR-003` concluídas com validações de lint/build e integração.
 
 ---
 

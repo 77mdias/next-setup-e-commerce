@@ -227,6 +227,53 @@ describe("POST /api/checkout integration", () => {
     });
   });
 
+  it("persists addressId when selected address belongs to the authenticated user", async () => {
+    mockDb.address.findFirst.mockResolvedValueOnce({ id: "address-1" });
+
+    const response = await POST(
+      createCheckoutRequest({
+        storeId: "store-1",
+        items: [{ productId: "product-1", quantity: 1 }],
+        shippingMethod: "STANDARD",
+        addressId: "address-1",
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mockDb.address.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: "address-1",
+        userId: "user-1",
+      },
+      select: { id: true },
+    });
+    expect(mockDb.order.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          addressId: "address-1",
+        }),
+      }),
+    );
+  });
+
+  it("returns 400 when provided addressId is invalid for authenticated user", async () => {
+    const response = await POST(
+      createCheckoutRequest({
+        storeId: "store-1",
+        items: [{ productId: "product-1", quantity: 1 }],
+        shippingMethod: "STANDARD",
+        addressId: "address-404",
+      }),
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toContain("Endereço inválido");
+    expect(mockDb.order.create).not.toHaveBeenCalled();
+    expect(mockCreateStripeCheckoutSession).not.toHaveBeenCalled();
+  });
+
   it("returns 404 for missing product and does not create order", async () => {
     mockDb.product.findMany.mockResolvedValue([]);
     mockDb.inventory.findMany.mockResolvedValue([]);

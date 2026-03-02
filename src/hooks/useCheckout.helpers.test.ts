@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  isAddressCheckoutError,
   mapCheckoutErrorMessage,
   mapOrderStatusError,
   normalizeCheckoutItems,
   resolveStoreIdFromCart,
+  selectPreferredAddressId,
 } from "./useCheckout.helpers";
 
 describe("normalizeCheckoutItems", () => {
@@ -61,6 +63,45 @@ describe("mapCheckoutErrorMessage", () => {
     expect(
       mapCheckoutErrorMessage(500, { error: "Erro interno do servidor" }),
     ).toBe("Erro interno do servidor");
+  });
+
+  it("returns recovery guidance when address is invalid on 400", () => {
+    expect(
+      mapCheckoutErrorMessage(400, {
+        error: "Dados inválidos para checkout",
+        issues: [{ field: "addressId", message: "Endereço inválido" }],
+      }),
+    ).toBe(
+      "O endereço selecionado não está mais disponível. Escolha outro endereço e tente novamente.",
+    );
+  });
+
+  it("returns recovery guidance when address is unavailable on 404", () => {
+    expect(
+      mapCheckoutErrorMessage(404, {
+        error: "Endereço não encontrado para o usuário",
+      }),
+    ).toBe(
+      "O endereço selecionado não está mais disponível. Escolha outro endereço e tente novamente.",
+    );
+  });
+});
+
+describe("isAddressCheckoutError", () => {
+  it("returns true when payload has address issue fields", () => {
+    expect(
+      isAddressCheckoutError(400, {
+        issues: [{ field: "addressId", message: "Required" }],
+      }),
+    ).toBe(true);
+  });
+
+  it("returns false for non-address 404 errors", () => {
+    expect(
+      isAddressCheckoutError(404, {
+        error: "Produto não encontrado",
+      }),
+    ).toBe(false);
   });
 });
 
@@ -129,5 +170,40 @@ describe("mapOrderStatusError", () => {
       message: "Erro interno do servidor",
       recoveryAction: "retry",
     });
+  });
+});
+
+describe("selectPreferredAddressId", () => {
+  it("keeps selected address when still available", () => {
+    expect(
+      selectPreferredAddressId(
+        [
+          { id: "addr-1", isDefault: false },
+          { id: "addr-2", isDefault: true },
+        ],
+        "addr-1",
+      ),
+    ).toBe("addr-1");
+  });
+
+  it("falls back to default address when current selection is unavailable", () => {
+    expect(
+      selectPreferredAddressId(
+        [
+          { id: "addr-1", isDefault: false },
+          { id: "addr-2", isDefault: true },
+        ],
+        "addr-3",
+      ),
+    ).toBe("addr-2");
+  });
+
+  it("falls back to first address when there is no default", () => {
+    expect(
+      selectPreferredAddressId([
+        { id: "addr-1", isDefault: false },
+        { id: "addr-2", isDefault: false },
+      ]),
+    ).toBe("addr-1");
   });
 });

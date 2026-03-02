@@ -2,8 +2,9 @@
 
 import type { FormEvent } from "react";
 import { useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CreditCard, User } from "lucide-react";
+import { CreditCard, MapPin, User } from "lucide-react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,17 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { products, total, totalQuantity, isLoading: cartLoading } = useCart();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { createCheckoutSession, isLoading, error } = useCheckout();
+  const {
+    createCheckoutSession,
+    isLoading,
+    error,
+    addresses,
+    selectedAddressId,
+    selectAddress,
+    isLoadingAddresses,
+    addressError,
+    refreshAddresses,
+  } = useCheckout();
 
   useEffect(() => {
     if (authLoading || cartLoading) {
@@ -60,7 +71,9 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    await createCheckoutSession();
+    await createCheckoutSession({
+      addressId: selectedAddressId ?? undefined,
+    });
   };
 
   return (
@@ -82,6 +95,115 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <div className="space-y-6">
+            <div className="rounded-lg bg-[var(--card-product)] p-6">
+              <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold text-white">
+                <MapPin className="h-5 w-5" />
+                Endereço de Entrega
+              </h2>
+
+              {isLoadingAddresses ? (
+                <div className="flex items-center gap-3 rounded-lg bg-gray-800/40 p-4 text-sm text-gray-300">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-transparent"></div>
+                  Carregando seus endereços...
+                </div>
+              ) : null}
+
+              {!isLoadingAddresses && addressError ? (
+                <div className="space-y-3 rounded-lg border border-red-500/25 bg-red-500/10 p-4">
+                  <p className="text-sm text-red-300">{addressError}</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-red-500/40 bg-transparent text-red-200 hover:bg-red-500/15 hover:text-red-100"
+                    onClick={() => {
+                      void refreshAddresses();
+                    }}
+                  >
+                    Tentar novamente
+                  </Button>
+                </div>
+              ) : null}
+
+              {!isLoadingAddresses &&
+              !addressError &&
+              addresses.length === 0 ? (
+                <div className="space-y-3 rounded-lg border border-gray-700 bg-gray-800/40 p-4">
+                  <p className="text-sm text-gray-300">
+                    Você ainda não possui um endereço salvo.
+                  </p>
+                  <Link
+                    href="/perfil"
+                    className="inline-flex text-sm font-medium text-[var(--text-price)] hover:underline"
+                  >
+                    Ir para meu perfil e cadastrar endereço
+                  </Link>
+                </div>
+              ) : null}
+
+              {!isLoadingAddresses && addresses.length > 0 ? (
+                <div className="space-y-3">
+                  {addresses.map((address) => {
+                    const isSelected = selectedAddressId === address.id;
+
+                    return (
+                      <label
+                        key={address.id}
+                        className={`block cursor-pointer rounded-lg border p-4 transition-colors ${
+                          isSelected
+                            ? "border-[var(--text-price)] bg-[var(--text-price)]/10"
+                            : "border-gray-700 bg-gray-800/30 hover:border-gray-500"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="delivery-address"
+                          value={address.id}
+                          checked={isSelected}
+                          onChange={() => selectAddress(address.id)}
+                          className="sr-only"
+                        />
+
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1.5">
+                            <p className="font-medium text-white">
+                              {address.label}
+                            </p>
+                            <p className="text-sm text-gray-300">
+                              {address.street}, {address.number}
+                              {address.complement
+                                ? `, ${address.complement}`
+                                : ""}
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              {address.neighborhood} - {address.city}/
+                              {address.state}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {address.zipCode} • {address.country || "Brasil"}
+                            </p>
+                          </div>
+
+                          {address.isDefault ? (
+                            <span className="rounded bg-[var(--text-price)]/20 px-2 py-1 text-xs font-medium text-[var(--text-price)]">
+                              Padrão
+                            </span>
+                          ) : null}
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              ) : null}
+
+              {!isLoadingAddresses &&
+              addresses.length > 0 &&
+              !selectedAddressId ? (
+                <p className="mt-3 text-sm text-red-300">
+                  Selecione um endereço para finalizar a compra.
+                </p>
+              ) : null}
+            </div>
+
             <div className="rounded-lg bg-[var(--card-product)] p-6">
               <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold text-white">
                 <User className="h-5 w-5" />
@@ -112,7 +234,11 @@ export default function CheckoutPage() {
                   <Button
                     type="submit"
                     className="w-full bg-[var(--button-primary)] text-white hover:bg-[var(--text-price-secondary)]"
-                    disabled={isLoading}
+                    disabled={
+                      isLoading ||
+                      isLoadingAddresses ||
+                      (addresses.length > 0 && !selectedAddressId)
+                    }
                   >
                     {isLoading ? (
                       <div className="flex items-center gap-2">
