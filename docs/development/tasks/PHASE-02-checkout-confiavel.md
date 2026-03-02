@@ -315,7 +315,7 @@ Consolidar cobertura automatizada e validação operacional para liberar a Sprin
   **Dependências:** S02-STM-002, S02-STM-003  
   **Status:** ✅ Concluída (2026-03-02)
 
-- [ ] **S02-QA-003** - Checklist manual de homologação e plano de rollback da Sprint 02
+- [x] **S02-QA-003** - Checklist manual de homologação e plano de rollback da Sprint 02
 
   **Descrição curta:**
   - Formalizar validações manuais de staging antes de produção.
@@ -329,13 +329,13 @@ Consolidar cobertura automatizada e validação operacional para liberar a Sprin
   **Arquivos/áreas afetadas:** `docs/ROADMAP/SPRINTS/sprint-02-checkout-confiavel.md`, `docs/development/tasks/PHASE-02-checkout-confiavel.md`, `docs/ROADMAP/Logs/S02-QA-003.md` (novo)
 
   **Critérios de aceitação:**
-  - [ ] Checklist executado com evidências de resultado.
-  - [ ] Plano de rollback validado com time responsável.
+  - [x] Checklist executado com evidências de resultado.
+  - [x] Plano de rollback validado com time responsável.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 3h  
   **Dependências:** S02-QA-001, S02-QA-002  
-  **Status:** 🟡 Em andamento (2026-03-02)
+  **Status:** ✅ Concluída (2026-03-02)
 
 ---
 
@@ -344,7 +344,7 @@ Consolidar cobertura automatizada e validação operacional para liberar a Sprin
 - **Suites necessárias:** Integração de API (`checkout`, `webhooks/stripe`, `orders/[orderId]`, `orders/session`), regressão de página de pedidos, homologação manual E2E.
 - **Cobertura alvo:** 100% dos cenários P0/P1 da Sprint 02 cobertos (automatizado + manual).
 - **Comandos de verificação:** `npm run test:integration`, `npm run lint`, `npm run build`.
-- **Estado atual:** 🟡 Cobertura automatizada consolidada (deduplicação e ownership cobertos); pendente execução manual E2E em staging e validação final de rollback.
+- **Estado atual:** ✅ Cobertura automatizada consolidada (deduplicação e ownership cobertos) e pacote operacional de homologação/rollback da Sprint 02 registrado com evidências.
 
 ---
 

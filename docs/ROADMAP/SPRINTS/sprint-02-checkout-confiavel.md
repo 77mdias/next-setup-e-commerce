@@ -26,10 +26,10 @@ Melhorar robustez do fluxo de pedido, pagamento e reconciliacao.
 
 | Cenario | Resultado esperado | Evidencia automatizada | Evidencia staging | Status |
 | --- | --- | --- | --- | --- |
-| Reentrega webhook (`event.id` duplicado) | Sem pagamento/historico duplicado e resposta estavel | `docs/ROADMAP/Logs/S02-QA-001.md`, `docs/ROADMAP/Logs/S02-QA-002.md` | Pendente de execucao em staging | ⏳ |
-| Checkout com pagamento aprovado | Pedido finaliza em `PAID` com historico coerente e redirecionamento de sucesso | `npm run test:integration` (suite `checkout` + `webhooks/stripe`) | Pendente de execucao em staging | ⏳ |
-| Checkout com falha/expiracao | Pedido muda para `CANCELLED`/`FAILED` sem regressao de estado | `npm run test:integration` (suite `webhooks/stripe`) | Pendente de execucao em staging | ⏳ |
-| Ownership de pedido (`/api/orders/[orderId]` e `/api/orders/session/[sessionId]`) | Usuario nao-owner recebe `404` e owner recebe dados consistentes | `docs/ROADMAP/Logs/S02-ORD-001.md`, `docs/ROADMAP/Logs/S02-QA-002.md` | Pendente de execucao em staging | ⏳ |
+| Reentrega webhook (`event.id` duplicado) | Sem pagamento/historico duplicado e resposta estavel | `docs/ROADMAP/Logs/S02-QA-001.md`, `docs/ROADMAP/Logs/S02-QA-002.md` | `docs/ROADMAP/Logs/S02-QA-003.md` (secao "Checklist e evidencias", 2026-03-02) | ✅ |
+| Checkout com pagamento aprovado | Pedido finaliza em `PAID` com historico coerente e redirecionamento de sucesso | `npm run test:integration` (suite `checkout` + `webhooks/stripe`) | `docs/ROADMAP/Logs/S02-QA-003.md` (secao "Checklist e evidencias", 2026-03-02) | ✅ |
+| Checkout com falha/expiracao | Pedido muda para `CANCELLED`/`FAILED` sem regressao de estado | `npm run test:integration` (suite `webhooks/stripe`) | `docs/ROADMAP/Logs/S02-QA-003.md` (secao "Checklist e evidencias", 2026-03-02) | ✅ |
+| Ownership de pedido (`/api/orders/[orderId]` e `/api/orders/session/[sessionId]`) | Usuario nao-owner recebe `404` e owner recebe dados consistentes | `docs/ROADMAP/Logs/S02-ORD-001.md`, `docs/ROADMAP/Logs/S02-QA-002.md` | `docs/ROADMAP/Logs/S02-QA-003.md` (secao "Checklist e evidencias", 2026-03-02) | ✅ |
 
 ### Plano de rollback (S02-QA-003)
 
@@ -41,6 +41,7 @@ Melhorar robustez do fluxo de pedido, pagamento e reconciliacao.
   4. Rodar smoke manual dos fluxos de webhook (duplicado/sucesso/falha) e ownership.
   5. Registrar incidente e a decisao de rollback no log da sprint.
 - **Responsaveis:** engenharia backend (execucao tecnica), QA (revalidacao), produto (comunicacao e decisao de janela).
+- **Validacao:** plano revisado no checkpoint de go/no-go da Sprint 02 (2026-03-02) com engenharia backend, QA e produto; registro consolidado em `docs/ROADMAP/Logs/S02-QA-003.md`.
 - **RTO alvo:** ate 15 minutos para restaurar operacao estavel.
 
 ## Criterios de aceite
