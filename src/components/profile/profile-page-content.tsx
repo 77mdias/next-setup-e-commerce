@@ -11,9 +11,14 @@ import {
   User,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import {
+  AddressFormModal,
+  type AddressFormValues,
+  EMPTY_ADDRESS_FORM_VALUES,
+} from "@/components/profile/address-form-modal";
 import { useAuth } from "@/hooks/useAuth";
 
 type ProfilePageContentProps = {
@@ -34,6 +39,22 @@ type UserAddress = {
   state: string;
   street: string;
   zipCode: string;
+};
+
+type AddressFormMode = "create" | "edit";
+
+type AddressResponsePayload = {
+  addresses?: UserAddress[];
+};
+
+type AddressApiIssue = {
+  field?: string;
+  message?: string;
+};
+
+type AddressApiErrorPayload = {
+  issues?: AddressApiIssue[];
+  message?: string;
 };
 
 function splitName(fullName?: string | null): [string, string] {
@@ -66,6 +87,67 @@ function formatPhone(phone?: string | number | null): string {
   }
 
   return String(phone);
+}
+
+function mapAddressToFormValues(address: UserAddress): AddressFormValues {
+  return {
+    city: address.city,
+    complement: address.complement ?? "",
+    country: address.country,
+    isDefault: address.isDefault,
+    label: address.label,
+    neighborhood: address.neighborhood,
+    number: address.number,
+    state: address.state,
+    street: address.street,
+    zipCode: address.zipCode,
+  };
+}
+
+function buildAddressRequestPayload(values: AddressFormValues) {
+  const payload: Record<string, string | boolean> = {
+    city: values.city,
+    isDefault: values.isDefault,
+    label: values.label,
+    neighborhood: values.neighborhood,
+    number: values.number,
+    state: values.state,
+    street: values.street,
+    zipCode: values.zipCode,
+  };
+
+  if (values.complement.trim()) {
+    payload.complement = values.complement;
+  }
+
+  if (values.country.trim()) {
+    payload.country = values.country;
+  }
+
+  return payload;
+}
+
+async function extractAddressErrorMessage(
+  response: Response,
+  fallbackMessage: string,
+) {
+  try {
+    const payload = (await response.json()) as AddressApiErrorPayload;
+    const issueMessage = payload.issues?.find(
+      (issue) => issue.message,
+    )?.message;
+    if (issueMessage?.trim()) {
+      return issueMessage;
+    }
+
+    if (payload.message?.trim()) {
+      return payload.message;
+    }
+  } catch {
+    // noop
+  }
+
+  return fallbackMessage;
 }
 
 function SidebarItem({
@@ -113,16 +195,18 @@ function InfoField({ label, value }: { label: string; value: string }) {
 
 function AddressCard({
   address,
+  isRemoving,
   onEdit,
   onRemove,
 }: {
   address: UserAddress;
+  isRemoving: boolean;
   onEdit: () => void;
   onRemove: () => void;
 }) {
   const lineOne = `${address.street}, ${address.number}${address.complement ? `, ${address.complement}` : ""}`;
   const lineTwo = `${address.city}, ${address.state} ${address.zipCode}`;
-  const lineThree = address.country || "United States";
+  const lineThree = address.country || "Brasil";
 
   return (
     <div className="relative min-h-[186px] rounded-2xl border border-[#5C7CFA] bg-[rgba(92,124,250,0.05)] p-6">
@@ -140,16 +224,18 @@ function AddressCard({
         <button
           type="button"
           onClick={onEdit}
-          className="text-[#5C7CFA] transition-colors hover:text-[#7991ff]"
+          disabled={isRemoving}
+          className="text-[#5C7CFA] transition-colors hover:text-[#7991ff] disabled:cursor-not-allowed disabled:opacity-60"
         >
           Edit
         </button>
         <button
           type="button"
           onClick={onRemove}
-          className="text-[#FB2C36] transition-colors hover:text-[#ff5a61]"
+          disabled={isRemoving}
+          className="text-[#FB2C36] transition-colors hover:text-[#ff5a61] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Remove
+          {isRemoving ? "Removing..." : "Remove"}
         </button>
       </div>
 
@@ -188,10 +274,18 @@ export function ProfilePageContent({
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [hasLoadedAddresses, setHasLoadedAddresses] = useState(false);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
-  const primaryAddress = useMemo(
-    () =>
-      addresses.find((address) => address.isDefault) ?? addresses[0] ?? null,
-    [addresses],
+  const [addressFormMode, setAddressFormMode] =
+    useState<AddressFormMode>("create");
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [addressFormInitialValues, setAddressFormInitialValues] =
+    useState<AddressFormValues>(EMPTY_ADDRESS_FORM_VALUES);
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [addressFormServerError, setAddressFormServerError] = useState<
+    string | null
+  >(null);
+  const [removingAddressId, setRemovingAddressId] = useState<string | null>(
+    null,
   );
   const headingBySection: Record<ProfileSection, string> = {
     personal: "Personal Information",
@@ -199,6 +293,179 @@ export function ProfilePageContent({
     payment: "Payment Methods",
     security: "Security",
   };
+
+  const loadAddresses = useCallback(
+    async ({ showLoader = true } = {}) => {
+      if (!isAuthenticated) {
+        return false;
+      }
+
+      if (showLoader) {
+        setIsLoadingAddresses(true);
+      }
+
+      try {
+        const response = await fetch("/api/addresses", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          const message = await extractAddressErrorMessage(
+            response,
+            "Não foi possível carregar os endereços.",
+          );
+          throw new Error(message);
+        }
+
+        const data = (await response.json()) as AddressResponsePayload;
+        setAddresses(data.addresses ?? []);
+        setHasLoadedAddresses(true);
+        return true;
+      } catch (error) {
+        console.error("Error loading addresses:", error);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Não foi possível carregar os endereços.",
+        );
+        return false;
+      } finally {
+        if (showLoader) {
+          setIsLoadingAddresses(false);
+        }
+      }
+    },
+    [isAuthenticated],
+  );
+
+  function openCreateAddressModal() {
+    setAddressFormMode("create");
+    setEditingAddressId(null);
+    setAddressFormInitialValues(EMPTY_ADDRESS_FORM_VALUES);
+    setAddressFormServerError(null);
+    setIsAddressModalOpen(true);
+  }
+
+  function openEditAddressModal(address: UserAddress) {
+    setAddressFormMode("edit");
+    setEditingAddressId(address.id);
+    setAddressFormInitialValues(mapAddressToFormValues(address));
+    setAddressFormServerError(null);
+    setIsAddressModalOpen(true);
+  }
+
+  function closeAddressModal() {
+    if (isSavingAddress) {
+      return;
+    }
+
+    setIsAddressModalOpen(false);
+    setAddressFormServerError(null);
+  }
+
+  async function handleAddressSubmit(values: AddressFormValues) {
+    const method = addressFormMode === "create" ? "POST" : "PUT";
+    const endpoint = "/api/addresses";
+    const payload = buildAddressRequestPayload(values);
+
+    if (addressFormMode === "edit") {
+      if (!editingAddressId) {
+        setAddressFormServerError(
+          "Não foi possível identificar o endereço para edição.",
+        );
+        return;
+      }
+
+      payload.id = editingAddressId;
+    }
+
+    setIsSavingAddress(true);
+    setAddressFormServerError(null);
+
+    try {
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const message = await extractAddressErrorMessage(
+          response,
+          "Não foi possível salvar o endereço.",
+        );
+        setAddressFormServerError(message);
+        return;
+      }
+
+      const didRefreshAddresses = await loadAddresses({ showLoader: false });
+      if (!didRefreshAddresses) {
+        setAddressFormServerError(
+          "Endereço salvo, mas não foi possível atualizar a lista. Recarregue a página.",
+        );
+        return;
+      }
+
+      setIsAddressModalOpen(false);
+      setAddressFormServerError(null);
+      toast.success(
+        addressFormMode === "create"
+          ? "Endereço criado com sucesso."
+          : "Endereço atualizado com sucesso.",
+      );
+    } catch (error) {
+      console.error("Error saving address:", error);
+      setAddressFormServerError(
+        "Não foi possível salvar o endereço. Tente novamente.",
+      );
+    } finally {
+      setIsSavingAddress(false);
+    }
+  }
+
+  async function handleRemoveAddress(address: UserAddress) {
+    const confirmRemoval = window.confirm(
+      `Deseja remover o endereço "${address.label}"?`,
+    );
+
+    if (!confirmRemoval) {
+      return;
+    }
+
+    setRemovingAddressId(address.id);
+
+    try {
+      const response = await fetch(`/api/addresses?id=${address.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const message = await extractAddressErrorMessage(
+          response,
+          "Não foi possível remover o endereço.",
+        );
+        toast.error(message);
+        return;
+      }
+
+      const didRefreshAddresses = await loadAddresses({ showLoader: false });
+      if (!didRefreshAddresses) {
+        toast.error(
+          "Endereço removido, mas não foi possível atualizar a lista automaticamente.",
+        );
+        return;
+      }
+
+      toast.success("Endereço removido com sucesso.");
+    } catch (error) {
+      console.error("Error deleting address:", error);
+      toast.error("Não foi possível remover o endereço.");
+    } finally {
+      setRemovingAddressId(null);
+    }
+  }
 
   useEffect(() => {
     if (
@@ -209,44 +476,8 @@ export function ProfilePageContent({
       return;
     }
 
-    let isCancelled = false;
-
-    async function loadAddresses() {
-      setIsLoadingAddresses(true);
-
-      try {
-        const response = await fetch("/api/addresses", {
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to load addresses");
-        }
-
-        const data = (await response.json()) as { addresses?: UserAddress[] };
-
-        if (!isCancelled) {
-          setAddresses(data.addresses ?? []);
-          setHasLoadedAddresses(true);
-        }
-      } catch (error) {
-        if (!isCancelled) {
-          console.error("Error loading addresses:", error);
-          toast.error("Could not load addresses.");
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsLoadingAddresses(false);
-        }
-      }
-    }
-
-    loadAddresses();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [activeSection, hasLoadedAddresses, isAuthenticated]);
+    void loadAddresses();
+  }, [activeSection, hasLoadedAddresses, isAuthenticated, loadAddresses]);
 
   if (isLoading) {
     return (
@@ -337,9 +568,7 @@ export function ProfilePageContent({
                 </h2>
                 <button
                   type="button"
-                  onClick={() =>
-                    toast("Address creation will be available soon.")
-                  }
+                  onClick={openCreateAddressModal}
                   className="inline-flex h-9 items-center rounded-2xl border border-[#dbe4ff] bg-white px-3.5 text-sm font-[var(--font-arimo)] font-medium text-[#0f172a] transition-colors hover:bg-[#f3f7ff] dark:border-white/[0.1] dark:bg-[#171A21] dark:text-[#F1F3F5] dark:hover:bg-[#1f2430]"
                 >
                   <Plus className="mr-1.5 h-4 w-4" />
@@ -397,16 +626,16 @@ export function ProfilePageContent({
                   </div>
                 ) : (
                   <div className="mt-6 grid gap-6 lg:grid-cols-2">
-                    {primaryAddress ? (
-                      <AddressCard
-                        address={primaryAddress}
-                        onEdit={() =>
-                          toast("Address editing will be available soon.")
-                        }
-                        onRemove={() =>
-                          toast("Address removal will be available soon.")
-                        }
-                      />
+                    {addresses.length > 0 ? (
+                      addresses.map((address) => (
+                        <AddressCard
+                          key={address.id}
+                          address={address}
+                          isRemoving={removingAddressId === address.id}
+                          onEdit={() => openEditAddressModal(address)}
+                          onRemove={() => void handleRemoveAddress(address)}
+                        />
+                      ))
                     ) : (
                       <div className="flex min-h-[186px] flex-col justify-center rounded-2xl border border-[#dbe4ff] bg-[#f8faff] p-6 dark:border-white/[0.1] dark:bg-[#12151A]">
                         <h3 className="text-base font-[var(--font-space-grotesk)] font-bold text-[#0f172a] dark:text-[#F1F3F5]">
@@ -418,11 +647,7 @@ export function ProfilePageContent({
                       </div>
                     )}
 
-                    <AddAddressCard
-                      onClick={() =>
-                        toast("Address creation will be available soon.")
-                      }
-                    />
+                    <AddAddressCard onClick={openCreateAddressModal} />
                   </div>
                 )}
               </>
@@ -439,6 +664,16 @@ export function ProfilePageContent({
           </section>
         </div>
       </div>
+
+      <AddressFormModal
+        initialValues={addressFormInitialValues}
+        isOpen={isAddressModalOpen}
+        isSubmitting={isSavingAddress}
+        mode={addressFormMode}
+        onClose={closeAddressModal}
+        onSubmit={handleAddressSubmit}
+        submitError={addressFormServerError}
+      />
     </div>
   );
 }

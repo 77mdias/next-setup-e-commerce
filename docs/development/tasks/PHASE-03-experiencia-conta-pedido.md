@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-02
 **Sprint Atual:** Sprint 03
-**Status Geral:** 🟡 8% (1/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 17% (2/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias úteis)
 **Pré-requisito:** Fase 02 - Checkout Confiável e Integridade de Pedido (✅ concluída em 2026-03-02)
 
@@ -13,11 +13,11 @@
 
 | Categoria                          | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ---------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Conta e endereços no perfil        | 3      | 1         | 0            | 2        | 0         |
+| Conta e endereços no perfil        | 3      | 2         | 0            | 1        | 0         |
 | Navegação e convergência de rotas  | 3      | 0         | 0            | 3        | 0         |
 | Admin remove-bg seguro e funcional | 3      | 0         | 0            | 3        | 0         |
 | Testes, homologação e governança   | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                          | **12** | **1**     | **0**        | **11**   | **0**     |
+| **TOTAL**                          | **12** | **2**     | **0**        | **10**   | **0**     |
 
 ### 🎯 Principais Indicadores
 
@@ -71,7 +71,7 @@ Fechar a lacuna funcional de perfil onde hoje há listagem de endereços, mas se
   **Dependências:** nenhuma  
   **Status:** ✅ Concluída (2026-03-02)
 
-- [ ] **S03-ADR-002** - Integrar CRUD de endereços na tela de perfil (`/perfil`)
+- [x] **S03-ADR-002** - Integrar CRUD de endereços na tela de perfil (`/perfil`)
 
   **Descrição curta:**
   - A interface de perfil ainda mostra ações com placeholder (`toast`) para adicionar/editar/remover endereço.
@@ -85,13 +85,13 @@ Fechar a lacuna funcional de perfil onde hoje há listagem de endereços, mas se
   **Arquivos/áreas afetadas:** `src/components/profile/profile-page-content.tsx`, `src/components/profile/*` (novo, se necessário)
 
   **Critérios de aceitação:**
-  - [ ] Usuário executa criação, edição e remoção de endereço sem fallback para placeholder.
-  - [ ] Estado da UI permanece consistente após mutações (lista, default, loading e erro).
+  - [x] Usuário executa criação, edição e remoção de endereço sem fallback para placeholder.
+  - [x] Estado da UI permanece consistente após mutações (lista, default, loading e erro).
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 6h  
   **Dependências:** S03-ADR-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-02)
 
 #### ADR.2 - Consumo de endereço no checkout
 
@@ -346,7 +346,7 @@ Assegurar cobertura mínima automatizada e validação operacional antes de go-l
 - **Suites necessárias:** Integração de API (`addresses`, `admin/remove-bg`, `orders redirects`), regressão de páginas (`/perfil`, `/checkout`, `/orders`, `/cart`), homologação manual E2E.
 - **Cobertura alvo:** 100% dos cenários P1/P2 da Sprint 03 cobertos (automatizado + manual).
 - **Comandos de verificação:** `npm run test:integration`, `npm run lint`, `npm run build`.
-- **Estado atual:** 🟡 Execução técnica iniciada; `S03-ADR-001` concluída com validações de lint/build e integração.
+- **Estado atual:** 🟡 Execução técnica em andamento; `S03-ADR-001` e `S03-ADR-002` concluídas com validações de lint/build e integração.
 
 ---
 

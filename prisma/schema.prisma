@@ -376,6 +376,8 @@ model Address {
   user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders       Order[]
 
+  /// Partial unique index for default-per-user is defined in SQL migration:
+  /// `addresses_userId_single_default_unique`.
   @@map("addresses")
 }
 
