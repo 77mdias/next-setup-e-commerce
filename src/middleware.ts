@@ -10,6 +10,7 @@ import type { AccessFeedbackReason } from "@/lib/access-feedback";
 const protectedRoutePattern =
   /^\/(?:orders(?:\/|$)|(?:[^/]+\/)?(?:perfil|wishlist|carrinho|checkout|pedido)(?:\/|$))/;
 const adminRoutePattern = /^\/(?:admin(?:\/|$)|[^/]+\/admin(?:\/|$))/;
+const legacyCartPathPattern = /^\/cart\/?$/;
 
 function normalizeRoutePrefix(value: string): string | null {
   const trimmed = value.trim();
@@ -122,6 +123,14 @@ export default withAuth(
         req.url,
       );
       return NextResponse.redirect(feedbackUrl);
+    }
+
+    if (legacyCartPathPattern.test(pathname)) {
+      const canonicalCartPath = getPathWithSearch(
+        "/carrinho",
+        req.nextUrl.search,
+      );
+      return NextResponse.redirect(new URL(canonicalCartPath, req.url));
     }
 
     // Redirecionar usuários autenticados das páginas de auth

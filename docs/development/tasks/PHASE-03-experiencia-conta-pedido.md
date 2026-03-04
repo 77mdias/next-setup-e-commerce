@@ -125,7 +125,7 @@ Padronizar rotas canônicas de compra/pedido e reduzir quebra em links antigos c
 
 #### NAV.1 - Alias e consistência de carrinho/pedido
 
-- [ ] **S03-NAV-001** - Implementar compatibilidade explícita de `/cart` para `/carrinho`
+- [x] **S03-NAV-001** - Implementar compatibilidade explícita de `/cart` para `/carrinho`
 
   **Descrição curta:**
   - Links legados para `/cart` ainda podem existir fora da aplicação e causar 404.
@@ -139,13 +139,13 @@ Padronizar rotas canônicas de compra/pedido e reduzir quebra em links antigos c
   **Arquivos/áreas afetadas:** `src/app/cart/page.tsx` (novo), `src/middleware.ts`
 
   **Critérios de aceitação:**
-  - [ ] Acessar `/cart` sempre redireciona para `/carrinho` mantendo parâmetros.
-  - [ ] Fluxo autenticado/anônimo continua com comportamento consistente de proteção.
+  - [x] Acessar `/cart` sempre redireciona para `/carrinho` mantendo parâmetros.
+  - [x] Fluxo autenticado/anônimo continua com comportamento consistente de proteção.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 2h  
   **Dependências:** nenhuma  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-04)
 
 - [ ] **S03-NAV-002** - Auditar e corrigir pontos de navegação entre rotas legadas e canônicas
 
