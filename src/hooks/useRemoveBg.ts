@@ -27,6 +27,10 @@ interface ProcessMultipleImagesResponse {
   totalErrors: number;
 }
 
+interface UseRemoveBgOptions {
+  endpoint?: string;
+}
+
 interface UseRemoveBgReturn {
   isProcessing: boolean;
   processImage: (
@@ -40,9 +44,12 @@ interface UseRemoveBgReturn {
   progress: number;
 }
 
-export const useRemoveBg = (): UseRemoveBgReturn => {
+export const useRemoveBg = (
+  options: UseRemoveBgOptions = {},
+): UseRemoveBgReturn => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const endpoint = options.endpoint ?? "/api/remove-bg";
 
   const processImage = useCallback(
     async (imageUrl: string, apiKey: string): Promise<ProcessImageResponse> => {
@@ -50,7 +57,7 @@ export const useRemoveBg = (): UseRemoveBgReturn => {
       setProgress(0);
 
       try {
-        const response = await axios.post("/api/remove-bg", {
+        const response = await axios.post(endpoint, {
           imageUrl,
           apiKey,
         });
@@ -67,7 +74,7 @@ export const useRemoveBg = (): UseRemoveBgReturn => {
         setIsProcessing(false);
       }
     },
-    [],
+    [endpoint],
   );
 
   const processMultipleImages = useCallback(
@@ -79,7 +86,7 @@ export const useRemoveBg = (): UseRemoveBgReturn => {
       setProgress(0);
 
       try {
-        const response = await axios.put("/api/remove-bg", {
+        const response = await axios.put(endpoint, {
           imageUrls,
           apiKey,
         });
@@ -104,7 +111,7 @@ export const useRemoveBg = (): UseRemoveBgReturn => {
         setIsProcessing(false);
       }
     },
-    [],
+    [endpoint],
   );
 
   return {

@@ -64,10 +64,12 @@
 
 ### Utilitario
 - `POST/PUT /api/remove-bg`
+- `POST/PUT /api/admin/remove-bg` (restrito a sessao autenticada com role `ADMIN`)
 
 ## Regras de acesso (estado atual)
 - Middleware protege principalmente rotas de UI (`/orders`, `/(slug)/perfil|wishlist|carrinho|checkout|pedido`).
 - Rotas API nao passam pelo matcher do middleware e dependem de validacao interna.
+- `POST/PUT /api/admin/remove-bg` exige sessao autenticada e role `ADMIN` na propria rota.
 - Nem todas as APIs sensiveis exigem sessao (ex.: `/api/test-stripe`, `/api/auth/user-info`, `/api/remove-bg`).
 
 ## Inconsistencias funcionais

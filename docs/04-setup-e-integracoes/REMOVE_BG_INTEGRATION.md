@@ -43,6 +43,14 @@ Navegue para: `https://seudominio.com/[slug-da-loja]/admin/remove-bg`
 
 ### 1. API Routes
 
+#### `/api/admin/remove-bg` (POST/PUT)
+
+Endpoint dedicado para a tela administrativa `/${slug}/admin/remove-bg`.
+
+- Exige sessão autenticada com role `ADMIN`.
+- Retorna `401` para sessão ausente e `403` para usuário sem privilégio administrativo.
+- Mantém contrato de processamento de imagem única (`POST`) e lote (`PUT`) com erros operacionais padronizados.
+
 #### `/api/remove-bg` (POST)
 
 Processa uma única imagem:
@@ -192,6 +200,7 @@ src/
 
 - A API Key é armazenada apenas no localStorage do cliente
 - As requisições são processadas no servidor (API Routes)
+- O endpoint administrativo dedicado (`/api/admin/remove-bg`) valida sessão e role `ADMIN` explicitamente
 - Validação de dados em todas as rotas
 - Tratamento seguro de erros
 

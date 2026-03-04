@@ -133,6 +133,7 @@ export default function RemoveBgPage() {
                 productId={selectedProduct.id}
                 images={selectedProduct.images}
                 onImagesProcessed={handleImagesProcessed}
+                apiEndpoint="/api/admin/remove-bg"
               />
             </div>
           </div>

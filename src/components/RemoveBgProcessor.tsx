@@ -8,14 +8,18 @@ interface RemoveBgProcessorProps {
   productId: string;
   images: string[];
   onImagesProcessed?: (processedImages: string[]) => void;
+  apiEndpoint?: string;
 }
 
 export default function RemoveBgProcessor({
   productId,
   images,
   onImagesProcessed,
+  apiEndpoint = "/api/remove-bg",
 }: RemoveBgProcessorProps) {
-  const { isProcessing, processMultipleImages, progress } = useRemoveBg();
+  const { isProcessing, processMultipleImages, progress } = useRemoveBg({
+    endpoint: apiEndpoint,
+  });
   const [apiKey, setApiKey] = useState("");
   const [processedImages, setProcessedImages] = useState<string[]>([]);
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);

@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 03: Experiência de Conta e Pedido
 
 **Status:** 🟢 ATIVA
-**Última atualização:** 2026-03-02
+**Última atualização:** 2026-03-04
 **Sprint Atual:** Sprint 03
-**Status Geral:** 🟡 25% (3/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 33% (4/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias úteis)
 **Pré-requisito:** Fase 02 - Checkout Confiável e Integridade de Pedido (✅ concluída em 2026-03-02)
 
@@ -15,9 +15,9 @@
 | ---------------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Conta e endereços no perfil        | 3      | 3         | 0            | 0        | 0         |
 | Navegação e convergência de rotas  | 3      | 0         | 0            | 3        | 0         |
-| Admin remove-bg seguro e funcional | 3      | 0         | 0            | 3        | 0         |
+| Admin remove-bg seguro e funcional | 3      | 1         | 0            | 2        | 0         |
 | Testes, homologação e governança   | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                          | **12** | **3**     | **0**        | **9**    | **0**     |
+| **TOTAL**                          | **12** | **4**     | **0**        | **8**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
@@ -199,7 +199,7 @@ Corrigir o fluxo administrativo de remoção de fundo para usar endpoint dedicad
 
 #### RBG.1 - Endpoint administrativo e hardening de segurança
 
-- [ ] **S03-RBG-001** - Criar endpoint dedicado para remove-bg administrativo com autorização explícita
+- [x] **S03-RBG-001** - Criar endpoint dedicado para remove-bg administrativo com autorização explícita
 
   **Descrição curta:**
   - O fluxo atual da página admin não usa endpoint específico para operação administrativa.
@@ -213,13 +213,13 @@ Corrigir o fluxo administrativo de remoção de fundo para usar endpoint dedicad
   **Arquivos/áreas afetadas:** `src/app/api/admin/remove-bg/route.ts` (novo), `src/middleware.ts`, `src/lib/auth.ts`
 
   **Critérios de aceitação:**
-  - [ ] Usuário sem privilégio administrativo não processa remove-bg.
-  - [ ] Endpoint administrativo responde de forma segura e previsível em erro.
+  - [x] Usuário sem privilégio administrativo não processa remove-bg.
+  - [x] Endpoint administrativo responde de forma segura e previsível em erro.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 5h  
   **Dependências:** nenhuma  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-04)
 
 - [ ] **S03-RBG-002** - Remover `apiKey` do payload cliente e aplicar allowlist de origem de imagem
 

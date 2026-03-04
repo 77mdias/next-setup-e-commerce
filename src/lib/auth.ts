@@ -220,3 +220,40 @@ export const requireAuth = async () => {
   }
   return user;
 };
+
+type AuthenticatedUser = Awaited<ReturnType<typeof getCurrentUser>>;
+
+type AdminAccessGranted = {
+  authorized: true;
+  user: NonNullable<AuthenticatedUser>;
+};
+
+type AdminAccessDenied = {
+  authorized: false;
+  status: 401 | 403;
+};
+
+export type AdminAccessResult = AdminAccessGranted | AdminAccessDenied;
+
+export const requireAdminAccess = async (): Promise<AdminAccessResult> => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return {
+      authorized: false,
+      status: 401,
+    };
+  }
+
+  if (user.role !== UserRole.ADMIN) {
+    return {
+      authorized: false,
+      status: 403,
+    };
+  }
+
+  return {
+    authorized: true,
+    user,
+  };
+};
