@@ -11,6 +11,7 @@
   - `/${slug}/product/[productId]` -> `/product/[productId]`
   - `/${slug}/categorias` -> `/products`
   - `/${slug}/categorias/[categorySlug]` -> `/products?category=[categorySlug]`
+  - Os redirecionamentos legados preservam querystring quando aplicável (com remoção de chaves legadas como `storeSlug`).
 
 ## Rotas de compra
 - `/carrinho`
@@ -30,6 +31,7 @@
   - `/${slug}/pedido/[orderId]` -> `/orders/[orderId]`
   - `/${slug}/pedido/sucesso` -> `/orders/success`
   - `/${slug}/pedido/falha` -> `/orders/failure`
+  - As pontes legadas preservam querystring para manter contexto de retorno.
 
 ## Rotas de autenticacao
 - `/auth/signin`

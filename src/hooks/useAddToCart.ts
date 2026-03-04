@@ -4,18 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Product } from "@prisma/client";
 import { useCart } from "@/context/cart";
-
-function resolveCartPath(redirectPath?: string) {
-  if (!redirectPath) {
-    return "/carrinho";
-  }
-
-  if (redirectPath.startsWith("/")) {
-    return redirectPath;
-  }
-
-  return "/carrinho";
-}
+import { resolveCanonicalCartPath } from "@/lib/routes";
 
 export const useAddToCart = (redirectPath?: string) => {
   const router = useRouter();
@@ -32,7 +21,7 @@ export const useAddToCart = (redirectPath?: string) => {
         quantity: 1,
       });
       // Redirecionar para o carrinho ao invés de mostrar alert
-      router.push(resolveCartPath(redirectPath));
+      router.push(resolveCanonicalCartPath(redirectPath));
     } catch (error) {
       console.error("Erro ao adicionar ao carrinho:", error);
       alert("Erro ao adicionar produto ao carrinho");

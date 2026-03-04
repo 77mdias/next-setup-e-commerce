@@ -147,7 +147,7 @@ Padronizar rotas canônicas de compra/pedido e reduzir quebra em links antigos c
   **Dependências:** nenhuma  
   **Status:** ✅ Concluída (2026-03-04)
 
-- [ ] **S03-NAV-002** - Auditar e corrigir pontos de navegação entre rotas legadas e canônicas
+- [x] **S03-NAV-002** - Auditar e corrigir pontos de navegação entre rotas legadas e canônicas
 
   **Descrição curta:**
   - A aplicação convive com rotas legadas por `slug` e rotas top-level canônicas.
@@ -161,13 +161,13 @@ Padronizar rotas canônicas de compra/pedido e reduzir quebra em links antigos c
   **Arquivos/áreas afetadas:** `src/components/layout/app-chrome.tsx`, `src/components/home/home-data.ts`, `src/hooks/useAddToCart.ts`, `src/app/[slug]/**/page.tsx`
 
   **Critérios de aceitação:**
-  - [ ] Menus e CTAs não direcionam para rotas inválidas/inconsistentes.
-  - [ ] Rotas legadas continuam funcionando apenas como ponte para a canônica equivalente.
+  - [x] Menus e CTAs não direcionam para rotas inválidas/inconsistentes.
+  - [x] Rotas legadas continuam funcionando apenas como ponte para a canônica equivalente.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 4h  
   **Dependências:** S03-NAV-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-04)
 
 - [ ] **S03-NAV-003** - Padronizar redirects de sucesso/falha de pedido e callback auth
 

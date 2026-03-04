@@ -4,25 +4,28 @@ import type {
   HomeContent,
   HomeFeaturedProductInput,
 } from "@/components/home/types";
+import { resolveCanonicalProductHref, ROUTE_PATHS } from "@/lib/routes";
+
+const developmentStatusHref = `${ROUTE_PATHS.status}?reason=development`;
 
 function buildFooterColumns(): FooterColumn[] {
   return [
     {
       title: "Shop",
       links: [
-        { label: "All Products", href: "/products" },
-        { label: "Peripherals", href: "/products" },
-        { label: "Audio", href: "/products" },
-        { label: "Accessories", href: "/products" },
+        { label: "All Products", href: ROUTE_PATHS.products },
+        { label: "Peripherals", href: ROUTE_PATHS.products },
+        { label: "Audio", href: ROUTE_PATHS.products },
+        { label: "Accessories", href: ROUTE_PATHS.products },
       ],
     },
     {
       title: "Support",
       links: [
-        { label: "Order Status", href: "/orders" },
-        { label: "Shipping & Returns", href: "/status?reason=development" },
-        { label: "FAQ", href: "/status?reason=development" },
-        { label: "Contact Us", href: "/status?reason=development" },
+        { label: "Order Status", href: ROUTE_PATHS.orders },
+        { label: "Shipping & Returns", href: developmentStatusHref },
+        { label: "FAQ", href: developmentStatusHref },
+        { label: "Contact Us", href: developmentStatusHref },
       ],
     },
     {
@@ -46,7 +49,7 @@ function buildFallbackProducts(): FeaturedProduct[] {
       rating: "4.8",
       imageSrc: "/images/home/card-razer-node.png",
       imageAlt: "Razer Basilisk V3 Pro mouse",
-      href: "/products",
+      href: ROUTE_PATHS.products,
       badge: {
         label: "New",
         tone: "blue",
@@ -61,7 +64,7 @@ function buildFallbackProducts(): FeaturedProduct[] {
       rating: "4.9",
       imageSrc: "/images/home/card-logitech-node.png",
       imageAlt: "Logitech G915 TKL keyboard",
-      href: "/products",
+      href: ROUTE_PATHS.products,
       badge: {
         label: "Sale",
         tone: "pink",
@@ -75,7 +78,7 @@ function buildFallbackProducts(): FeaturedProduct[] {
       rating: "4.7",
       imageSrc: "/images/home/card-steelseries-node.png",
       imageAlt: "SteelSeries Arctis Nova Pro headset",
-      href: "/products",
+      href: ROUTE_PATHS.products,
     },
     {
       id: "samsung-odyssey-g9",
@@ -85,7 +88,7 @@ function buildFallbackProducts(): FeaturedProduct[] {
       rating: "4.6",
       imageSrc: "/images/home/card-samsung-node.png",
       imageAlt: "Samsung Odyssey G9 monitor",
-      href: "/products",
+      href: ROUTE_PATHS.products,
       badge: {
         label: "New",
         tone: "blue",
@@ -117,7 +120,7 @@ function mapFeaturedProducts(
       rating: product.rating,
       imageSrc: product.imageSrc,
       imageAlt: product.imageAlt,
-      href: product.href || `/product/${product.id}`,
+      href: resolveCanonicalProductHref(product.href, product.id),
       badge,
     };
   });
@@ -129,15 +132,15 @@ export function buildHomeContent(
   return {
     navigation: {
       links: [
-        { label: "Home", href: "/", isActive: true },
-        { label: "Products", href: "/products" },
-        { label: "Categories", href: "/products" },
-        { label: "Orders", href: "/orders" },
+        { label: "Home", href: ROUTE_PATHS.home, isActive: true },
+        { label: "Products", href: ROUTE_PATHS.products },
+        { label: "Categories", href: ROUTE_PATHS.products },
+        { label: "Orders", href: ROUTE_PATHS.orders },
       ],
-      searchHref: "/products",
-      wishlistHref: "/wishlist",
-      cartHref: "/carrinho",
-      profileHref: "/perfil",
+      searchHref: ROUTE_PATHS.products,
+      wishlistHref: ROUTE_PATHS.wishlist,
+      cartHref: ROUTE_PATHS.cart,
+      profileHref: ROUTE_PATHS.profile,
     },
     hero: {
       badge: "New Collection 2026",
@@ -150,12 +153,12 @@ export function buildHomeContent(
       actions: [
         {
           label: "Shop Now",
-          href: "/products",
+          href: ROUTE_PATHS.products,
           variant: "primary",
         },
         {
           label: "View Collections",
-          href: "/products",
+          href: ROUTE_PATHS.products,
           variant: "secondary",
         },
       ],
@@ -163,7 +166,7 @@ export function buildHomeContent(
     featured: {
       title: "Featured Gear",
       subtitle: "Curated selection for the elite.",
-      viewAllHref: "/products",
+      viewAllHref: ROUTE_PATHS.products,
       products: mapFeaturedProducts(featuredProducts),
     },
     story: {
@@ -181,7 +184,7 @@ export function buildHomeContent(
       ],
       action: {
         label: "Discover Our Story",
-        href: "/status?reason=development",
+        href: developmentStatusHref,
       },
     },
     promo: {
@@ -191,12 +194,12 @@ export function buildHomeContent(
       actions: [
         {
           label: "Shop Sale",
-          href: "/explore",
+          href: ROUTE_PATHS.explore,
           variant: "primary",
         },
         {
           label: "Learn More",
-          href: "/status?reason=development",
+          href: developmentStatusHref,
           variant: "secondary",
         },
       ],
@@ -207,8 +210,8 @@ export function buildHomeContent(
       columns: buildFooterColumns(),
       copyright: "© 2026 Nexus Gaming. All rights reserved.",
       legalLinks: [
-        { label: "Privacy Policy", href: "/status?reason=development" },
-        { label: "Terms of Service", href: "/status?reason=development" },
+        { label: "Privacy Policy", href: developmentStatusHref },
+        { label: "Terms of Service", href: developmentStatusHref },
       ],
     },
   };

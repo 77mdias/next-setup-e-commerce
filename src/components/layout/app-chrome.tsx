@@ -10,24 +10,25 @@ import type {
   FooterLink,
   NavigationLink,
 } from "@/components/home/types";
+import { ROUTE_PATHS } from "@/lib/routes";
 
 const footerColumns: FooterColumn[] = [
   {
     title: "Shop",
     links: [
-      { label: "All Products", href: "/products" },
-      { label: "Peripherals", href: "/products" },
-      { label: "Audio", href: "/products" },
-      { label: "Accessories", href: "/products" },
+      { label: "All Products", href: ROUTE_PATHS.products },
+      { label: "Peripherals", href: ROUTE_PATHS.products },
+      { label: "Audio", href: ROUTE_PATHS.products },
+      { label: "Accessories", href: ROUTE_PATHS.products },
     ],
   },
   {
     title: "Support",
     links: [
-      { label: "Order Status", href: "/orders" },
-      { label: "Shipping & Returns", href: "/perfil" },
-      { label: "FAQ", href: "/perfil" },
-      { label: "Contact Us", href: "/perfil" },
+      { label: "Order Status", href: ROUTE_PATHS.orders },
+      { label: "Shipping & Returns", href: ROUTE_PATHS.profile },
+      { label: "FAQ", href: ROUTE_PATHS.profile },
+      { label: "Contact Us", href: ROUTE_PATHS.profile },
     ],
   },
   {
@@ -41,25 +42,31 @@ const footerColumns: FooterColumn[] = [
 ];
 
 const legalLinks: FooterLink[] = [
-  { label: "Privacy Policy", href: "/perfil" },
-  { label: "Terms of Service", href: "/perfil" },
+  { label: "Privacy Policy", href: ROUTE_PATHS.profile },
+  { label: "Terms of Service", href: ROUTE_PATHS.profile },
 ];
 
 function buildNavigationLinks(pathname: string): NavigationLink[] {
   const isProductsPath =
-    pathname === "/products" ||
-    pathname.startsWith("/product/") ||
-    pathname.startsWith("/products/");
+    pathname === ROUTE_PATHS.products ||
+    pathname.startsWith(`${ROUTE_PATHS.productRoot}/`) ||
+    pathname.startsWith(`${ROUTE_PATHS.products}/`);
   const isExplorePath =
-    pathname === "/explore" || pathname.startsWith("/explore/");
+    pathname === ROUTE_PATHS.explore ||
+    pathname.startsWith(`${ROUTE_PATHS.explore}/`);
   const isOrdersPath =
-    pathname === "/orders" || pathname.startsWith("/orders/");
+    pathname === ROUTE_PATHS.orders ||
+    pathname.startsWith(`${ROUTE_PATHS.orders}/`);
 
   return [
-    { label: "Home", href: "/", isActive: pathname === "/" },
-    { label: "Products", href: "/products", isActive: isProductsPath },
-    { label: "Explore", href: "/explore", isActive: isExplorePath },
-    { label: "Orders", href: "/orders", isActive: isOrdersPath },
+    {
+      label: "Home",
+      href: ROUTE_PATHS.home,
+      isActive: pathname === ROUTE_PATHS.home,
+    },
+    { label: "Products", href: ROUTE_PATHS.products, isActive: isProductsPath },
+    { label: "Explore", href: ROUTE_PATHS.explore, isActive: isExplorePath },
+    { label: "Orders", href: ROUTE_PATHS.orders, isActive: isOrdersPath },
   ];
 }
 
@@ -76,10 +83,10 @@ export default function AppChrome({ children }: AppChromeProps) {
       <HomeNavigation
         homeHref="/"
         links={buildNavigationLinks(currentPath)}
-        searchHref="/products"
-        wishlistHref="/wishlist"
-        cartHref="/carrinho"
-        profileHref="/perfil"
+        searchHref={ROUTE_PATHS.products}
+        wishlistHref={ROUTE_PATHS.wishlist}
+        cartHref={ROUTE_PATHS.cart}
+        profileHref={ROUTE_PATHS.profile}
       />
 
       <div className="pt-20">{children}</div>
