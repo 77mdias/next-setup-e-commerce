@@ -16,12 +16,11 @@ interface OrdersFailurePageProps {
   }>;
 }
 
-const CART_PAGE_PATH = "/carrinho";
 const ORDERS_PAGE_PATH = "/orders";
 const ORDERS_FAILURE_PATH = "/orders/failure";
 
-function buildCartFailurePath() {
-  return `${CART_PAGE_PATH}?checkout=failed`;
+function buildOrdersFailurePath() {
+  return `${ORDERS_PAGE_PATH}?checkout=failed`;
 }
 
 export const dynamic = "force-dynamic";
@@ -33,7 +32,7 @@ export default async function OrdersFailurePage({
   const sessionId = normalizeOrderSessionId(rawSessionId ?? "");
 
   if (!sessionId) {
-    redirect(buildCartFailurePath());
+    redirect(buildOrdersFailurePath());
   }
 
   const sessionCallbackPath = buildOrderSessionCallbackPath(
@@ -68,8 +67,8 @@ export default async function OrdersFailurePage({
     redirect(
       buildAccessFeedbackPath({
         reason: "outage",
-        callbackUrl: buildCartFailurePath(),
-        fromPath: ORDERS_FAILURE_PATH,
+        callbackUrl: buildOrdersFailurePath(),
+        fromPath: sessionCallbackPath,
       }),
     );
   }
@@ -78,7 +77,7 @@ export default async function OrdersFailurePage({
     redirect(
       buildAccessFeedbackPath({
         reason: "forbidden",
-        callbackUrl: buildCartFailurePath(),
+        callbackUrl: buildOrdersFailurePath(),
         fromPath: sessionCallbackPath,
       }),
     );

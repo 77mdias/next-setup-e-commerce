@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { User, LogOut, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  DEFAULT_AUTH_CALLBACK_PATH,
+  normalizeCallbackPath,
+} from "@/lib/callback-url";
 
 function resolveLegacyBasePath(slug?: string) {
   if (!slug) {
@@ -14,12 +18,19 @@ function resolveLegacyBasePath(slug?: string) {
   return slug.startsWith("/") ? slug : `/${slug}`;
 }
 
+function resolveAuthCallbackPath(slug?: string) {
+  return normalizeCallbackPath(
+    resolveLegacyBasePath(slug),
+    DEFAULT_AUTH_CALLBACK_PATH,
+  );
+}
+
 export default function AuthButton({ slug }: { slug?: string }) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const legacyBasePath = resolveLegacyBasePath(slug);
   const profilePath = legacyBasePath ? `${legacyBasePath}/perfil` : "/perfil";
-  const authCallbackPath = legacyBasePath || "/products";
+  const authCallbackPath = resolveAuthCallbackPath(slug);
 
   if (isLoading) {
     return <div className="h-6 w-6 animate-pulse rounded bg-gray-600"></div>;

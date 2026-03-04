@@ -64,7 +64,7 @@ export default async function OrdersSuccessPage({
       buildAccessFeedbackPath({
         reason: "outage",
         callbackUrl: ORDERS_PAGE_PATH,
-        fromPath: ORDERS_SUCCESS_PATH,
+        fromPath: sessionCallbackPath,
       }),
     );
   }

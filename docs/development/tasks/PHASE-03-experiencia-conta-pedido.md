@@ -169,7 +169,7 @@ Padronizar rotas canônicas de compra/pedido e reduzir quebra em links antigos c
   **Dependências:** S03-NAV-001  
   **Status:** ✅ Concluída (2026-03-04)
 
-- [ ] **S03-NAV-003** - Padronizar redirects de sucesso/falha de pedido e callback auth
+- [x] **S03-NAV-003** - Padronizar redirects de sucesso/falha de pedido e callback auth
 
   **Descrição curta:**
   - Fluxos de `orders/success` e `orders/failure` já possuem regras de segurança, mas precisam convergir para destino canônico único.
@@ -183,13 +183,13 @@ Padronizar rotas canônicas de compra/pedido e reduzir quebra em links antigos c
   **Arquivos/áreas afetadas:** `src/app/orders/success/page.tsx`, `src/app/orders/failure/page.tsx`, `src/components/auth/AuthButton.tsx`, `src/app/orders/__tests__/page.integration.test.ts`
 
   **Critérios de aceitação:**
-  - [ ] Redirecionamentos de sucesso/falha seguem rota canônica e preservam contexto necessário.
-  - [ ] Usuário sem sessão é direcionado para auth com callback válido e sem loop.
+  - [x] Redirecionamentos de sucesso/falha seguem rota canônica e preservam contexto necessário.
+  - [x] Usuário sem sessão é direcionado para auth com callback válido e sem loop.
 
   **Prioridade:** 🟢 Média  
   **Estimativa:** 3h  
   **Dependências:** S03-NAV-002  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-04)
 
 ### 📦 Admin remove-bg seguro e funcional - Endpoint dedicado com acesso controlado
 

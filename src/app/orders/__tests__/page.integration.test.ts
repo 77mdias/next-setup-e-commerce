@@ -133,10 +133,24 @@ describe("orders success/failure pages integration", () => {
     );
   });
 
-  it("redirects failure page to cart when session_id is missing", async () => {
+  it("redirects success page to safe outage feedback preserving session_id context", async () => {
+    mockDb.order.findFirst.mockRejectedValue(new Error("db unavailable"));
+
+    const fromPath = "/orders/success?session_id=cs_owner_1";
+    await expectRedirectTo(
+      OrdersSuccessPage({ searchParams: makeSearchParams("cs_owner_1") }),
+      buildAccessFeedbackPath({
+        reason: "outage",
+        callbackUrl: "/orders",
+        fromPath,
+      }),
+    );
+  });
+
+  it("redirects failure page to canonical orders route when session_id is missing", async () => {
     await expectRedirectTo(
       OrdersFailurePage({ searchParams: makeSearchParams() }),
-      "/carrinho?checkout=failed",
+      "/orders?checkout=failed",
     );
   });
 
@@ -188,7 +202,21 @@ describe("orders success/failure pages integration", () => {
       OrdersFailurePage({ searchParams: makeSearchParams("cs_owner_1") }),
       buildAccessFeedbackPath({
         reason: "forbidden",
-        callbackUrl: "/carrinho?checkout=failed",
+        callbackUrl: "/orders?checkout=failed",
+        fromPath,
+      }),
+    );
+  });
+
+  it("redirects failure page to safe outage feedback preserving session_id context", async () => {
+    mockDb.order.findFirst.mockRejectedValue(new Error("db unavailable"));
+
+    const fromPath = "/orders/failure?session_id=cs_owner_1";
+    await expectRedirectTo(
+      OrdersFailurePage({ searchParams: makeSearchParams("cs_owner_1") }),
+      buildAccessFeedbackPath({
+        reason: "outage",
+        callbackUrl: "/orders?checkout=failed",
         fromPath,
       }),
     );
