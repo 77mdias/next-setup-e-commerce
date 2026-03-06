@@ -49,7 +49,11 @@ function parseInternalPath(path: string): URL | null {
   }
 }
 
-function buildPath(pathname: string, searchParams: URLSearchParams, hash: string) {
+function buildPath(
+  pathname: string,
+  searchParams: URLSearchParams,
+  hash: string,
+) {
   const queryString = searchParams.toString();
   const querySuffix = queryString ? `?${queryString}` : "";
   return `${pathname}${querySuffix}${hash || ""}`;
@@ -134,7 +138,11 @@ export function resolveCanonicalProductHref(
       return fallbackPath;
     }
 
-    return buildPath(buildProductPath(legacyProductId), searchParams, parsedPath.hash);
+    return buildPath(
+      buildProductPath(legacyProductId),
+      searchParams,
+      parsedPath.hash,
+    );
   }
 
   if (legacySlugPath.startsWith("/categorias/")) {

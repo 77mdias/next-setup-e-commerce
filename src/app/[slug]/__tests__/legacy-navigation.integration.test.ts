@@ -9,7 +9,10 @@ import LegacySlugOrdersPage from "@/app/[slug]/pedido/page";
 import LegacySlugOrderSuccessPage from "@/app/[slug]/pedido/sucesso/page";
 import LegacyProductDetailRedirectPage from "@/app/[slug]/product/[productId]/page";
 import LegacySlugWishlistPage from "@/app/[slug]/wishlist/page";
-import { resolveCanonicalCartPath, resolveCanonicalProductHref } from "@/lib/routes";
+import {
+  resolveCanonicalCartPath,
+  resolveCanonicalProductHref,
+} from "@/lib/routes";
 import type { PageSearchParams } from "@/lib/search-params";
 
 type RedirectError = Error & { destination?: string };
@@ -155,7 +158,10 @@ describe("canonical route normalization helpers", () => {
 
   it("normalizes legacy product href to canonical product detail", () => {
     expect(
-      resolveCanonicalProductHref("/store-a/product/prod-123?ref=hero", "fallback"),
+      resolveCanonicalProductHref(
+        "/store-a/product/prod-123?ref=hero",
+        "fallback",
+      ),
     ).toBe("/product/prod-123?ref=hero");
   });
 
@@ -169,9 +175,9 @@ describe("canonical route normalization helpers", () => {
   });
 
   it("falls back to canonical product path when href is invalid", () => {
-    expect(resolveCanonicalProductHref("https://example.com/product/123", "prod-1")).toBe(
-      "/product/prod-1",
-    );
+    expect(
+      resolveCanonicalProductHref("https://example.com/product/123", "prod-1"),
+    ).toBe("/product/prod-1");
     expect(resolveCanonicalProductHref("", "prod-2")).toBe("/product/prod-2");
   });
 });

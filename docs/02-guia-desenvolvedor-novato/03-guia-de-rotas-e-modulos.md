@@ -1,6 +1,7 @@
 # Guia Novato - Rotas e Modulos
 
 ## Rotas de produto
+
 - Novo fluxo:
   - `/`
   - `/products`
@@ -14,6 +15,7 @@
   - Os redirecionamentos legados preservam querystring quando aplicável (com remoção de chaves legadas como `storeSlug`).
 
 ## Rotas de compra
+
 - `/carrinho`
 - `/checkout`
 - `/wishlist`
@@ -34,6 +36,7 @@
   - As pontes legadas preservam querystring para manter contexto de retorno.
 
 ## Rotas de autenticacao
+
 - `/auth/signin`
 - `/auth/signup`
 - `/auth/verify-email`
@@ -42,6 +45,7 @@
 - `/auth/thank-you`
 
 ## APIs principais
+
 - Catalogo: `/api/products`, `/api/categories`
 - Carrinho/Wishlist: `/api/cart`, `/api/wishlist`
 - Checkout/Pedidos: `/api/checkout`, `/api/orders/*`, `/api/webhooks/stripe`
@@ -53,7 +57,9 @@
   - Para listagem rapida, usar `includeFacets=0&includeTotal=0` e paginacao por `hasMore`.
 
 ## Dica pratica
+
 Quando for alterar comportamento de checkout/pedido, sempre revisar estes 4 arquivos juntos:
+
 - `src/hooks/useCheckout.ts`
 - `src/app/api/checkout/route.ts`
 - `src/app/api/webhooks/stripe/route.ts`
