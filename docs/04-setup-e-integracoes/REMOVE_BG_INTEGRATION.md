@@ -24,10 +24,11 @@ Navegue para: `https://seudominio.com/[slug-da-loja]/admin/remove-bg`
 ### 2. Processar Imagens
 
 1. Selecione um produto da lista
-2. Clique em "Remover Fundo das Imagens"
-3. Aguarde o processamento
-4. As imagens processadas serão exibidas
-5. Você pode baixar individualmente ou todas de uma vez
+2. Use busca por nome e paginação para localizar produtos em catálogos maiores
+3. Clique em "Remover Fundo das Imagens"
+4. Aguarde o processamento
+5. As imagens processadas serão exibidas
+6. Você pode baixar individualmente ou todas de uma vez
 
 ### 3. Salvar no Banco
 
@@ -69,6 +70,8 @@ Processa múltiplas imagens:
 #### `/api/products` (GET)
 
 Busca os produtos da loja ativa:
+
+- Suporta `page`, `limit` e `query` para paginação e busca por nome.
 
 ```typescript
 Response: {

@@ -58,8 +58,8 @@ describe("GET /api/products integration", () => {
       name: "Next Store",
     });
 
-    mockDb.$transaction.mockImplementation(async (operations: Promise<unknown>[]) =>
-      Promise.all(operations),
+    mockDb.$transaction.mockImplementation(
+      async (operations: Promise<unknown>[]) => Promise.all(operations),
     );
 
     mockDb.product.findMany.mockResolvedValue([createProduct("p1")]);
@@ -167,5 +167,35 @@ describe("GET /api/products integration", () => {
     expect(response.status).toBe(404);
     expect(body.error).toBe("Categoria não encontrada");
     expect(mockDb.product.findMany).not.toHaveBeenCalled();
+  });
+
+  it("aplica filtro de busca por nome quando query é informado", async () => {
+    const response = await GET(
+      createRequest("?query=%20Teclado%20&includeFacets=0&includeTotal=1"),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.filters.query).toBe("Teclado");
+    expect(mockDb.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          name: {
+            contains: "Teclado",
+            mode: "insensitive",
+          },
+        }),
+      }),
+    );
+    expect(mockDb.product.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          name: {
+            contains: "Teclado",
+            mode: "insensitive",
+          },
+        }),
+      }),
+    );
   });
 });

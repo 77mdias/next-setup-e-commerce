@@ -46,6 +46,7 @@ type ProductsApiResponse = {
   hasMore: boolean;
   filters: {
     category: string | null;
+    query: string | null;
     minPrice: number | null;
     maxPrice: number | null;
     sort: string;
@@ -95,6 +96,15 @@ function parseNumberParam(value: string | null): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parseStringParam(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
 function getCachedFacets(storeId: string): ProductFacets | null {
   const cached = productFacetsCache.get(storeId);
 
@@ -133,6 +143,7 @@ function normalizeNumberKey(value: number | null): string {
 function buildProductsCacheKey(input: {
   storeId: string;
   categorySlug: string | null;
+  searchQuery: string | null;
   sort: string;
   minPrice: number | null;
   maxPrice: number | null;
@@ -144,6 +155,7 @@ function buildProductsCacheKey(input: {
   return [
     input.storeId,
     input.categorySlug ?? "all",
+    input.searchQuery ?? "nosearch",
     input.sort,
     normalizeNumberKey(input.minPrice),
     normalizeNumberKey(input.maxPrice),
@@ -361,6 +373,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const categorySlug = searchParams.get("category");
+    const searchQuery = parseStringParam(searchParams.get("query"));
     const sort = searchParams.get("sort") ?? "newest";
     const minPrice = parseNumberParam(searchParams.get("minPrice"));
     const maxPrice = parseNumberParam(searchParams.get("maxPrice"));
@@ -435,6 +448,13 @@ export async function GET(request: NextRequest) {
       where.price = priceFilter;
     }
 
+    if (searchQuery) {
+      where.name = {
+        contains: searchQuery,
+        mode: "insensitive",
+      };
+    }
+
     const orderByMap: Record<
       string,
       | Prisma.ProductOrderByWithRelationInput
@@ -457,6 +477,7 @@ export async function GET(request: NextRequest) {
     productsCacheKey = buildProductsCacheKey({
       storeId: store.id,
       categorySlug,
+      searchQuery,
       sort,
       minPrice,
       maxPrice,
@@ -538,6 +559,7 @@ export async function GET(request: NextRequest) {
           hasMore,
           filters: {
             category: categorySlug,
+            query: searchQuery,
             minPrice,
             maxPrice,
             sort,
