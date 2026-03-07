@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
 import RemoveBgProcessor from "@/components/RemoveBgProcessor";
 
 interface Product {
@@ -10,62 +9,116 @@ interface Product {
   images: string[];
 }
 
-export default function RemoveBgPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+interface ProductsApiResponse {
+  success?: boolean;
+  products?: Product[];
+  error?: string;
+}
 
+interface PersistImagesApiResponse {
+  success?: boolean;
+  error?: string;
+}
+
+type FeedbackState = {
+  type: "success" | "error";
+  message: string;
+} | null;
+
+const PRODUCTS_ENDPOINT =
+  "/api/products?includeFacets=0&includeTotal=1&limit=60&sort=name-asc";
+
+export default function RemoveBgPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSavingImages, setIsSavingImages] = useState(false);
+  const [loadingError, setLoadingError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   const fetchProducts = useCallback(async () => {
     try {
-      const response = await fetch(`/api/products/${slug}`);
-      const data = await response.json();
+      setLoadingError(null);
 
-      if (data.success) {
-        setProducts(data.products);
-      } else {
-        console.error("Erro ao buscar produtos:", data.error);
+      const response = await fetch(PRODUCTS_ENDPOINT, {
+        cache: "no-store",
+      });
+      const data = (await response.json()) as ProductsApiResponse;
+
+      if (!response.ok || !data.success || !Array.isArray(data.products)) {
+        throw new Error(data.error ?? "Falha ao carregar produtos");
       }
+
+      setProducts(data.products);
+      setSelectedProduct((currentProduct) => {
+        if (!currentProduct) {
+          return null;
+        }
+
+        return (
+          data.products?.find((product) => product.id === currentProduct.id) ??
+          null
+        );
+      });
     } catch (error) {
       console.error("Erro ao buscar produtos:", error);
+      setLoadingError(
+        error instanceof Error
+          ? error.message
+          : "Erro ao buscar produtos para processamento",
+      );
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, []);
 
   useEffect(() => {
     void fetchProducts();
   }, [fetchProducts]);
 
   const handleImagesProcessed = async (processedImages: string[]) => {
-    if (!selectedProduct) return;
+    if (!selectedProduct) {
+      return;
+    }
+
+    setFeedback(null);
+    setIsSavingImages(true);
 
     try {
-      const response = await fetch(`/api/products/${slug}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `/api/admin/products/${selectedProduct.id}/images`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            processedImages,
+          }),
         },
-        body: JSON.stringify({
-          productId: selectedProduct.id,
-          processedImages: processedImages,
-        }),
-      });
+      );
+      const data = (await response.json()) as PersistImagesApiResponse;
 
-      const data = await response.json();
-
-      if (data.success) {
-        alert("Imagens processadas e salvas com sucesso!");
-        // Atualizar a lista de produtos
-        await fetchProducts();
-      } else {
-        alert(`Erro ao salvar imagens: ${data.error}`);
+      if (!response.ok || !data.success) {
+        throw new Error(data.error ?? "Falha ao salvar imagens processadas");
       }
+
+      setFeedback({
+        type: "success",
+        message: "Imagens processadas e persistidas com sucesso.",
+      });
+      await fetchProducts();
     } catch (error) {
       console.error("Erro ao salvar imagens:", error);
-      alert("Erro ao salvar imagens processadas");
+      setFeedback({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Erro ao salvar imagens processadas",
+      });
+    } finally {
+      setIsSavingImages(false);
     }
   };
 
@@ -93,34 +146,63 @@ export default function RemoveBgPage() {
           </p>
         </div>
 
-        {/* Seletor de Produtos */}
+        {feedback && (
+          <div
+            className={`mb-6 rounded-md border p-4 text-sm ${
+              feedback.type === "success"
+                ? "border-green-200 bg-green-50 text-green-800"
+                : "border-red-200 bg-red-50 text-red-800"
+            }`}
+          >
+            {feedback.message}
+          </div>
+        )}
+
+        {isSavingImages && (
+          <div className="mb-6 rounded-md border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+            Persistindo imagens processadas no produto selecionado...
+          </div>
+        )}
+
         <div className="mb-8 rounded-lg bg-white p-6 shadow">
           <h2 className="mb-4 text-xl font-semibold text-gray-800">
             Selecionar Produto
           </h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                onClick={() => setSelectedProduct(product)}
-                className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
-                  selectedProduct?.id === product.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                <h3 className="mb-2 font-medium text-gray-900">
-                  {product.name}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {product.images.length} imagem(ns)
-                </p>
-              </div>
-            ))}
-          </div>
+
+          {loadingError && (
+            <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+              {loadingError}
+            </div>
+          )}
+
+          {products.length === 0 ? (
+            <p className="text-sm text-gray-600">
+              Nenhum produto disponível para processamento no momento.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {products.map((product) => (
+                <div
+                  key={product.id}
+                  onClick={() => setSelectedProduct(product)}
+                  className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                    selectedProduct?.id === product.id
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <h3 className="mb-2 font-medium text-gray-900">
+                    {product.name}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {product.images.length} imagem(ns)
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Processador de Imagens */}
         {selectedProduct && (
           <div className="rounded-lg bg-white shadow">
             <div className="border-b border-gray-200 p-6">

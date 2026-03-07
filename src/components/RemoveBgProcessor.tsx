@@ -8,7 +8,7 @@ import { useRemoveBg } from "@/hooks/useRemoveBg";
 interface RemoveBgProcessorProps {
   productId: string;
   images: string[];
-  onImagesProcessed?: (processedImages: string[]) => void;
+  onImagesProcessed?: (processedImages: string[]) => void | Promise<void>;
   apiEndpoint?: string;
 }
 
@@ -41,14 +41,19 @@ export default function RemoveBgProcessor({
         );
         setProcessedImages(processed);
 
-        if (onImagesProcessed) {
-          onImagesProcessed(processed);
+        if (processed.length > 0 && onImagesProcessed) {
+          void onImagesProcessed(processed);
         }
 
-        if (result.errors.length > 0) {
-          const errorMessages = result.errors.map(
-            (err) => `Erro na imagem ${err.index + 1}: ${err.error}`,
-          );
+        const errorMessages = result.errors.map(
+          (err) => `Erro na imagem ${err.index + 1}: ${err.error}`,
+        );
+
+        if (processed.length === 0) {
+          errorMessages.unshift("Nenhuma imagem foi processada com sucesso");
+        }
+
+        if (errorMessages.length > 0) {
           setErrors(errorMessages);
         }
       } else {

@@ -66,26 +66,25 @@ Processa múltiplas imagens:
 }
 ```
 
-#### `/api/products/[storeSlug]` (GET)
+#### `/api/products` (GET)
 
-Busca produtos de uma loja:
+Busca os produtos da loja ativa:
 
 ```typescript
 Response: {
   success: boolean,
   store: Store,
   products: Product[],
-  total: number
+  total: number | null
 }
 ```
 
-#### `/api/products/[storeSlug]` (PUT)
+#### `/api/admin/products/[productId]/images` (PUT)
 
-Atualiza imagens de um produto:
+Atualiza as imagens processadas de um produto (uso administrativo):
 
 ```typescript
 {
-  productId: string,
   processedImages: string[]
 }
 ```
@@ -174,9 +173,13 @@ src/
 │   ├── api/
 │   │   ├── remove-bg/
 │   │   │   └── route.ts
-│   │   └── products/
-│   │       └── [storeSlug]/
-│   │           └── route.ts
+│   │   ├── products/
+│   │   │   └── route.ts
+│   │   └── admin/
+│   │       └── products/
+│   │           └── [productId]/
+│   │               └── images/
+│   │                   └── route.ts
 │   └── [slug]/
 │       └── admin/
 │           └── remove-bg/
@@ -192,6 +195,7 @@ src/
 - A API Key permanece apenas no servidor (`REMOVE_BG_API_KEY`)
 - As requisições são processadas no servidor (API Routes)
 - O endpoint administrativo dedicado (`/api/admin/remove-bg`) valida sessão e role `ADMIN` explicitamente
+- A persistência de imagens também usa endpoint administrativo dedicado (`/api/admin/products/[productId]/images`) com validação de sessão/role
 - URLs de imagem são validadas por protocolo/host antes de qualquer download externo
 - Validação de dados em todas as rotas
 - Tratamento seguro de erros
