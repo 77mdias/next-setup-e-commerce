@@ -149,6 +149,26 @@ function notFoundResponse(message: string) {
   return NextResponse.json({ message }, { status: 404 });
 }
 
+function isPoolTimeoutError(error: unknown): boolean {
+  if (!error || typeof error !== "object" || !("code" in error)) {
+    return false;
+  }
+
+  return (error as { code?: unknown }).code === "P2024";
+}
+
+function overloadedResponse() {
+  return NextResponse.json(
+    { message: "Serviço temporariamente sobrecarregado. Tente novamente." },
+    {
+      status: 503,
+      headers: {
+        "Retry-After": "5",
+      },
+    },
+  );
+}
+
 async function parseRequestBody(request: NextRequest) {
   try {
     return await request.json();
@@ -238,6 +258,11 @@ export async function GET() {
     return NextResponse.json({ addresses });
   } catch (error) {
     console.error("Erro ao buscar endereços:", error);
+
+    if (isPoolTimeoutError(error)) {
+      return overloadedResponse();
+    }
+
     return NextResponse.json(
       { message: "Erro interno do servidor" },
       { status: 500 },
@@ -298,6 +323,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ address }, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar endereço:", error);
+
+    if (isPoolTimeoutError(error)) {
+      return overloadedResponse();
+    }
+
     return NextResponse.json(
       { message: "Erro interno do servidor" },
       { status: 500 },
@@ -427,6 +457,11 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ address: updatedAddress });
   } catch (error) {
     console.error("Erro ao atualizar endereço:", error);
+
+    if (isPoolTimeoutError(error)) {
+      return overloadedResponse();
+    }
+
     return NextResponse.json(
       { message: "Erro interno do servidor" },
       { status: 500 },
@@ -525,6 +560,11 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ message: "Endereço removido com sucesso" });
   } catch (error) {
     console.error("Erro ao remover endereço:", error);
+
+    if (isPoolTimeoutError(error)) {
+      return overloadedResponse();
+    }
+
     return NextResponse.json(
       { message: "Erro interno do servidor" },
       { status: 500 },

@@ -154,6 +154,19 @@ describe("API /api/addresses integration", () => {
     );
   });
 
+  it("returns 503 when Prisma pool is exhausted during GET", async () => {
+    mockDb.address.findMany.mockRejectedValueOnce({ code: "P2024" });
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(body.message).toBe(
+      "Serviço temporariamente sobrecarregado. Tente novamente.",
+    );
+    expect(response.headers.get("retry-after")).toBe("5");
+  });
+
   it("creates first address as default and binds user ownership in POST", async () => {
     const response = await POST(
       createJsonRequest("POST", {

@@ -378,6 +378,7 @@ model Address {
 
   /// Partial unique index for default-per-user is defined in SQL migration:
   /// `addresses_userId_single_default_unique`.
+  @@index([userId, isDefault, createdAt], map: "addresses_userId_isDefault_createdAt_idx")
   @@map("addresses")
 }
 
