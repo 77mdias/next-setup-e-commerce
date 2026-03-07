@@ -91,6 +91,54 @@ describe("API /api/addresses integration", () => {
     expect(body.message).toBe("Não autorizado");
   });
 
+  it("returns 401 when unauthenticated on POST", async () => {
+    mockGetCurrentUser.mockResolvedValue(null);
+
+    const response = await POST(
+      createJsonRequest("POST", {
+        city: "São Paulo",
+        label: "Casa",
+        neighborhood: "Centro",
+        number: "100",
+        state: "SP",
+        street: "Rua das Flores",
+        zipCode: "12345-678",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body.message).toBe("Não autorizado");
+    expect(mockDb.address.create).not.toHaveBeenCalled();
+  });
+
+  it("returns 401 when unauthenticated on PUT", async () => {
+    mockGetCurrentUser.mockResolvedValue(null);
+
+    const response = await PUT(
+      createJsonRequest("PUT", {
+        id: "address-1",
+        city: "Campinas",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body.message).toBe("Não autorizado");
+    expect(mockDb.address.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("returns 401 when unauthenticated on DELETE", async () => {
+    mockGetCurrentUser.mockResolvedValue(null);
+
+    const response = await DELETE(createDeleteRequest("address-1"));
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body.message).toBe("Não autorizado");
+    expect(mockDb.address.deleteMany).not.toHaveBeenCalled();
+  });
+
   it("lists only authenticated user addresses in GET", async () => {
     mockDb.address.findMany.mockResolvedValue([createdAddress]);
 
@@ -138,6 +186,41 @@ describe("API /api/addresses integration", () => {
           isDefault: true,
           state: "SP",
           zipCode: "12345-678",
+        }),
+      }),
+    );
+  });
+
+  it("keeps new address as non-default when user already has addresses in POST", async () => {
+    mockDb.address.count.mockResolvedValueOnce(2);
+    mockDb.address.create.mockResolvedValueOnce({
+      ...createdAddress,
+      id: "address-2",
+      isDefault: false,
+    });
+
+    const response = await POST(
+      createJsonRequest("POST", {
+        city: "São Paulo",
+        isDefault: false,
+        label: "Escritório",
+        neighborhood: "Centro",
+        number: "200",
+        state: "SP",
+        street: "Av. Paulista",
+        zipCode: "12345-678",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(body.address.isDefault).toBe(false);
+    expect(mockDb.address.updateMany).not.toHaveBeenCalled();
+    expect(mockDb.address.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          isDefault: false,
+          userId: "user-1",
         }),
       }),
     );
@@ -268,6 +351,40 @@ describe("API /api/addresses integration", () => {
     });
   });
 
+  it("keeps address as default when unsetting current default without replacement in PUT", async () => {
+    mockDb.address.findFirst
+      .mockResolvedValueOnce({
+        id: "address-1",
+        isDefault: true,
+      })
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        ...createdAddress,
+        id: "address-1",
+        isDefault: true,
+      });
+
+    const response = await PUT(
+      createJsonRequest("PUT", {
+        id: "address-1",
+        isDefault: false,
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.address.isDefault).toBe(true);
+    expect(mockDb.address.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "address-1",
+        userId: "user-1",
+      },
+      data: expect.objectContaining({
+        isDefault: true,
+      }),
+    });
+  });
+
   it("removes owned default address and promotes replacement in DELETE", async () => {
     mockDb.address.findFirst
       .mockResolvedValueOnce({
@@ -306,6 +423,26 @@ describe("API /api/addresses integration", () => {
         isDefault: true,
       },
     });
+  });
+
+  it("removes non-default address without touching default flag in DELETE", async () => {
+    mockDb.address.findFirst.mockResolvedValueOnce({
+      id: "address-2",
+      isDefault: false,
+    });
+
+    const response = await DELETE(createDeleteRequest("address-2"));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.message).toBe("Endereço removido com sucesso");
+    expect(mockDb.address.deleteMany).toHaveBeenCalledWith({
+      where: {
+        id: "address-2",
+        userId: "user-1",
+      },
+    });
+    expect(mockDb.address.updateMany).not.toHaveBeenCalled();
   });
 
   it("returns 404 when deleting a non-owned address", async () => {

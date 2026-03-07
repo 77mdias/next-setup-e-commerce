@@ -273,7 +273,7 @@ Assegurar cobertura mínima automatizada e validação operacional antes de go-l
 
 #### QA.1 - Cobertura crítica e operação controlada
 
-- [ ] **S03-QA-001** - Cobrir integração da API de endereços (auth, CRUD e default)
+- [x] **S03-QA-001** - Cobrir integração da API de endereços (auth, CRUD e default)
 
   **Descrição curta:**
   - Garantir que endpoints de endereço não sofram regressão de ownership e validação.
@@ -287,13 +287,13 @@ Assegurar cobertura mínima automatizada e validação operacional antes de go-l
   **Arquivos/áreas afetadas:** `src/app/api/addresses/__tests__/route.integration.test.ts` (novo), `src/app/api/addresses/route.ts`
 
   **Critérios de aceitação:**
-  - [ ] API de endereços falha com segurança para acessos não autorizados.
-  - [ ] Mutações válidas atualizam estado esperado sem inconsistência de default.
+  - [x] API de endereços falha com segurança para acessos não autorizados.
+  - [x] Mutações válidas atualizam estado esperado sem inconsistência de default.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 4h  
   **Dependências:** S03-ADR-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-07)
 
 - [ ] **S03-QA-002** - Cobrir navegação canônica e fluxo admin remove-bg em integração
 
