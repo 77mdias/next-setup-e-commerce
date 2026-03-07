@@ -119,6 +119,13 @@ describe("orders success/failure pages integration", () => {
     );
   });
 
+  it("redirects success page to canonical orders route when session_id is missing", async () => {
+    await expectRedirectTo(
+      OrdersSuccessPage({ searchParams: makeSearchParams() }),
+      "/orders",
+    );
+  });
+
   it("redirects success page to safe forbidden feedback when order is not found", async () => {
     mockDb.order.findFirst.mockResolvedValue(null);
 

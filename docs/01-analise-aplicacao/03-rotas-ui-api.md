@@ -10,6 +10,7 @@
 - `/orders`: pedidos do usuario autenticado.
 - `/orders/[orderId]`: atalho para filtro de um pedido específico.
 - `/orders/success` e `/orders/failure`: callbacks canônicos pós-checkout.
+- `/cart`: alias legado, redireciona para `/carrinho` preservando querystring.
 - `/auth/*`: signin, signup, verify-email, reset-password, error, thank-you.
 - `/carrinho`, `/checkout`, `/wishlist`: fluxos canônicos (sem slug).
 
@@ -65,6 +66,7 @@
 ### Utilitario
 - `POST/PUT /api/remove-bg`
 - `POST/PUT /api/admin/remove-bg` (restrito a sessao autenticada com role `ADMIN`)
+  - Contrato de erro previsivel para fluxo admin: `401` (nao autenticado), `403` (sem role ADMIN), `404` (imagem de origem nao encontrada).
 
 ## Regras de acesso (estado atual)
 - Middleware protege principalmente rotas de UI (`/orders`, `/(slug)/perfil|wishlist|carrinho|checkout|pedido`).
@@ -73,4 +75,4 @@
 - Nem todas as APIs sensiveis exigem sessao (ex.: `/api/test-stripe`, `/api/auth/user-info`, `/api/remove-bg`).
 
 ## Inconsistencias funcionais
-- Pagina admin remove-bg usa `/api/products/${slug}` com `PUT`, mas a API existente em `/api/products/[productId]` e apenas `GET`.
+- Fluxo admin remove-bg foi alinhado para endpoint administrativo dedicado de persistencia por produto (`PUT /api/admin/products/[productId]/images`).

@@ -295,7 +295,7 @@ Assegurar cobertura mínima automatizada e validação operacional antes de go-l
   **Dependências:** S03-ADR-001  
   **Status:** ✅ Concluída (2026-03-07)
 
-- [ ] **S03-QA-002** - Cobrir navegação canônica e fluxo admin remove-bg em integração
+- [x] **S03-QA-002** - Cobrir navegação canônica e fluxo admin remove-bg em integração
 
   **Descrição curta:**
   - Validar redirects de rotas legadas (`/cart`, `/${slug}/...`) para canônicas.
@@ -306,16 +306,16 @@ Assegurar cobertura mínima automatizada e validação operacional antes de go-l
   - Criar cenários de autorização para endpoint admin remove-bg.
   - Validar comportamento estável para erros previsíveis (`401/403/404`).
 
-  **Arquivos/áreas afetadas:** `src/app/orders/__tests__/page.integration.test.ts`, `src/app/api/admin/remove-bg/__tests__/route.integration.test.ts` (novo), `src/app/cart/page.tsx` (novo)
+  **Arquivos/áreas afetadas:** `src/app/cart/__tests__/page.integration.test.ts` (novo), `src/app/orders/__tests__/page.integration.test.ts`, `src/app/api/admin/remove-bg/__tests__/route.integration.test.ts`, `src/app/api/admin/remove-bg/route.ts`
 
   **Critérios de aceitação:**
-  - [ ] Redirecionamentos de navegação são estáveis em cenários autenticado/anônimo.
-  - [ ] Endpoint admin remove-bg é bloqueado para perfil não autorizado.
+  - [x] Redirecionamentos de navegação são estáveis em cenários autenticado/anônimo.
+  - [x] Endpoint admin remove-bg é bloqueado para perfil não autorizado.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 4h  
   **Dependências:** S03-NAV-001, S03-NAV-003, S03-RBG-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-07)
 
 - [ ] **S03-QA-003** - Checklist manual de homologação e plano de rollback da Sprint 03
 
@@ -346,7 +346,7 @@ Assegurar cobertura mínima automatizada e validação operacional antes de go-l
 - **Suites necessárias:** Integração de API (`addresses`, `admin/remove-bg`, `orders redirects`), regressão de páginas (`/perfil`, `/checkout`, `/orders`, `/cart`), homologação manual E2E.
 - **Cobertura alvo:** 100% dos cenários P1/P2 da Sprint 03 cobertos (automatizado + manual).
 - **Comandos de verificação:** `npm run test:integration`, `npm run lint`, `npm run build`.
-- **Estado atual:** 🟡 Execução técnica em andamento; `S03-ADR-001`, `S03-ADR-002`, `S03-ADR-003`, `S03-RBG-001`, `S03-RBG-002` e `S03-RBG-003` concluídas com validações de lint/build e integração.
+- **Estado atual:** 🟡 Execução técnica em andamento; `S03-ADR-001`, `S03-ADR-002`, `S03-ADR-003`, `S03-RBG-001`, `S03-RBG-002`, `S03-RBG-003`, `S03-QA-001` e `S03-QA-002` concluídas com validações de lint/build e integração.
 
 ---
 

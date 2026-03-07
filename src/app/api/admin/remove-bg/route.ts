@@ -57,6 +57,13 @@ function mapRemoveBgError(error: unknown): RemoveBgErrorResponse {
     };
   }
 
+  if (status === 404) {
+    return {
+      status: 404,
+      error: "Imagem de origem não encontrada para processamento",
+    };
+  }
+
   if (status === 429) {
     return {
       status: 429,

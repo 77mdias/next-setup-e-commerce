@@ -94,6 +94,27 @@ describe("/api/admin/remove-bg integration", () => {
     expect(mockAxiosPost).not.toHaveBeenCalled();
   });
 
+  it("retorna 404 quando a imagem de origem não é encontrada", async () => {
+    mockAxiosGet.mockRejectedValue({
+      response: {
+        status: 404,
+      },
+    });
+
+    const response = await POST(
+      createRequest("POST", {
+        imageUrl: "https://example.com/image.jpg",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body.error).toBe(
+      "Imagem de origem não encontrada para processamento",
+    );
+    expect(mockAxiosPost).not.toHaveBeenCalled();
+  });
+
   it("processa imagem única para admin autorizado", async () => {
     const response = await POST(
       createRequest("POST", {
