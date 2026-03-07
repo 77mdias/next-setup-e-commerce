@@ -3,6 +3,7 @@
 ## Rotas UI (principais)
 
 ### Top-level
+
 - `/`: home.
 - `/products`: catalogo novo.
 - `/product/[productId]`: detalhe de produto.
@@ -15,6 +16,7 @@
 - `/carrinho`, `/checkout`, `/wishlist`: fluxos canônicos (sem slug).
 
 ### Por loja (`/[slug]`)
+
 - `/${slug}`: legado, redireciona para `/`.
 - `/${slug}/product` e `/${slug}/product/[productId]`: legadas, redirecionam para `/products` e `/product/[productId]`.
 - `/${slug}/categorias` e `/${slug}/categorias/[categorySlug]`: legadas, redirecionam para `/products` e `/products?category=...`.
@@ -27,6 +29,7 @@
 ## Rotas API (catalogo resumido)
 
 ### Auth
+
 - `GET/POST /api/auth/[...nextauth]`
 - `POST /api/auth/register`
 - `GET/POST /api/auth/verify-email`
@@ -35,6 +38,7 @@
 - `GET /api/auth/user-info`
 
 ### Catalogo e loja
+
 - `GET /api/products`
 - `GET /api/products/[productId]`
 - `GET /api/categories`
@@ -48,12 +52,14 @@
   - `includeFacets=0` evita custo de facets no payload da listagem.
 
 ### Carrinho e wishlist
+
 - `GET/POST/PUT/DELETE /api/cart`
 - `POST /api/cart/migrate`
 - `GET/POST /api/wishlist`
 - `GET /api/addresses`
 
 ### Checkout e pedidos
+
 - `POST /api/checkout`
   - Payload aceito: `{ storeId, items: [{ productId, quantity, variantId? }], addressId?, shippingMethod }`.
   - O backend ignora/rejeita preco e metadados de produto vindos do cliente; subtotal/total sao calculados no servidor.
@@ -64,15 +70,18 @@
 - `GET /api/test-stripe`
 
 ### Utilitario
+
 - `POST/PUT /api/remove-bg`
 - `POST/PUT /api/admin/remove-bg` (restrito a sessao autenticada com role `ADMIN`)
   - Contrato de erro previsivel para fluxo admin: `401` (nao autenticado), `403` (sem role ADMIN), `404` (imagem de origem nao encontrada).
 
 ## Regras de acesso (estado atual)
+
 - Middleware protege principalmente rotas de UI (`/orders`, `/(slug)/perfil|wishlist|carrinho|checkout|pedido`).
 - Rotas API nao passam pelo matcher do middleware e dependem de validacao interna.
 - `POST/PUT /api/admin/remove-bg` exige sessao autenticada e role `ADMIN` na propria rota.
 - Nem todas as APIs sensiveis exigem sessao (ex.: `/api/test-stripe`, `/api/auth/user-info`, `/api/remove-bg`).
 
 ## Inconsistencias funcionais
+
 - Fluxo admin remove-bg foi alinhado para endpoint administrativo dedicado de persistencia por produto (`PUT /api/admin/products/[productId]/images`).
