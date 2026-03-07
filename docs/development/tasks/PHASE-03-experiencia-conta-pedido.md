@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 03: Experiência de Conta e Pedido
 
 **Status:** 🟢 ATIVA
-**Última atualização:** 2026-03-04
+**Última atualização:** 2026-03-06
 **Sprint Atual:** Sprint 03
-**Status Geral:** 🟡 33% (4/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 42% (5/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (5-7 dias úteis)
 **Pré-requisito:** Fase 02 - Checkout Confiável e Integridade de Pedido (✅ concluída em 2026-03-02)
 
@@ -15,15 +15,15 @@
 | ---------------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Conta e endereços no perfil        | 3      | 3         | 0            | 0        | 0         |
 | Navegação e convergência de rotas  | 3      | 0         | 0            | 3        | 0         |
-| Admin remove-bg seguro e funcional | 3      | 1         | 0            | 2        | 0         |
+| Admin remove-bg seguro e funcional | 3      | 2         | 0            | 1        | 0         |
 | Testes, homologação e governança   | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                          | **12** | **4**     | **0**        | **8**    | **0**     |
+| **TOTAL**                          | **12** | **5**     | **0**        | **7**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Escopo da Sprint 03 consolidado em 4 frentes de experiência e operação.
 - ✅ Dependências críticas de pedido/pagamento já endereçadas na Fase 02.
-- ⚠️ Risco principal atual: fluxo admin de remove-bg usa endpoint de produto incompatível para persistência e expõe `apiKey` no payload.
+- ⚠️ Risco principal atual: fluxo admin de remove-bg ainda usa endpoint de produto incompatível para persistência.
 
 ---
 
@@ -221,7 +221,7 @@ Corrigir o fluxo administrativo de remoção de fundo para usar endpoint dedicad
   **Dependências:** nenhuma  
   **Status:** ✅ Concluída (2026-03-04)
 
-- [ ] **S03-RBG-002** - Remover `apiKey` do payload cliente e aplicar allowlist de origem de imagem
+- [x] **S03-RBG-002** - Remover `apiKey` do payload cliente e aplicar allowlist de origem de imagem
 
   **Descrição curta:**
   - Hoje `POST/PUT /api/remove-bg` aceitam `apiKey` no body, o que expõe segredo e amplia superfície de abuso.
@@ -235,13 +235,13 @@ Corrigir o fluxo administrativo de remoção de fundo para usar endpoint dedicad
   **Arquivos/áreas afetadas:** `src/app/api/remove-bg/route.ts`, `src/hooks/useRemoveBg.ts`, `docs/04-setup-e-integracoes/ENVIRONMENT_VARIABLES.md`
 
   **Critérios de aceitação:**
-  - [ ] Requisição cliente não envia segredo de remove-bg no payload.
-  - [ ] Endpoint rejeita origem de imagem fora da allowlist definida.
+  - [x] Requisição cliente não envia segredo de remove-bg no payload.
+  - [x] Endpoint rejeita origem de imagem fora da allowlist definida.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 5h  
   **Dependências:** S03-RBG-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-06)
 
 - [ ] **S03-RBG-003** - Corrigir persistência de imagens processadas no fluxo admin
 

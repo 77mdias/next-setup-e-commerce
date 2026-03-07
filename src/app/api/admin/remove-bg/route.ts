@@ -3,6 +3,10 @@ import FormData from "form-data";
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireAdminAccess } from "@/lib/auth";
+import {
+  getServerRemoveBgApiKey,
+  validateRemoveBgImageUrl,
+} from "@/lib/remove-bg-security";
 
 const REMOVE_BG_API_URL = "https://api.remove.bg/v1.0/removebg";
 const BATCH_REQUEST_DELAY_MS = 1000;
@@ -24,7 +28,8 @@ function extractHttpStatus(error: unknown): number | null {
     return null;
   }
 
-  const status = (error as { response?: { status?: unknown } }).response?.status;
+  const status = (error as { response?: { status?: unknown } }).response
+    ?.status;
   return typeof status === "number" ? status : null;
 }
 
@@ -93,7 +98,10 @@ async function assertAdminAuthorization(): Promise<NextResponse | null> {
   }
 
   if (access.status === 401) {
-    return NextResponse.json({ error: "Usuário não autenticado" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Usuário não autenticado" },
+      { status: 401 },
+    );
   }
 
   return NextResponse.json(
@@ -102,7 +110,11 @@ async function assertAdminAuthorization(): Promise<NextResponse | null> {
   );
 }
 
-async function processImageWithRemoveBg(imageUrl: string, apiKey: string, filename: string) {
+async function processImageWithRemoveBg(
+  imageUrl: string,
+  apiKey: string,
+  filename: string,
+) {
   const imageResponse = await axios.get(imageUrl, {
     responseType: "arraybuffer",
   });
@@ -143,7 +155,6 @@ export async function POST(request: NextRequest) {
   try {
     const payload = (await request.json()) as {
       imageUrl?: unknown;
-      apiKey?: unknown;
     };
 
     if (!isNonEmptyString(payload.imageUrl)) {
@@ -153,16 +164,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!isNonEmptyString(payload.apiKey)) {
+    const apiKey = getServerRemoveBgApiKey();
+    if (!apiKey) {
       return NextResponse.json(
-        { error: "API Key do Remove.bg é obrigatória" },
+        { error: "REMOVE_BG_API_KEY não configurada no servidor" },
+        { status: 500 },
+      );
+    }
+
+    const imageUrlValidation = validateRemoveBgImageUrl(payload.imageUrl);
+    if (!imageUrlValidation.valid) {
+      return NextResponse.json(
+        { error: imageUrlValidation.error },
         { status: 400 },
       );
     }
 
     const result = await processImageWithRemoveBg(
-      payload.imageUrl.trim(),
-      payload.apiKey.trim(),
+      imageUrlValidation.normalizedUrl,
+      apiKey,
       "admin-image.jpg",
     );
 
@@ -178,7 +198,10 @@ export async function POST(request: NextRequest) {
       status: mappedError.status,
     });
 
-    return NextResponse.json({ error: mappedError.error }, { status: mappedError.status });
+    return NextResponse.json(
+      { error: mappedError.error },
+      { status: mappedError.status },
+    );
   }
 }
 
@@ -192,7 +215,6 @@ export async function PUT(request: NextRequest) {
   try {
     const payload = (await request.json()) as {
       imageUrls?: unknown;
-      apiKey?: unknown;
     };
 
     const imageUrls = normalizeImageUrls(payload.imageUrls);
@@ -204,14 +226,28 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    if (!isNonEmptyString(payload.apiKey)) {
+    const apiKey = getServerRemoveBgApiKey();
+    if (!apiKey) {
       return NextResponse.json(
-        { error: "API Key do Remove.bg é obrigatória" },
-        { status: 400 },
+        { error: "REMOVE_BG_API_KEY não configurada no servidor" },
+        { status: 500 },
       );
     }
 
-    const apiKey = payload.apiKey.trim();
+    const validatedImageUrls: string[] = [];
+    for (let index = 0; index < imageUrls.length; index += 1) {
+      const validation = validateRemoveBgImageUrl(imageUrls[index]);
+
+      if (!validation.valid) {
+        return NextResponse.json(
+          { error: `Imagem ${index + 1}: ${validation.error}` },
+          { status: 400 },
+        );
+      }
+
+      validatedImageUrls.push(validation.normalizedUrl);
+    }
+
     const processedImages: Array<{
       index: number;
       originalUrl: string;
@@ -220,8 +256,8 @@ export async function PUT(request: NextRequest) {
     }> = [];
     const errors: RemoveBgBatchItemError[] = [];
 
-    for (let index = 0; index < imageUrls.length; index += 1) {
-      const imageUrl = imageUrls[index];
+    for (let index = 0; index < validatedImageUrls.length; index += 1) {
+      const imageUrl = validatedImageUrls[index];
 
       try {
         const result = await processImageWithRemoveBg(
@@ -237,8 +273,10 @@ export async function PUT(request: NextRequest) {
           success: true,
         });
 
-        if (index < imageUrls.length - 1) {
-          await new Promise((resolve) => setTimeout(resolve, BATCH_REQUEST_DELAY_MS));
+        if (index < validatedImageUrls.length - 1) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, BATCH_REQUEST_DELAY_MS),
+          );
         }
       } catch (error: unknown) {
         const mappedError = mapRemoveBgError(error);
@@ -260,7 +298,10 @@ export async function PUT(request: NextRequest) {
       totalErrors: errors.length,
     });
   } catch (error: unknown) {
-    console.error("[api/admin/remove-bg][PUT] processamento em lote falhou", error);
+    console.error(
+      "[api/admin/remove-bg][PUT] processamento em lote falhou",
+      error,
+    );
 
     return NextResponse.json(
       { error: "Erro interno do servidor ao processar imagens" },

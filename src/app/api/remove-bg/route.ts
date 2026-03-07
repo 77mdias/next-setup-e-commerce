@@ -1,162 +1,245 @@
-import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import FormData from "form-data";
+import { NextRequest, NextResponse } from "next/server";
+
+import {
+  getServerRemoveBgApiKey,
+  validateRemoveBgImageUrl,
+} from "@/lib/remove-bg-security";
+
+const REMOVE_BG_API_URL = "https://api.remove.bg/v1.0/removebg";
+const BATCH_REQUEST_DELAY_MS = 1000;
+
+type RemoveBgErrorResponse = {
+  status: number;
+  error: string;
+};
+
+type RemoveBgBatchItemError = {
+  index: number;
+  originalUrl: string;
+  error: string;
+  success: false;
+};
+
+function extractHttpStatus(error: unknown): number | null {
+  if (!error || typeof error !== "object" || !("response" in error)) {
+    return null;
+  }
+
+  const status = (error as { response?: { status?: unknown } }).response?.status;
+  return typeof status === "number" ? status : null;
+}
+
+function mapRemoveBgError(error: unknown): RemoveBgErrorResponse {
+  const status = extractHttpStatus(error);
+
+  if (status === 400 || status === 422) {
+    return {
+      status: 422,
+      error: "Não foi possível processar a imagem enviada",
+    };
+  }
+
+  if (status === 402) {
+    return {
+      status: 402,
+      error: "Créditos insuficientes na API do Remove.bg",
+    };
+  }
+
+  if (status === 403) {
+    return {
+      status: 403,
+      error: "Falha na autenticação com o provedor de remoção de fundo",
+    };
+  }
+
+  if (status === 429) {
+    return {
+      status: 429,
+      error: "Limite de processamento atingido. Tente novamente em instantes",
+    };
+  }
+
+  return {
+    status: 502,
+    error: "Falha ao processar imagem no provedor externo",
+  };
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function normalizeImageUrls(value: unknown): string[] | null {
+  if (!Array.isArray(value) || value.length === 0) {
+    return null;
+  }
+
+  const normalized = value
+    .filter((item): item is string => isNonEmptyString(item))
+    .map((url) => url.trim());
+
+  if (normalized.length !== value.length) {
+    return null;
+  }
+
+  return normalized;
+}
+
+async function processImageWithRemoveBg(imageUrl: string, apiKey: string, filename: string) {
+  const imageResponse = await axios.get(imageUrl, {
+    responseType: "arraybuffer",
+  });
+
+  const originalImageBuffer = Buffer.from(imageResponse.data);
+  const formData = new FormData();
+  formData.append("image_file", originalImageBuffer, {
+    filename,
+    contentType: "image/jpeg",
+  });
+  formData.append("size", "auto");
+
+  const removeBgResponse = await axios.post(REMOVE_BG_API_URL, formData, {
+    headers: {
+      "X-Api-Key": apiKey,
+      ...formData.getHeaders(),
+    },
+    responseType: "arraybuffer",
+  });
+
+  const processedImageBuffer = Buffer.from(removeBgResponse.data);
+
+  return {
+    originalSize: originalImageBuffer.length,
+    processedSize: processedImageBuffer.length,
+    processedImage: `data:image/png;base64,${processedImageBuffer.toString("base64")}`,
+  };
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const { imageUrl, apiKey } = await request.json();
+    const payload = (await request.json()) as {
+      imageUrl?: unknown;
+    };
 
-    if (!imageUrl) {
+    if (!isNonEmptyString(payload.imageUrl)) {
       return NextResponse.json(
         { error: "URL da imagem é obrigatória" },
         { status: 400 },
       );
     }
 
+    const apiKey = getServerRemoveBgApiKey();
     if (!apiKey) {
       return NextResponse.json(
-        { error: "API Key do Remove.bg é obrigatória" },
+        { error: "REMOVE_BG_API_KEY não configurada no servidor" },
+        { status: 500 },
+      );
+    }
+
+    const imageUrlValidation = validateRemoveBgImageUrl(payload.imageUrl);
+    if (!imageUrlValidation.valid) {
+      return NextResponse.json(
+        { error: imageUrlValidation.error },
         { status: 400 },
       );
     }
 
-    // Baixar a imagem original
-    const imageResponse = await axios.get(imageUrl, {
-      responseType: "arraybuffer",
-    });
-
-    const imageBuffer = Buffer.from(imageResponse.data);
-
-    // Criar FormData para enviar para o Remove.bg
-    const formData = new FormData();
-    formData.append("image_file", imageBuffer, {
-      filename: "image.jpg",
-      contentType: "image/jpeg",
-    });
-    formData.append("size", "auto");
-
-    // Fazer requisição para o Remove.bg
-    const removeBgResponse = await axios.post(
-      "https://api.remove.bg/v1.0/removebg",
-      formData,
-      {
-        headers: {
-          "X-Api-Key": apiKey,
-          ...formData.getHeaders(),
-        },
-        responseType: "arraybuffer",
-      },
+    const result = await processImageWithRemoveBg(
+      imageUrlValidation.normalizedUrl,
+      apiKey,
+      "image.jpg",
     );
-
-    // Converter a resposta para base64
-    const processedImageBuffer = Buffer.from(removeBgResponse.data);
-    const base64Image = processedImageBuffer.toString("base64");
-    const dataUrl = `data:image/png;base64,${base64Image}`;
 
     return NextResponse.json({
       success: true,
-      processedImage: dataUrl,
-      originalSize: imageBuffer.length,
-      processedSize: processedImageBuffer.length,
+      processedImage: result.processedImage,
+      originalSize: result.originalSize,
+      processedSize: result.processedSize,
     });
-  } catch (error: any) {
-    console.error("Erro ao processar imagem:", error);
+  } catch (error: unknown) {
+    const mappedError = mapRemoveBgError(error);
+    console.error("[api/remove-bg][POST] processamento falhou", {
+      status: mappedError.status,
+    });
 
-    if (error.response?.status === 402) {
-      return NextResponse.json(
-        { error: "Créditos insuficientes na API do Remove.bg" },
-        { status: 402 },
-      );
-    }
-
-    if (error.response?.status === 403) {
-      return NextResponse.json(
-        { error: "API Key inválida do Remove.bg" },
-        { status: 403 },
-      );
-    }
-
-    return NextResponse.json(
-      { error: "Erro interno do servidor ao processar imagem" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: mappedError.error }, { status: mappedError.status });
   }
 }
 
-// Endpoint para processar múltiplas imagens
 export async function PUT(request: NextRequest) {
   try {
-    const { imageUrls, apiKey } = await request.json();
+    const payload = (await request.json()) as {
+      imageUrls?: unknown;
+    };
 
-    if (!imageUrls || !Array.isArray(imageUrls)) {
+    const imageUrls = normalizeImageUrls(payload.imageUrls);
+
+    if (!imageUrls) {
       return NextResponse.json(
         { error: "Array de URLs das imagens é obrigatório" },
         { status: 400 },
       );
     }
 
+    const apiKey = getServerRemoveBgApiKey();
     if (!apiKey) {
       return NextResponse.json(
-        { error: "API Key do Remove.bg é obrigatória" },
-        { status: 400 },
+        { error: "REMOVE_BG_API_KEY não configurada no servidor" },
+        { status: 500 },
       );
     }
 
-    const processedImages = [];
-    const errors = [];
+    const validatedImageUrls: string[] = [];
+    for (let index = 0; index < imageUrls.length; index += 1) {
+      const validation = validateRemoveBgImageUrl(imageUrls[index]);
 
-    for (let i = 0; i < imageUrls.length; i++) {
+      if (!validation.valid) {
+        return NextResponse.json(
+          { error: `Imagem ${index + 1}: ${validation.error}` },
+          { status: 400 },
+        );
+      }
+
+      validatedImageUrls.push(validation.normalizedUrl);
+    }
+
+    const processedImages: Array<{
+      index: number;
+      originalUrl: string;
+      processedImage: string;
+      success: true;
+    }> = [];
+    const errors: RemoveBgBatchItemError[] = [];
+
+    for (let index = 0; index < validatedImageUrls.length; index += 1) {
+      const imageUrl = validatedImageUrls[index];
+
       try {
-        const imageUrl = imageUrls[i];
-
-        // Baixar a imagem original
-        const imageResponse = await axios.get(imageUrl, {
-          responseType: "arraybuffer",
-        });
-
-        const imageBuffer = Buffer.from(imageResponse.data);
-
-        // Criar FormData para enviar para o Remove.bg
-        const formData = new FormData();
-        formData.append("image_file", imageBuffer, {
-          filename: `image_${i}.jpg`,
-          contentType: "image/jpeg",
-        });
-        formData.append("size", "auto");
-
-        // Fazer requisição para o Remove.bg
-        const removeBgResponse = await axios.post(
-          "https://api.remove.bg/v1.0/removebg",
-          formData,
-          {
-            headers: {
-              "X-Api-Key": apiKey,
-              ...formData.getHeaders(),
-            },
-            responseType: "arraybuffer",
-          },
+        const result = await processImageWithRemoveBg(
+          imageUrl,
+          apiKey,
+          `image_${index}.jpg`,
         );
 
-        // Converter a resposta para base64
-        const processedImageBuffer = Buffer.from(removeBgResponse.data);
-        const base64Image = processedImageBuffer.toString("base64");
-        const dataUrl = `data:image/png;base64,${base64Image}`;
-
         processedImages.push({
-          index: i,
+          index,
           originalUrl: imageUrl,
-          processedImage: dataUrl,
+          processedImage: result.processedImage,
           success: true,
         });
 
-        // Delay para evitar rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      } catch (error: any) {
-        console.error(`Erro ao processar imagem ${i}:`, error);
+        if (index < validatedImageUrls.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, BATCH_REQUEST_DELAY_MS));
+        }
+      } catch (error: unknown) {
+        const mappedError = mapRemoveBgError(error);
         errors.push({
-          index: i,
-          originalUrl: imageUrls[i],
-          error: error.message,
+          index,
+          originalUrl: imageUrl,
+          error: mappedError.error,
           success: false,
         });
       }
@@ -169,8 +252,9 @@ export async function PUT(request: NextRequest) {
       totalProcessed: processedImages.length,
       totalErrors: errors.length,
     });
-  } catch (error: any) {
-    console.error("Erro ao processar múltiplas imagens:", error);
+  } catch (error: unknown) {
+    console.error("[api/remove-bg][PUT] processamento em lote falhou", error);
+
     return NextResponse.json(
       { error: "Erro interno do servidor ao processar imagens" },
       { status: 500 },

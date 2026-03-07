@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRemoveBg } from "@/hooks/useRemoveBg";
+import { useState } from "react";
 import Image from "next/image";
+
+import { useRemoveBg } from "@/hooks/useRemoveBg";
 
 interface RemoveBgProcessorProps {
   productId: string;
@@ -20,36 +21,19 @@ export default function RemoveBgProcessor({
   const { isProcessing, processMultipleImages, progress } = useRemoveBg({
     endpoint: apiEndpoint,
   });
-  const [apiKey, setApiKey] = useState("");
   const [processedImages, setProcessedImages] = useState<string[]>([]);
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
-  // Carregar API key do localStorage se existir
-  useEffect(() => {
-    const savedApiKey = localStorage.getItem("removebg-api-key");
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-    }
-  }, []);
-
   const handleProcessImages = async () => {
-    if (!apiKey.trim()) {
-      alert("Por favor, insira sua API Key do Remove.bg");
-      setShowApiKeyInput(true);
-      return;
-    }
-
     if (images.length === 0) {
       alert("Nenhuma imagem encontrada para processar");
       return;
     }
 
-    // Salvar API key no localStorage
-    localStorage.setItem("removebg-api-key", apiKey);
+    setErrors([]);
 
     try {
-      const result = await processMultipleImages(images, apiKey);
+      const result = await processMultipleImages(images);
 
       if (result.success) {
         const processed = result.processedImages.map(
@@ -89,7 +73,7 @@ export default function RemoveBgProcessor({
     processedImages.forEach((imageData, index) => {
       setTimeout(() => {
         downloadImage(imageData, index);
-      }, index * 500); // Delay entre downloads
+      }, index * 500);
     });
   };
 
@@ -99,51 +83,11 @@ export default function RemoveBgProcessor({
         Remover Fundo das Imagens
       </h2>
 
-      {/* Input da API Key */}
-      <div className="mb-6">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setShowApiKeyInput(!showApiKeyInput)}
-            className="rounded-md bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
-          >
-            {showApiKeyInput ? "Ocultar" : "Configurar"} API Key
-          </button>
-
-          {apiKey && !showApiKeyInput && (
-            <span className="font-medium text-green-600">
-              ✓ API Key configurada
-            </span>
-          )}
-        </div>
-
-        {showApiKeyInput && (
-          <div className="mt-4">
-            <label className="mb-2 block text-sm font-medium text-gray-700">
-              API Key do Remove.bg:
-            </label>
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Insira sua API Key do Remove.bg"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Obtenha sua API Key gratuita em:
-              <a
-                href="https://www.remove.bg/api"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ml-1 text-blue-500 hover:underline"
-              >
-                remove.bg/api
-              </a>
-            </p>
-          </div>
-        )}
+      <div className="mb-6 rounded-md border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
+        A autenticação com o provedor é feita apenas no servidor. Nenhuma chave
+        sensível é enviada pelo navegador.
       </div>
 
-      {/* Imagens Originais */}
       <div className="mb-6">
         <h3 className="mb-3 text-lg font-semibold text-gray-700">
           Imagens Originais ({images.length})
@@ -166,13 +110,12 @@ export default function RemoveBgProcessor({
         </div>
       </div>
 
-      {/* Botão de Processar */}
       <div className="mb-6">
         <button
           onClick={handleProcessImages}
-          disabled={isProcessing || !apiKey.trim()}
+          disabled={isProcessing || images.length === 0}
           className={`rounded-md px-6 py-3 font-medium transition-colors ${
-            isProcessing || !apiKey.trim()
+            isProcessing || images.length === 0
               ? "cursor-not-allowed bg-gray-300 text-gray-500"
               : "bg-green-500 text-white hover:bg-green-600"
           }`}
@@ -195,7 +138,6 @@ export default function RemoveBgProcessor({
         )}
       </div>
 
-      {/* Erros */}
       {errors.length > 0 && (
         <div className="mb-6 rounded-md border border-red-200 bg-red-50 p-4">
           <h4 className="mb-2 font-medium text-red-800">Erros encontrados:</h4>
@@ -207,7 +149,6 @@ export default function RemoveBgProcessor({
         </div>
       )}
 
-      {/* Imagens Processadas */}
       {processedImages.length > 0 && (
         <div>
           <div className="mb-3 flex items-center justify-between">

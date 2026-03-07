@@ -36,7 +36,13 @@ STRIPE_WEBHOOK_SECRET_KEY="whsec_..."
 
 ```
 REMOVE_BG_API_KEY="your-remove-bg-api-key"
+REMOVE_BG_ALLOWED_IMAGE_HOSTS="images.kabum.com.br,m.media-amazon.com,cdn.shopify.com"
+REMOVE_BG_ALLOWED_IMAGE_PROTOCOLS="https"
 ```
+
+- `REMOVE_BG_API_KEY`: segredo usado apenas no servidor (não enviar no payload cliente).
+- `REMOVE_BG_ALLOWED_IMAGE_HOSTS`: lista separada por vírgula com hosts permitidos para download/processamento.
+- `REMOVE_BG_ALLOWED_IMAGE_PROTOCOLS`: protocolos permitidos (ex.: `https`).
 
 ## Email (para verificação de conta)
 

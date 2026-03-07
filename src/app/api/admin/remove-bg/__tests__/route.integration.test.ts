@@ -1,11 +1,13 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockRequireAdminAccess, mockAxiosGet, mockAxiosPost } = vi.hoisted(() => ({
-  mockRequireAdminAccess: vi.fn(),
-  mockAxiosGet: vi.fn(),
-  mockAxiosPost: vi.fn(),
-}));
+const { mockRequireAdminAccess, mockAxiosGet, mockAxiosPost } = vi.hoisted(
+  () => ({
+    mockRequireAdminAccess: vi.fn(),
+    mockAxiosGet: vi.fn(),
+    mockAxiosPost: vi.fn(),
+  }),
+);
 
 vi.mock("@/lib/auth", () => ({
   requireAdminAccess: mockRequireAdminAccess,
@@ -33,6 +35,9 @@ function createRequest(method: "POST" | "PUT", payload: unknown): NextRequest {
 describe("/api/admin/remove-bg integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env.REMOVE_BG_API_KEY = "server-test-key";
+    process.env.REMOVE_BG_ALLOWED_IMAGE_HOSTS = "example.com";
+    delete process.env.REMOVE_BG_ALLOWED_IMAGE_PROTOCOLS;
 
     mockRequireAdminAccess.mockResolvedValue({
       authorized: true,
@@ -60,7 +65,6 @@ describe("/api/admin/remove-bg integration", () => {
     const response = await POST(
       createRequest("POST", {
         imageUrl: "https://example.com/image.jpg",
-        apiKey: "test-key",
       }),
     );
     const body = await response.json();
@@ -80,7 +84,6 @@ describe("/api/admin/remove-bg integration", () => {
     const response = await POST(
       createRequest("POST", {
         imageUrl: "https://example.com/image.jpg",
-        apiKey: "test-key",
       }),
     );
     const body = await response.json();
@@ -95,7 +98,6 @@ describe("/api/admin/remove-bg integration", () => {
     const response = await POST(
       createRequest("POST", {
         imageUrl: "https://example.com/image.jpg",
-        apiKey: "test-key",
       }),
     );
     const body = await response.json();
@@ -116,7 +118,7 @@ describe("/api/admin/remove-bg integration", () => {
       expect.objectContaining({
         responseType: "arraybuffer",
         headers: expect.objectContaining({
-          "X-Api-Key": "test-key",
+          "X-Api-Key": "server-test-key",
         }),
       }),
     );
@@ -133,7 +135,6 @@ describe("/api/admin/remove-bg integration", () => {
     const response = await POST(
       createRequest("POST", {
         imageUrl: "https://example.com/image.jpg",
-        apiKey: "test-key",
       }),
     );
     const body = await response.json();
@@ -162,7 +163,6 @@ describe("/api/admin/remove-bg integration", () => {
           "https://example.com/image-1.jpg",
           "https://example.com/image-2.jpg",
         ],
-        apiKey: "test-key",
       }),
     );
     const body = await response.json();
@@ -179,5 +179,37 @@ describe("/api/admin/remove-bg integration", () => {
         success: false,
       },
     ]);
+  });
+
+  it("rejeita URL de origem fora da allowlist", async () => {
+    process.env.REMOVE_BG_ALLOWED_IMAGE_HOSTS = "allowed.example.com";
+
+    const response = await POST(
+      createRequest("POST", {
+        imageUrl: "https://example.com/image.jpg",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("Origem da imagem não permitida");
+    expect(mockAxiosGet).not.toHaveBeenCalled();
+    expect(mockAxiosPost).not.toHaveBeenCalled();
+  });
+
+  it("retorna 500 quando REMOVE_BG_API_KEY não está configurada no servidor", async () => {
+    delete process.env.REMOVE_BG_API_KEY;
+
+    const response = await POST(
+      createRequest("POST", {
+        imageUrl: "https://example.com/image.jpg",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("REMOVE_BG_API_KEY não configurada no servidor");
+    expect(mockAxiosGet).not.toHaveBeenCalled();
+    expect(mockAxiosPost).not.toHaveBeenCalled();
   });
 });
