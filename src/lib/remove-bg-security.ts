@@ -55,9 +55,9 @@ function normalizeProtocol(protocol: string): string {
 }
 
 function getAllowedProtocols(): string[] {
-  const configured = parseCsvEnv(process.env[REMOVE_BG_ALLOWED_PROTOCOLS_ENV]).map(
-    normalizeProtocol,
-  );
+  const configured = parseCsvEnv(
+    process.env[REMOVE_BG_ALLOWED_PROTOCOLS_ENV],
+  ).map(normalizeProtocol);
 
   if (configured.length > 0) {
     return configured;
@@ -105,7 +105,9 @@ export function getServerRemoveBgApiKey(): string | null {
   return apiKey && apiKey.length > 0 ? apiKey : null;
 }
 
-export function validateRemoveBgImageUrl(rawUrl: string): ImageUrlValidationResult {
+export function validateRemoveBgImageUrl(
+  rawUrl: string,
+): ImageUrlValidationResult {
   const trimmed = rawUrl.trim();
 
   if (trimmed.length === 0) {

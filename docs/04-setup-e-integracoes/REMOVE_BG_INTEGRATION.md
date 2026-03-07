@@ -53,7 +53,7 @@ Processa uma única imagem:
 
 ```typescript
 {
-  imageUrl: string
+  imageUrl: string;
 }
 ```
 

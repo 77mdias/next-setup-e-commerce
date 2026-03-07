@@ -27,7 +27,8 @@ function extractHttpStatus(error: unknown): number | null {
     return null;
   }
 
-  const status = (error as { response?: { status?: unknown } }).response?.status;
+  const status = (error as { response?: { status?: unknown } }).response
+    ?.status;
   return typeof status === "number" ? status : null;
 }
 
@@ -88,7 +89,11 @@ function normalizeImageUrls(value: unknown): string[] | null {
   return normalized;
 }
 
-async function processImageWithRemoveBg(imageUrl: string, apiKey: string, filename: string) {
+async function processImageWithRemoveBg(
+  imageUrl: string,
+  apiKey: string,
+  filename: string,
+) {
   const imageResponse = await axios.get(imageUrl, {
     responseType: "arraybuffer",
   });
@@ -165,7 +170,10 @@ export async function POST(request: NextRequest) {
       status: mappedError.status,
     });
 
-    return NextResponse.json({ error: mappedError.error }, { status: mappedError.status });
+    return NextResponse.json(
+      { error: mappedError.error },
+      { status: mappedError.status },
+    );
   }
 }
 
@@ -232,7 +240,9 @@ export async function PUT(request: NextRequest) {
         });
 
         if (index < validatedImageUrls.length - 1) {
-          await new Promise((resolve) => setTimeout(resolve, BATCH_REQUEST_DELAY_MS));
+          await new Promise((resolve) =>
+            setTimeout(resolve, BATCH_REQUEST_DELAY_MS),
+          );
         }
       } catch (error: unknown) {
         const mappedError = mapRemoveBgError(error);
