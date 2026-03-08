@@ -86,6 +86,7 @@ export default function AppChrome({ children }: AppChromeProps) {
         searchHref={ROUTE_PATHS.products}
         wishlistHref={ROUTE_PATHS.wishlist}
         cartHref={ROUTE_PATHS.cart}
+        ordersHref={ROUTE_PATHS.orders}
         profileHref={ROUTE_PATHS.profile}
       />
 

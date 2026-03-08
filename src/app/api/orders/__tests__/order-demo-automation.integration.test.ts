@@ -103,7 +103,9 @@ describe("order-demo-automation integration", () => {
         }),
       }),
     );
-    expect(mockTransactionClient.orderStatusHistory.create).toHaveBeenCalledWith(
+    expect(
+      mockTransactionClient.orderStatusHistory.create,
+    ).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           orderId: 42,
@@ -140,13 +142,12 @@ describe("order-demo-automation integration", () => {
       updated: true,
       transitionsApplied: 4,
     });
-    expect(mockTransactionClient.orderStatusHistory.create).toHaveBeenCalledTimes(
-      4,
-    );
+    expect(
+      mockTransactionClient.orderStatusHistory.create,
+    ).toHaveBeenCalledTimes(4);
     expect(
       mockTransactionClient.orderStatusHistory.create.mock.calls.map(
-        (call) =>
-          (call[0] as { data: { status: string } }).data.status,
+        (call) => (call[0] as { data: { status: string } }).data.status,
       ),
     ).toEqual(["PAID", "PROCESSING", "SHIPPED", "DELIVERED"]);
     expect(mockTransactionClient.order.updateMany).toHaveBeenCalledWith(

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Search, ShoppingCart, UserRound } from "lucide-react";
+import { Heart, Package, Search, ShoppingCart, UserRound } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
@@ -16,6 +16,7 @@ type HomeNavigationProps = {
   searchHref: string;
   wishlistHref: string;
   cartHref: string;
+  ordersHref: string;
   profileHref: string;
 };
 
@@ -28,6 +29,7 @@ export function HomeNavigation({
   searchHref,
   wishlistHref,
   cartHref,
+  ordersHref,
   profileHref,
 }: HomeNavigationProps) {
   const resolvedHomeHref =
@@ -106,6 +108,14 @@ export function HomeNavigation({
                 {totalQuantity > 99 ? "99+" : totalQuantity}
               </span>
             )}
+          </Link>
+
+          <Link
+            href={ordersHref}
+            className={iconBaseClass}
+            aria-label="Open orders"
+          >
+            <Package size={18} />
           </Link>
 
           <Link

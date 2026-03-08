@@ -6,10 +6,12 @@ import {
   LoaderCircle,
   LogOut,
   MapPin,
+  Package,
   Plus,
   Shield,
   User,
 } from "lucide-react";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -538,6 +540,16 @@ export function ProfilePageContent({
                   label="Security"
                   onClick={() => setActiveSection("security")}
                 />
+
+                <Link
+                  href="/orders"
+                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm text-[#64748b] transition-colors hover:bg-[#edf2ff] hover:text-[#0f172a] dark:text-[#99A1AF] dark:hover:bg-white/5 dark:hover:text-[#F1F3F5]"
+                >
+                  <Package className="h-5 w-5" />
+                  <span className="text-sm font-[var(--font-arimo)]">
+                    My Orders
+                  </span>
+                </Link>
               </nav>
 
               <div className="border-t border-[#dbe4ff] pt-8 dark:border-white/[0.05]">
