@@ -43,6 +43,32 @@ Criar base de confiabilidade continua para releases.
 | P1         | Middleware protege `checkout/carrinho/pedido` e redirect de auth preserva callback               | Auth + Middleware          | Sem suite automatizada dedicada para `src/middleware.ts`                                                                        | Planejar testes de contrato de middleware              |
 | P1         | Fallback legado de vinculo por email em pedido nao reabre exposicao indevida                    | Orders (legado/transicao)  | Coberto parcialmente em `src/app/api/orders/[orderId]/__tests__/route.integration.test.ts`                                    | Monitorar ate remocao do fallback                       |
 
+### Baseline de metricas minimas e thresholds de alerta (S04-QLT-002)
+
+#### SLI/SLO iniciais por API critica
+
+| Metrica | Escopo | SLI (definicao) | SLO inicial | Janela de observacao | Threshold de alerta | Fonte de coleta | Responsavel operacional |
+| ------- | ------ | --------------- | ----------- | -------------------- | ------------------- | --------------- | ----------------------- |
+| `api.checkout.5xx_rate` | `POST /api/checkout` | `% 5xx = respostas HTTP 5xx / total de requests` | <= `0.5%` | rolling `15m` e consolidado `24h` | warn `>1.0%` (15m), crit `>2.0%` (15m) | metricas HTTP por rota + logs runtime de API | Engenharia Backend Checkout (on-call commerce) |
+| `api.checkout.p95_latency_ms` | `POST /api/checkout` | `p95` da latencia de resposta em ms | <= `1200ms` | rolling `5m` e consolidado `1h` | warn `>1800ms` (3 janelas), crit `>2500ms` (2 janelas) | metricas HTTP por rota + logs runtime de API | Engenharia Backend Checkout (on-call commerce) |
+| `api.webhook_stripe.5xx_rate` | `POST /api/webhooks/stripe` | `% 5xx = respostas HTTP 5xx / total de requests` | <= `0.5%` | rolling `15m` e consolidado `24h` | warn `>1.0%` (15m), crit `>2.0%` (15m) | metricas HTTP por rota + logs runtime de API | Engenharia Backend Pagamentos (on-call pagamentos) |
+| `api.webhook_stripe.p95_latency_ms` | `POST /api/webhooks/stripe` | `p95` da latencia de resposta em ms | <= `1500ms` | rolling `5m` e consolidado `1h` | warn `>2500ms` (3 janelas), crit `>3500ms` (2 janelas) | metricas HTTP por rota + logs runtime de API | Engenharia Backend Pagamentos (on-call pagamentos) |
+| `webhook.failed_processing_rate` | `stripe_webhook_events` | `% failed = status FAILED / (COMPLETED + FAILED)` | <= `1.0%` | rolling `15m` e consolidado `24h` | warn `>2.0%` (15m), crit `>4.0%` (15m) | tabela `stripe_webhook_events.status` (`PROCESSING/COMPLETED/FAILED`) | Engenharia Backend Pagamentos (on-call pagamentos) |
+| `api.orders.5xx_rate` | `GET /api/orders/user`, `GET /api/orders/[orderId]`, `GET /api/orders/session/[sessionId]` | `% 5xx = respostas HTTP 5xx / total de requests` | <= `0.5%` | rolling `15m` e consolidado `24h` | warn `>1.0%` (15m), crit `>2.0%` (15m) | metricas HTTP por rota + logs runtime de API | Engenharia Backend Orders (on-call orders) |
+| `api.orders.p95_latency_ms` | `GET /api/orders/*` | `p95` da latencia de resposta em ms | <= `900ms` | rolling `5m` e consolidado `1h` | warn `>1400ms` (3 janelas), crit `>2000ms` (2 janelas) | metricas HTTP por rota + logs runtime de API | Engenharia Backend Orders (on-call orders) |
+| `payment.failed_rate` | Fluxo de pagamento apos tentativa de cobranca | `% failed = pedidos com paymentStatus FAILED / pedidos com tentativa de cobranca` | <= `3.0%` | rolling `15m`, consolidado `1h` e `24h` | warn `>5.0%` (15m, volume >=20), crit `>8.0%` (15m, volume >=20) | tabela `orders.paymentStatus`, `orders.cancelledAt`, eventos `charge.failed`/`checkout.session.async_payment_failed` | Engenharia Backend Pagamentos + Produto de Checkout |
+
+#### Regras objetivas de alerta (operacao diaria e go/no-go)
+
+- `ALR-PAY-001` (falha de pagamento): acionar alerta quando `payment.failed_rate` ultrapassar `5.0%` em `15m` com volume minimo de `20` tentativas; escalar para severidade critica acima de `8.0%` na mesma janela.
+- `ALR-LAT-001` (degradacao de latencia): acionar alerta quando `p95` ultrapassar o threshold de warning por `3` janelas consecutivas de `5m`; escalar para critico quando ultrapassar threshold critico por `2` janelas.
+- `ALR-ERR-001` (erro de API critica): acionar alerta quando `5xx_rate` exceder `1.0%` em `15m`; bloquear go/no-go de release quando qualquer rota critica exceder `2.0%`.
+
+#### Criterio minimo de go/no-go para release
+
+- `Go`: ultimas `24h` com `5xx_rate <= 0.5%` em `checkout`, `webhooks/stripe` e `orders`; `payment.failed_rate <= 3.0%`; sem alerta critico ativo por `>=30m`.
+- `No-Go`: qualquer alerta critico ativo (`ALR-PAY-001`, `ALR-LAT-001`, `ALR-ERR-001`) ou violacao de SLO em duas janelas consecutivas de decisao de release.
+
 ## Etapa 2 - Design
 - Estruturar suite de testes (unit + integration + e2e).
 - Definir logger estruturado com redacao de PII.

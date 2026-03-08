@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-08
 **Sprint Atual:** Sprint 04
-**Status Geral:** 🟡 8% (1/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 17% (2/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (10 dias úteis)
 **Pré-requisito:** Fase 03 - Experiência de Conta e Pedido (✅ concluída em 2026-03-08)
 
@@ -13,15 +13,16 @@
 
 | Categoria                               | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | --------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Estratégia de qualidade e critérios     | 3      | 1         | 0            | 2        | 0         |
+| Estratégia de qualidade e critérios     | 3      | 2         | 0            | 1        | 0         |
 | Cobertura automatizada do fluxo crítico | 3      | 0         | 0            | 3        | 0         |
 | Observabilidade e logs seguros          | 3      | 0         | 0            | 3        | 0         |
 | CI gate e rollout monitorado            | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                               | **12** | **1**     | **0**        | **11**   | **0**     |
+| **TOTAL**                               | **12** | **2**     | **0**        | **10**   | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Baseline inicial de risco do fluxo de compra publicada na Sprint 04 (`S04-QLT-001`).
+- ✅ Baseline de metricas minimas com SLI/SLO e thresholds de alerta publicada (`S04-QLT-002`).
 - ⚠️ CI atual ainda não executa suíte crítica de testes como gate bloqueante de merge.
 - ⚠️ Logging operacional ainda depende de `console.*` em rotas críticas e precisa padronização com redaction de PII.
 
@@ -71,7 +72,7 @@ Definir o que será medido e testado antes de ampliar cobertura de forma indiscr
   **Dependências:** nenhuma  
   **Status:** ✅ Concluída (2026-03-08)
 
-- [ ] **S04-QLT-002** - Definir métricas mínimas de saúde e thresholds de alerta
+- [x] **S04-QLT-002** - Definir métricas mínimas de saúde e thresholds de alerta
 
   **Descrição curta:**
   - Formalizar métricas de confiabilidade para operação diária e go/no-go de release.
@@ -85,13 +86,13 @@ Definir o que será medido e testado antes de ampliar cobertura de forma indiscr
   **Arquivos/áreas afetadas:** `docs/ROADMAP/SPRINTS/sprint-04-qualidade-observabilidade.md`, `docs/ROADMAP/Logs/S04-QLT-002.md` (novo)
 
   **Critérios de aceitação:**
-  - [ ] Métricas críticas com thresholds e responsáveis documentados.
-  - [ ] Critério objetivo de alerta definido para falha de pagamento e degradação de latência.
+  - [x] Métricas críticas com thresholds e responsáveis documentados.
+  - [x] Critério objetivo de alerta definido para falha de pagamento e degradação de latência.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 3h  
   **Dependências:** S04-QLT-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-08)
 
 - [ ] **S04-QLT-003** - Definir estratégia de cobertura por camada (unit + integration + e2e)
 
