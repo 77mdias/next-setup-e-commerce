@@ -15,6 +15,9 @@ const { mockConstructEvent, mockStripeCtor, mockDb } = vi.hoisted(() => ({
     payment: {
       create: vi.fn(),
     },
+    cart: {
+      deleteMany: vi.fn(),
+    },
     orderStatusHistory: {
       create: vi.fn(),
     },
@@ -74,6 +77,7 @@ describe("POST /api/webhooks/stripe integration", () => {
 
     mockDb.order.findUnique.mockResolvedValue({
       id: 123,
+      userId: "user-owner",
       status: "PENDING",
       paymentStatus: "PENDING",
       total: 115,
@@ -99,6 +103,7 @@ describe("POST /api/webhooks/stripe integration", () => {
       amount: 115,
       status: "PAID",
     });
+    mockDb.cart.deleteMany.mockResolvedValue({ count: 3 });
     mockDb.orderStatusHistory.create.mockResolvedValue({
       id: "history-1",
       orderId: 123,
@@ -157,6 +162,11 @@ describe("POST /api/webhooks/stripe integration", () => {
         status: "PAID",
         paymentStatus: "PAID",
       }),
+    });
+    expect(mockDb.cart.deleteMany).toHaveBeenCalledWith({
+      where: {
+        userId: expect.any(String),
+      },
     });
 
     expect(mockDb.payment.create).toHaveBeenCalledWith({

@@ -620,6 +620,17 @@ export async function POST(request: NextRequest) {
           paymentMethod: "stripe",
         },
       });
+
+      try {
+        await db.cart.deleteMany({
+          where: { userId: session.user.id },
+        });
+      } catch (clearCartError) {
+        console.error(
+          `Erro ao limpar carrinho do usuário ${session.user.id} após checkout do pedido ${order.id}:`,
+          clearCartError,
+        );
+      }
     } catch (checkoutError) {
       if (stripeSession?.id) {
         try {

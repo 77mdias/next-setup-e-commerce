@@ -30,6 +30,9 @@ const {
     inventory: {
       findMany: vi.fn(),
     },
+    cart: {
+      deleteMany: vi.fn(),
+    },
     order: {
       create: vi.fn(),
       update: vi.fn(),
@@ -122,6 +125,7 @@ describe("POST /api/checkout integration", () => {
     mockDb.order.create.mockResolvedValue({ id: 123 });
     mockDb.order.update.mockResolvedValue({ id: 123 });
     mockDb.order.delete.mockResolvedValue({ id: 123 });
+    mockDb.cart.deleteMany.mockResolvedValue({ count: 1 });
     mockDb.$transaction.mockImplementation(async (operation: unknown) => {
       if (typeof operation === "function") {
         return operation(mockDb);
@@ -224,6 +228,9 @@ describe("POST /api/checkout integration", () => {
         stripePaymentId: "cs_test_123",
         paymentMethod: "stripe",
       },
+    });
+    expect(mockDb.cart.deleteMany).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
     });
   });
 

@@ -51,6 +51,7 @@ type PlannedTransition = {
 
 type OrderAutomationSnapshot = {
   id: number;
+  userId: string | null;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   total: number;
@@ -66,6 +67,7 @@ type OrderAutomationSnapshot = {
 
 const orderAutomationSelect = {
   id: true,
+  userId: true,
   status: true,
   paymentStatus: true,
   total: true,
@@ -320,6 +322,22 @@ async function upsertPaidPayment({
   });
 }
 
+async function clearUserCartAfterPaidOrder({
+  userId,
+  transactionClient,
+}: {
+  userId: string | null;
+  transactionClient: Prisma.TransactionClient;
+}) {
+  if (!userId) {
+    return;
+  }
+
+  await transactionClient.cart.deleteMany({
+    where: { userId },
+  });
+}
+
 function planOrderTransitions({
   order,
   now,
@@ -490,6 +508,10 @@ async function runAutomationForOrder({
         await upsertPaidPayment({
           order: currentOrder,
           now,
+          transactionClient,
+        });
+        await clearUserCartAfterPaidOrder({
+          userId: currentOrder.userId,
           transactionClient,
         });
       }

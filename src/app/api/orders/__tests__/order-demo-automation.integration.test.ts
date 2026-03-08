@@ -14,6 +14,9 @@ const { mockDb, mockTransactionClient } = vi.hoisted(() => {
       create: vi.fn(),
       updateMany: vi.fn(),
     },
+    cart: {
+      deleteMany: vi.fn(),
+    },
   };
 
   return {
@@ -42,6 +45,7 @@ const mutableEnv = process.env as Record<string, string | undefined>;
 function createAutomationOrder(overrides: Record<string, unknown> = {}) {
   return {
     id: 42,
+    userId: "user-owner",
     status: "PENDING",
     paymentStatus: "PENDING",
     total: 119.9,
@@ -122,6 +126,11 @@ describe("order-demo-automation integration", () => {
         }),
       }),
     );
+    expect(mockTransactionClient.cart.deleteMany).toHaveBeenCalledWith({
+      where: {
+        userId: "user-owner",
+      },
+    });
   });
 
   it("applies full demo delivery timeline for aged pending orders", async () => {
@@ -158,5 +167,6 @@ describe("order-demo-automation integration", () => {
         }),
       }),
     );
+    expect(mockTransactionClient.cart.deleteMany).toHaveBeenCalledTimes(1);
   });
 });

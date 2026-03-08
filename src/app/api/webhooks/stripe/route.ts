@@ -13,7 +13,7 @@ type WebhookProcessResult = {
 
 type WebhookMutationClient = Pick<
   typeof db,
-  "order" | "payment" | "stripeWebhookEvent" | "orderStatusHistory"
+  "order" | "payment" | "stripeWebhookEvent" | "orderStatusHistory" | "cart"
 >;
 
 type EventRegistrationResult =
@@ -336,6 +336,19 @@ async function markWebhookEventFailed(eventId: string, failureReason: string) {
   });
 }
 
+async function clearUserCartAfterPaidOrder(
+  database: WebhookMutationClient,
+  userId: string | null | undefined,
+) {
+  if (!userId) {
+    return;
+  }
+
+  await database.cart.deleteMany({
+    where: { userId },
+  });
+}
+
 async function processWebhookEvent(
   database: WebhookMutationClient,
   event: Stripe.Event,
@@ -521,6 +534,8 @@ async function processWebhookEvent(
         status: payment.status,
       });
 
+      await clearUserCartAfterPaidOrder(database, existingOrder.userId);
+
       return {
         completed: true,
         response: NextResponse.json({ received: true }),
@@ -664,6 +679,7 @@ async function processWebhookEventAtomically(event: Stripe.Event) {
         order: tx.order,
         orderStatusHistory: tx.orderStatusHistory,
         payment: tx.payment,
+        cart: tx.cart,
         stripeWebhookEvent: tx.stripeWebhookEvent,
       },
       event,
