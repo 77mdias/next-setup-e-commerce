@@ -33,6 +33,8 @@ const PAYMENT_METHODS = [
   { id: "mastercard", label: "mastercard", lastDigits: "8888" },
 ] as const;
 
+type PaymentMethodId = (typeof PAYMENT_METHODS)[number]["id"];
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { products, total, totalQuantity, isLoading: cartLoading } = useCart();
@@ -48,9 +50,8 @@ export default function CheckoutPage() {
     addressError,
     refreshAddresses,
   } = useCheckout();
-  const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState(
-    PAYMENT_METHODS[0].id,
-  );
+  const [selectedPaymentMethodId, setSelectedPaymentMethodId] =
+    useState<PaymentMethodId>(PAYMENT_METHODS[0].id);
 
   useEffect(() => {
     if (authLoading || cartLoading) {

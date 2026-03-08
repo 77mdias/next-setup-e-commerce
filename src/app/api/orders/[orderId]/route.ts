@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { runDemoOrderAutomationForOrder } from "@/lib/order-demo-automation";
 import { buildOrderStatusHistory } from "@/lib/order-status-history";
 import { db } from "@/lib/prisma";
 
@@ -173,12 +174,39 @@ export async function GET(
       );
     }
 
+    try {
+      const automationResult = await runDemoOrderAutomationForOrder(order.id);
+
+      if (automationResult.updated) {
+        const refreshedOrder = await db.order.findFirst({
+          where: {
+            id: orderId,
+            userId: session.user.id,
+          },
+          include: buildOrderDetailsInclude(),
+        });
+
+        if (refreshedOrder) {
+          order = refreshedOrder;
+        }
+      }
+    } catch (automationError) {
+      console.error(
+        "⚠️ Falha ao executar automação demo para o pedido:",
+        automationError,
+      );
+    }
+
     // Formatar os dados para a resposta
     const formattedOrder = {
       id: order.id,
       status: order.status,
       paymentStatus: order.paymentStatus,
       total: order.total,
+      trackingCode: order.trackingCode,
+      estimatedDelivery: order.estimatedDelivery?.toISOString() ?? null,
+      shippedAt: order.shippedAt?.toISOString() ?? null,
+      deliveredAt: order.deliveredAt?.toISOString() ?? null,
       customerName: order.customerName,
       customerEmail: order.customerEmail,
       customerPhone: order.customerPhone,

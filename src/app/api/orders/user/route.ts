@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { OrderStatus } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
+import { runDemoOrderAutomationForUser } from "@/lib/order-demo-automation";
 import { buildOrderStatusHistory } from "@/lib/order-status-history";
 
 const validOrderStatuses = new Set<OrderStatus>(Object.values(OrderStatus));
@@ -16,6 +17,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: "Usuário não autenticado" },
         { status: 401 },
+      );
+    }
+
+    try {
+      await runDemoOrderAutomationForUser(session.user.id);
+    } catch (automationError) {
+      console.error(
+        "⚠️ Falha ao executar automação demo de pedidos do usuário:",
+        automationError,
       );
     }
 

@@ -164,6 +164,8 @@ npm install
 # 2) Variáveis de ambiente
 cp .env.example .env.local
 # veja também: docs/04-setup-e-integracoes/ENVIRONMENT_VARIABLES.md
+# opcional (portfolio/demo): automação de status de pedido e entrega
+# DEMO_ORDER_AUTOMATION_ENABLED=true
 
 # 3) Prisma
 npx prisma generate

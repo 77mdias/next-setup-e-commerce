@@ -1,10 +1,10 @@
 # 🚀 Tasks - Fase 03: Experiência de Conta e Pedido
 
-**Status:** 🟢 ATIVA
-**Última atualização:** 2026-03-06
+**Status:** ✅ CONCLUÍDA
+**Última atualização:** 2026-03-08
 **Sprint Atual:** Sprint 03
-**Status Geral:** 🟡 42% (5/12 tarefas completas) - FASE ATIVA
-**ETA:** 1 sprint (5-7 dias úteis)
+**Status Geral:** 🟢 100% (12/12 tarefas completas) - FASE ENCERRADA
+**ETA:** Sprint concluída
 **Pré-requisito:** Fase 02 - Checkout Confiável e Integridade de Pedido (✅ concluída em 2026-03-02)
 
 ---
@@ -14,16 +14,17 @@
 | Categoria                          | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ---------------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Conta e endereços no perfil        | 3      | 3         | 0            | 0        | 0         |
-| Navegação e convergência de rotas  | 3      | 0         | 0            | 3        | 0         |
-| Admin remove-bg seguro e funcional | 3      | 2         | 0            | 1        | 0         |
-| Testes, homologação e governança   | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                          | **12** | **5**     | **0**        | **7**    | **0**     |
+| Navegação e convergência de rotas  | 3      | 3         | 0            | 0        | 0         |
+| Admin remove-bg seguro e funcional | 3      | 3         | 0            | 0        | 0         |
+| Testes, homologação e governança   | 3      | 3         | 0            | 0        | 0         |
+| **TOTAL**                          | **12** | **12**    | **0**        | **0**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Escopo da Sprint 03 consolidado em 4 frentes de experiência e operação.
 - ✅ Dependências críticas de pedido/pagamento já endereçadas na Fase 02.
-- ⚠️ Risco principal atual: fluxo admin de remove-bg ainda usa endpoint de produto incompatível para persistência.
+- ✅ Checklist de homologação e plano de rollback da Sprint 03 formalizados (S03-QA-003).
+- ✅ Fluxo DEMO de acompanhamento de pedido implementado para mitigar dependência operacional de webhook no portfólio.
 
 ---
 
@@ -317,7 +318,7 @@ Assegurar cobertura mínima automatizada e validação operacional antes de go-l
   **Dependências:** S03-NAV-001, S03-NAV-003, S03-RBG-001  
   **Status:** ✅ Concluída (2026-03-07)
 
-- [ ] **S03-QA-003** - Checklist manual de homologação e plano de rollback da Sprint 03
+- [x] **S03-QA-003** - Checklist manual de homologação e plano de rollback da Sprint 03
 
   **Descrição curta:**
   - Formalizar validações manuais de staging para perfil/endereço, navegação e admin remove-bg.
@@ -331,13 +332,13 @@ Assegurar cobertura mínima automatizada e validação operacional antes de go-l
   **Arquivos/áreas afetadas:** `docs/ROADMAP/SPRINTS/sprint-03-experiencia-conta-pedido.md`, `docs/development/tasks/PHASE-03-experiencia-conta-pedido.md`, `docs/ROADMAP/Logs/S03-QA-003.md` (novo)
 
   **Critérios de aceitação:**
-  - [ ] Checklist executado com evidências de resultado.
-  - [ ] Plano de rollback validado com time responsável.
+  - [x] Checklist executado com evidências de resultado.
+  - [x] Plano de rollback validado com time responsável.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 3h  
   **Dependências:** S03-QA-001, S03-QA-002  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-08)
 
 ---
 
@@ -346,7 +347,7 @@ Assegurar cobertura mínima automatizada e validação operacional antes de go-l
 - **Suites necessárias:** Integração de API (`addresses`, `admin/remove-bg`, `orders redirects`), regressão de páginas (`/perfil`, `/checkout`, `/orders`, `/cart`), homologação manual E2E.
 - **Cobertura alvo:** 100% dos cenários P1/P2 da Sprint 03 cobertos (automatizado + manual).
 - **Comandos de verificação:** `npm run test:integration`, `npm run lint`, `npm run build`.
-- **Estado atual:** 🟡 Execução técnica em andamento; `S03-ADR-001`, `S03-ADR-002`, `S03-ADR-003`, `S03-RBG-001`, `S03-RBG-002`, `S03-RBG-003`, `S03-QA-001` e `S03-QA-002` concluídas com validações de lint/build e integração.
+- **Estado atual:** ✅ Validação final concluída; `S03-ADR-001`, `S03-ADR-002`, `S03-ADR-003`, `S03-NAV-001`, `S03-NAV-002`, `S03-NAV-003`, `S03-RBG-001`, `S03-RBG-002`, `S03-RBG-003`, `S03-QA-001`, `S03-QA-002` e `S03-QA-003` encerradas com evidências técnicas e operacionais.
 
 ---
 
@@ -361,9 +362,9 @@ Assegurar cobertura mínima automatizada e validação operacional antes de go-l
 
 ## ✅ Checklist de Encerramento da Fase
 
-- [ ] Todas as tarefas da Fase 03 marcadas como concluídas.
-- [ ] Migrations Prisma aplicadas e versionadas (se houver mudanças de schema para endereços).
-- [ ] Validações `npm run test:integration`, `npm run lint` e `npm run build` executadas com sucesso.
-- [ ] Fluxos de endereço, navegação canônica e admin remove-bg validados em homologação.
-- [ ] Evidências e logs técnicos da Sprint 03 registrados em `docs/ROADMAP/Logs`.
-- [ ] Aprovação final da Sprint 03 registrada pelo time responsável.
+- [x] Todas as tarefas da Fase 03 marcadas como concluídas.
+- [x] Migrations Prisma aplicadas e versionadas (sem novas migrations nesta etapa de QA final).
+- [x] Validações `npm run test:integration`, `npm run lint` e `npm run build` executadas com sucesso.
+- [x] Fluxos de endereço, navegação canônica e admin remove-bg validados em homologação.
+- [x] Evidências e logs técnicos da Sprint 03 registrados em `docs/ROADMAP/Logs`.
+- [x] Aprovação final da Sprint 03 registrada pelo time responsável.

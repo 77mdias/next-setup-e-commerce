@@ -32,6 +32,24 @@ STRIPE_SECRET_KEY="sk_test_..."
 STRIPE_WEBHOOK_SECRET_KEY="whsec_..."
 ```
 
+## Automacao DEMO de pedido (opcional)
+
+```
+DEMO_ORDER_AUTOMATION_ENABLED="true"
+DEMO_ORDER_PAYMENT_CONFIRMED_AFTER_MINUTES="2"
+DEMO_ORDER_PROCESSING_AFTER_MINUTES="4"
+DEMO_ORDER_SHIPPED_AFTER_MINUTES="6"
+DEMO_ORDER_DELIVERED_AFTER_MINUTES="8"
+```
+
+- Quando `DEMO_ORDER_AUTOMATION_ENABLED=true`, pedidos com pagamento pendente evoluem automaticamente para simular fluxo completo de demonstracao.
+- Timeline padrao:
+  - `~2 min`: `PENDING/PAYMENT_PENDING` -> `PAID`
+  - `~4 min`: `PAID` -> `PROCESSING`
+  - `~6 min`: `PROCESSING` -> `SHIPPED` (com codigo de rastreio demo)
+  - `~8 min`: `SHIPPED` -> `DELIVERED`
+- Os tempos podem ser ajustados pelas variaveis `*_AFTER_MINUTES`.
+
 ## Remove.bg (opcional)
 
 ```

@@ -66,6 +66,7 @@
 - `GET /api/orders/user`
 - `GET /api/orders/[orderId]`
 - `GET /api/orders/session/[sessionId]`
+  - Quando `DEMO_ORDER_AUTOMATION_ENABLED=true`, as leituras de pedido aplicam evolucao automatica de status para demonstracao (`PENDING/PAYMENT_PENDING -> PAID -> PROCESSING -> SHIPPED -> DELIVERED`).
 - `POST /api/webhooks/stripe`
 - `GET /api/test-stripe`
 

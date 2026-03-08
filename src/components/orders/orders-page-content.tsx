@@ -55,6 +55,10 @@ type Order = {
   paymentStatus: PaymentStatus;
   total: number;
   createdAt: string;
+  estimatedDelivery?: string | null;
+  trackingCode?: string | null;
+  shippedAt?: string | null;
+  deliveredAt?: string | null;
   cancelledAt?: string;
   cancelReason?: string;
   items: OrderItem[];
@@ -189,6 +193,18 @@ function formatOrderCode(orderId: number) {
 }
 
 function formatPlacedDate(value: string) {
+  return new Date(value).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatDeliveryDate(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
   return new Date(value).toLocaleDateString("en-US", {
     day: "numeric",
     month: "short",
@@ -676,6 +692,10 @@ export function OrdersPageContent() {
               const showDeliveryProgress = shouldRenderDeliveryProgress(
                 order.status,
               );
+              const estimatedDeliveryLabel = formatDeliveryDate(
+                order.estimatedDelivery,
+              );
+              const deliveredAtLabel = formatDeliveryDate(order.deliveredAt);
 
               return (
                 <article
@@ -734,6 +754,25 @@ export function OrdersPageContent() {
                   {showDeliveryProgress && (
                     <div className="mt-6">
                       <DeliveryProgress status={order.status} />
+
+                      <div className="mt-3 grid gap-2 rounded-xl border border-white/6 bg-[#12151a] p-3 [font-family:var(--font-arimo)] text-xs text-[#99a1af] sm:grid-cols-2">
+                        <p>
+                          {order.status === "DELIVERED"
+                            ? `Delivered on ${deliveredAtLabel ?? estimatedDeliveryLabel ?? "N/A"}`
+                            : `Estimated delivery: ${estimatedDeliveryLabel ?? "calculating..."}`}
+                        </p>
+                        <p className="sm:text-right">
+                          {order.status === "SHIPPED" && order.trackingCode
+                            ? `Tracking: ${order.trackingCode}`
+                            : order.status === "SHIPPED"
+                              ? "Tracking code pending"
+                              : order.status === "PROCESSING"
+                                ? "Dispatch scheduled soon"
+                                : order.status === "PAID"
+                                  ? "Preparing fulfillment"
+                                  : "Tracking updates in progress"}
+                        </p>
+                      </div>
                     </div>
                   )}
 
