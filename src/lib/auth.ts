@@ -7,6 +7,7 @@ import { db } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
 import { getServerSession } from "next-auth";
+import { NEXT_AUTH_SESSION_COOKIE_NAME } from "@/lib/auth-cookie";
 import {
   DEFAULT_AUTH_CALLBACK_PATH,
   normalizeCallbackPath,
@@ -97,7 +98,7 @@ export const authOptions: NextAuthOptions = {
   },
   cookies: {
     sessionToken: {
-      name: `next-auth.session-token`,
+      name: NEXT_AUTH_SESSION_COOKIE_NAME,
       options: {
         httpOnly: true,
         sameSite: "lax",

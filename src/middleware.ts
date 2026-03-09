@@ -1,6 +1,7 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
+import { NEXT_AUTH_SESSION_COOKIE_NAME } from "@/lib/auth-cookie";
 import {
   buildAccessFeedbackPath,
   resolveRuntimeAccessReason,
@@ -186,6 +187,11 @@ export default withAuth(
   {
     callbacks: {
       authorized: () => true, // Deixar o middleware handle a lógica
+    },
+    cookies: {
+      sessionToken: {
+        name: NEXT_AUTH_SESSION_COOKIE_NAME,
+      },
     },
   },
 );
