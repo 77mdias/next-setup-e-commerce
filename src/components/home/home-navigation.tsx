@@ -8,6 +8,14 @@ import { useEffect, useState } from "react";
 
 import type { NavigationLink } from "@/components/home/types";
 import { useCart } from "@/context/cart";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  clearWishlistNewItems,
+  getWishlistNewItemsStorageKey,
+  hasWishlistNewItems,
+  WISHLIST_NEW_ITEMS_EVENT,
+  type WishlistNewItemsEventDetail,
+} from "@/lib/wishlist-notification";
 import { cn } from "@/lib/utils";
 
 type HomeNavigationProps = {
@@ -36,11 +44,54 @@ export function HomeNavigation({
     homeHref ?? links.find((link) => link.isActive)?.href ?? "/";
   const { theme, setTheme } = useTheme();
   const { totalQuantity } = useCart();
+  const { isAuthenticated, user } = useAuth();
   const [mounted, setMounted] = useState(false);
+  const [showWishlistDot, setShowWishlistDot] = useState(false);
+  const wishlistUserId = isAuthenticated ? user?.id : null;
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!wishlistUserId) {
+      setShowWishlistDot(false);
+      return;
+    }
+
+    setShowWishlistDot(hasWishlistNewItems(wishlistUserId));
+
+    const handleWishlistNewItems = (event: Event) => {
+      const customEvent = event as CustomEvent<WishlistNewItemsEventDetail>;
+      if (customEvent.detail?.userId !== wishlistUserId) {
+        return;
+      }
+
+      setShowWishlistDot(Boolean(customEvent.detail.hasNewItems));
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== getWishlistNewItemsStorageKey(wishlistUserId)) {
+        return;
+      }
+
+      setShowWishlistDot(event.newValue === "1");
+    };
+
+    window.addEventListener(
+      WISHLIST_NEW_ITEMS_EVENT,
+      handleWishlistNewItems as EventListener,
+    );
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener(
+        WISHLIST_NEW_ITEMS_EVENT,
+        handleWishlistNewItems as EventListener,
+      );
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [wishlistUserId]);
 
   const isDark = !mounted || theme !== "light";
 
@@ -92,9 +143,18 @@ export function HomeNavigation({
             href={wishlistHref}
             className={iconBaseClass}
             aria-label="Open wishlist"
+            onClick={() => {
+              if (!wishlistUserId) {
+                return;
+              }
+
+              clearWishlistNewItems(wishlistUserId);
+            }}
           >
             <Heart size={18} />
-            <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-[#ff2e63]" />
+            {showWishlistDot && (
+              <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-[#ff2e63]" />
+            )}
           </Link>
 
           <Link

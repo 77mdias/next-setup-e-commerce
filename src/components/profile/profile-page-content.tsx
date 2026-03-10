@@ -12,6 +12,7 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -22,6 +23,7 @@ import {
   EMPTY_ADDRESS_FORM_VALUES,
 } from "@/components/profile/address-form-modal";
 import { useAuth } from "@/hooks/useAuth";
+import { buildAccessFeedbackPath } from "@/lib/access-feedback";
 
 type ProfilePageContentProps = {
   signOutCallbackUrl: string;
@@ -270,6 +272,7 @@ function AddAddressCard({ onClick }: { onClick: () => void }) {
 export function ProfilePageContent({
   signOutCallbackUrl,
 }: ProfilePageContentProps) {
+  const router = useRouter();
   const { user, isLoading, isAuthenticated } = useAuth();
   const [activeSection, setActiveSection] =
     useState<ProfileSection>("personal");
@@ -481,6 +484,22 @@ export function ProfilePageContent({
     void loadAddresses();
   }, [activeSection, hasLoadedAddresses, isAuthenticated, loadAddresses]);
 
+  useEffect(() => {
+    if (isLoading || isAuthenticated) {
+      return;
+    }
+
+    const callbackPath = "/perfil";
+
+    router.replace(
+      buildAccessFeedbackPath({
+        reason: "auth-required",
+        callbackUrl: callbackPath,
+        fromPath: callbackPath,
+      }),
+    );
+  }, [isAuthenticated, isLoading, router]);
+
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] w-full items-center justify-center bg-[#f4f8ff] dark:bg-[#0B0D10]">
@@ -490,18 +509,7 @@ export function ProfilePageContent({
   }
 
   if (!isAuthenticated || !user) {
-    return (
-      <div className="flex min-h-[50vh] w-full items-center justify-center bg-[#f4f8ff] px-4 py-12 dark:bg-[#0B0D10]">
-        <div className="max-w-md rounded-2xl border border-[#dbe4ff] bg-white p-8 text-center dark:border-white/[0.06] dark:bg-[#171A21]">
-          <h1 className="text-2xl font-[var(--font-space-grotesk)] font-bold text-[#0f172a] dark:text-[#F1F3F5]">
-            Acesso não autorizado
-          </h1>
-          <p className="mt-3 text-sm font-[var(--font-arimo)] text-[#64748b] dark:text-[#99A1AF]">
-            Você precisa estar logado para acessar esta página.
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const [firstName, lastName] = splitName(user.name);

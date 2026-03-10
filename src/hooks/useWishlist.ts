@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { buildAccessFeedbackPath } from "@/lib/access-feedback";
+import { markWishlistNewItems } from "@/lib/wishlist-notification";
 
 type WishlistToggleAction = "added" | "removed";
 
@@ -35,7 +36,7 @@ function resolveCallbackPath(redirectPath?: string) {
 }
 
 export const useWishlist = (redirectPath?: string) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const router = useRouter();
   const [loadingWishlist, setLoadingWishlist] = useState<string | null>(null);
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
@@ -110,6 +111,7 @@ export const useWishlist = (redirectPath?: string) => {
       if (action === "added") {
         // Adicionar o produto à wishlist
         setWishlistItems((prev) => new Set([...prev, product.id]));
+        markWishlistNewItems(user?.id);
       } else {
         // Remover o produto da wishlist
         setWishlistItems((prev) => {

@@ -4,6 +4,7 @@ import { Product } from "@prisma/client";
 import { ArrowRight, Heart, ShoppingCart, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 
@@ -13,6 +14,7 @@ import { useAddToCart } from "@/hooks/useAddToCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
 import { buildAccessFeedbackPath } from "@/lib/access-feedback";
+import { clearWishlistNewItems } from "@/lib/wishlist-notification";
 import {
   normalizeProductImageSrc,
   shouldUseUnoptimizedImage,
@@ -42,6 +44,7 @@ const fontVariablesStyle = {
 } as CSSProperties;
 
 export default function WishlistPage() {
+  const router = useRouter();
   const { user, isLoading, isAuthenticated } = useAuth();
   const [wishlistData, setWishlistData] = useState<WishlistItem[]>([]);
   const [isWishlistDataLoading, setIsWishlistDataLoading] = useState(true);
@@ -88,6 +91,30 @@ export default function WishlistPage() {
     void loadWishlistData();
   }, [loadWishlistData]);
 
+  useEffect(() => {
+    if (isLoading || isAuthenticated) {
+      return;
+    }
+
+    const callbackPath = "/wishlist";
+
+    router.replace(
+      buildAccessFeedbackPath({
+        reason: "auth-required",
+        callbackUrl: callbackPath,
+        fromPath: callbackPath,
+      }),
+    );
+  }, [isAuthenticated, isLoading, router]);
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated || !user?.id) {
+      return;
+    }
+
+    clearWishlistNewItems(user.id);
+  }, [isAuthenticated, isLoading, user?.id]);
+
   const handleWishlistToggle = async (product: WishlistProduct) => {
     const action = await handleAddToWishlist(product);
 
@@ -115,40 +142,7 @@ export default function WishlistPage() {
   }
 
   if (!isAuthenticated || !user) {
-    const callbackPath = "/wishlist";
-    const loginPath = buildAccessFeedbackPath({
-      reason: "auth-required",
-      callbackUrl: callbackPath,
-      fromPath: callbackPath,
-    });
-
-    return (
-      <main
-        style={fontVariablesStyle}
-        className="relative min-h-screen overflow-hidden bg-[#f6f8ff] px-4 py-14 text-[#0f172a] sm:px-6 lg:px-8 dark:bg-[#0b0d10] dark:text-[#f1f3f5]"
-      >
-        <div className="relative mx-auto flex w-full max-w-[760px] flex-col items-center rounded-3xl border border-[#dbe4ff] bg-[#f8fbff] px-7 py-12 text-center shadow-[0_18px_40px_rgba(99,122,186,0.15)] dark:border-white/10 dark:bg-[#171a21] dark:shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#ff2e63] text-white">
-            <Heart className="h-6 w-6" />
-          </div>
-
-          <h1 className="[font-family:var(--font-space-grotesk)] text-3xl font-bold text-[#0f172a] dark:text-[#f1f3f5]">
-            Login Required
-          </h1>
-
-          <p className="mt-3 max-w-[500px] [font-family:var(--font-arimo)] text-sm leading-relaxed text-[#64748b] dark:text-[#99a1af]">
-            Faça login para acessar sua wishlist e salvar os produtos que você
-            quer acompanhar.
-          </p>
-
-          <Link href={loginPath} className="mt-7">
-            <Button className="h-11 rounded-xl bg-[#ff2e63] px-6 [font-family:var(--font-arimo)] text-sm font-semibold text-white hover:bg-[#ff4a77]">
-              Ir para login
-            </Button>
-          </Link>
-        </div>
-      </main>
-    );
+    return null;
   }
 
   return (
