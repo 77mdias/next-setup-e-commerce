@@ -37,6 +37,19 @@ describe("normalizeCheckoutItems", () => {
 
     expect(result).toEqual([{ productId: "p-2", quantity: 2 }]);
   });
+
+  it("normalizes product and variant ids before grouping", () => {
+    const result = normalizeCheckoutItems([
+      { id: " p-1 ", quantity: 1, variantId: " v-1 " },
+      { id: "p-1", quantity: 2, variantId: "v-1" },
+      { id: " p-1 ", quantity: 1, variantId: "   " },
+    ]);
+
+    expect(result).toEqual([
+      { productId: "p-1", quantity: 3, variantId: "v-1" },
+      { productId: "p-1", quantity: 1, variantId: undefined },
+    ]);
+  });
 });
 
 describe("mapCheckoutErrorMessage", () => {
@@ -63,6 +76,12 @@ describe("mapCheckoutErrorMessage", () => {
     expect(
       mapCheckoutErrorMessage(500, { error: "Erro interno do servidor" }),
     ).toBe("Erro interno do servidor");
+  });
+
+  it("returns default fallback when unknown status has blank payload error", () => {
+    expect(mapCheckoutErrorMessage(500, { error: "   " })).toBe(
+      "Erro ao criar checkout. Tente novamente.",
+    );
   });
 
   it("returns recovery guidance when address is invalid on 400", () => {
@@ -100,6 +119,14 @@ describe("isAddressCheckoutError", () => {
     expect(
       isAddressCheckoutError(404, {
         error: "Produto não encontrado",
+      }),
+    ).toBe(false);
+  });
+
+  it("returns false for unsupported status even with address context", () => {
+    expect(
+      isAddressCheckoutError(500, {
+        error: "Endereco invalido para checkout",
       }),
     ).toBe(false);
   });
@@ -171,6 +198,22 @@ describe("mapOrderStatusError", () => {
       recoveryAction: "retry",
     });
   });
+
+  it("trims payload error before returning fallback message", () => {
+    expect(
+      mapOrderStatusError(500, { error: "  Erro interno do servidor  " }),
+    ).toEqual({
+      message: "Erro interno do servidor",
+      recoveryAction: "retry",
+    });
+  });
+
+  it("returns deterministic fallback when payload error is blank", () => {
+    expect(mapOrderStatusError(500, { error: "   " })).toEqual({
+      message: "Nao foi possivel consultar este pedido agora. Tente novamente.",
+      recoveryAction: "retry",
+    });
+  });
 });
 
 describe("selectPreferredAddressId", () => {
@@ -184,6 +227,18 @@ describe("selectPreferredAddressId", () => {
         "addr-1",
       ),
     ).toBe("addr-1");
+  });
+
+  it("keeps selected address after trimming current address id", () => {
+    expect(
+      selectPreferredAddressId(
+        [
+          { id: "addr-1", isDefault: false },
+          { id: "addr-2", isDefault: true },
+        ],
+        " addr-2 ",
+      ),
+    ).toBe("addr-2");
   });
 
   it("falls back to default address when current selection is unavailable", () => {

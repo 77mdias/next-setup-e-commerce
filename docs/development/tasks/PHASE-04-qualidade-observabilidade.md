@@ -124,7 +124,7 @@ Implementar cobertura automatizada para reduzir regressões nos caminhos de maio
 
 #### TST.1 - Suíte de testes críticos
 
-- [ ] **S04-TST-001** - Expandir suíte unitária para regras críticas de domínio
+- [x] **S04-TST-001** - Expandir suíte unitária para regras críticas de domínio
 
   **Descrição curta:**
   - Cobrir regras determinísticas que não dependem de infraestrutura externa.
@@ -138,13 +138,13 @@ Implementar cobertura automatizada para reduzir regressões nos caminhos de maio
   **Arquivos/áreas afetadas:** `package.json`, `vitest.unit.config.ts` (novo), `src/lib/order-state-machine.ts`, `src/lib/order-state-machine.test.ts` (novo), `src/hooks/useCheckout.helpers.test.ts`
 
   **Critérios de aceitação:**
-  - [ ] Regras críticas de domínio com cobertura unitária executável em pipeline.
-  - [ ] Script `test:unit` disponível e estável em execução local/CI.
+  - [x] Regras críticas de domínio com cobertura unitária executável em pipeline.
+  - [x] Script `test:unit` disponível e estável em execução local/CI.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 5h  
   **Dependências:** S04-QLT-003  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-10)
 
 - [ ] **S04-TST-002** - Cobrir fluxo crítico de compra em integração backend
 
