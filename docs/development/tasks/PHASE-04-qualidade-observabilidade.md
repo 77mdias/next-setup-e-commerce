@@ -146,7 +146,7 @@ Implementar cobertura automatizada para reduzir regressões nos caminhos de maio
   **Dependências:** S04-QLT-003  
   **Status:** ✅ Concluída (2026-03-10)
 
-- [ ] **S04-TST-002** - Cobrir fluxo crítico de compra em integração backend
+- [x] **S04-TST-002** - Cobrir fluxo crítico de compra em integração backend
 
   **Descrição curta:**
   - Validar contrato entre checkout, webhook e leitura de pedido em cenários reais de API.
@@ -160,13 +160,13 @@ Implementar cobertura automatizada para reduzir regressões nos caminhos de maio
   **Arquivos/áreas afetadas:** `src/app/api/checkout/__tests__/route.integration.test.ts`, `src/app/api/webhooks/stripe/__tests__/route.integration.test.ts`, `src/app/api/orders/session/[sessionId]/__tests__/route.integration.test.ts`, `src/app/api/orders/[orderId]/__tests__/route.integration.test.ts`
 
   **Critérios de aceitação:**
-  - [ ] Fluxo crítico de compra coberto por testes de integração automatizados.
-  - [ ] Cenários de duplicidade/falha de pagamento bloqueiam regressão no CI.
+  - [x] Fluxo crítico de compra coberto por testes de integração automatizados.
+  - [x] Cenários de duplicidade/falha de pagamento bloqueiam regressão no CI.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** S04-TST-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-10)
 
 - [ ] **S04-TST-003** - Introduzir cenário E2E de compra para validação de release
 
