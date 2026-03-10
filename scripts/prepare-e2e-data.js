@@ -6,8 +6,7 @@ const prisma = new PrismaClient();
 
 const E2E_USER_EMAIL =
   process.env.E2E_USER_EMAIL || "e2e.customer@nextstore.local";
-const E2E_USER_PASSWORD =
-  process.env.E2E_USER_PASSWORD || "E2eCheckout#123";
+const E2E_USER_PASSWORD = process.env.E2E_USER_PASSWORD || "E2eCheckout#123";
 const E2E_STORE_SLUG = process.env.E2E_STORE_SLUG || "nextstore-e2e";
 const E2E_BRAND_SLUG = process.env.E2E_BRAND_SLUG || "e2e-brand";
 const E2E_CATEGORY_SLUG = process.env.E2E_CATEGORY_SLUG || "e2e-category";
@@ -167,22 +166,35 @@ async function upsertProduct(params) {
 }
 
 async function upsertInventory(params) {
-  await prisma.inventory.upsert({
+  const existingInventory = await prisma.inventory.findFirst({
     where: {
-      productId_variantId_storeId: {
-        productId: params.productId,
-        variantId: null,
-        storeId: params.storeId,
+      productId: params.productId,
+      storeId: params.storeId,
+      variantId: null,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (existingInventory) {
+    await prisma.inventory.update({
+      where: {
+        id: existingInventory.id,
       },
-    },
-    update: {
-      quantity: 40,
-      reserved: 0,
-      minStock: 1,
-      maxStock: 200,
-      location: "E2E-A1",
-    },
-    create: {
+      data: {
+        quantity: 40,
+        reserved: 0,
+        minStock: 1,
+        maxStock: 200,
+        location: "E2E-A1",
+      },
+    });
+    return;
+  }
+
+  await prisma.inventory.create({
+    data: {
       productId: params.productId,
       variantId: null,
       storeId: params.storeId,
@@ -214,7 +226,10 @@ async function main() {
   await cleanupUserCheckoutState(user.id);
 
   const store = await upsertStore(user.id);
-  const [brand, category] = await Promise.all([upsertBrand(), upsertCategory()]);
+  const [brand, category] = await Promise.all([
+    upsertBrand(),
+    upsertCategory(),
+  ]);
   const product = await upsertProduct({
     storeId: store.id,
     brandId: brand.id,
