@@ -86,11 +86,15 @@ const baseProduct = {
   specifications: { ram: "16GB" },
 };
 
-function createCheckoutRequest(payload: unknown) {
+function createCheckoutRequest(
+  payload: unknown,
+  headers?: Record<string, string>,
+) {
   return new NextRequest("http://localhost:3000/api/checkout", {
     method: "POST",
     headers: {
       "content-type": "application/json",
+      ...(headers ?? {}),
     },
     body: JSON.stringify(payload),
   });
@@ -99,6 +103,7 @@ function createCheckoutRequest(payload: unknown) {
 describe("POST /api/checkout integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.E2E_CHECKOUT_MOCK_MODE;
 
     mockGetServerSession.mockResolvedValue({
       user: {
@@ -231,6 +236,77 @@ describe("POST /api/checkout integration", () => {
     });
     expect(mockDb.cart.deleteMany).toHaveBeenCalledWith({
       where: { userId: "user-1" },
+    });
+  });
+
+  it("simulates successful checkout flow for E2E mode without calling Stripe", async () => {
+    process.env.E2E_CHECKOUT_MOCK_MODE = "true";
+    process.env.NEXT_PUBLIC_BASE_URL = "http://localhost:3000";
+
+    const response = await POST(
+      createCheckoutRequest({
+        storeId: "store-1",
+        items: [{ productId: "product-1", quantity: 1 }],
+        shippingMethod: "STANDARD",
+      }),
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.orderId).toBe(123);
+    expect(body.sessionId).toMatch(/^cs_e2e_123_/);
+    expect(body.url).toContain("/orders/success?session_id=cs_e2e_123_");
+    expect(mockCreateStripeCheckoutSession).not.toHaveBeenCalled();
+    expect(mockDb.order.update).toHaveBeenCalledWith({
+      where: { id: 123 },
+      data: expect.objectContaining({
+        status: "PAID",
+        paymentStatus: "PAID",
+        stripeCheckoutSessionId: expect.stringMatching(/^cs_e2e_123_/),
+        stripePaymentIntentId: expect.stringMatching(/^cs_e2e_123_/),
+        stripePaymentId: expect.stringMatching(/^cs_e2e_123_/),
+        paymentMethod: "stripe",
+        cancelReason: null,
+      }),
+    });
+  });
+
+  it("simulates failed checkout flow for E2E mode when outcome header is provided", async () => {
+    process.env.E2E_CHECKOUT_MOCK_MODE = "true";
+    process.env.NEXT_PUBLIC_BASE_URL = "http://localhost:3000";
+
+    const response = await POST(
+      createCheckoutRequest(
+        {
+          storeId: "store-1",
+          items: [{ productId: "product-1", quantity: 1 }],
+          shippingMethod: "STANDARD",
+        },
+        {
+          "x-e2e-checkout-outcome": "failed",
+        },
+      ),
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.orderId).toBe(123);
+    expect(body.sessionId).toMatch(/^cs_e2e_123_/);
+    expect(body.url).toContain("/orders/failure?session_id=cs_e2e_123_");
+    expect(mockCreateStripeCheckoutSession).not.toHaveBeenCalled();
+    expect(mockDb.order.update).toHaveBeenCalledWith({
+      where: { id: 123 },
+      data: expect.objectContaining({
+        status: "CANCELLED",
+        paymentStatus: "FAILED",
+        stripeCheckoutSessionId: expect.stringMatching(/^cs_e2e_123_/),
+        stripePaymentIntentId: expect.stringMatching(/^cs_e2e_123_/),
+        stripePaymentId: expect.stringMatching(/^cs_e2e_123_/),
+        cancelledAt: expect.any(Date),
+        cancelReason: "Pagamento falhou (simulação E2E).",
+      }),
     });
   });
 

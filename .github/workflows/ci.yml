@@ -17,7 +17,21 @@ jobs:
   quality:
     name: Quality Gates
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: my_store
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d my_store"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     env:
       DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/my_store?schema=public
       DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:5432/my_store?schema=public
@@ -107,6 +121,24 @@ jobs:
       - name: Critical integration suite (P0)
         run: npm run test:integration:critical
 
-      - name: E2E critical suite (conditional)
-        if: ${{ hashFiles('e2e/**/*.spec.ts', 'e2e/**/*.test.ts') != '' }}
+      - name: Prisma migrate deploy (E2E baseline)
+        run: npm run prisma:migrate:deploy
+
+      - name: Prepare deterministic E2E data
+        run: npm run e2e:prepare
+
+      - name: Install Playwright browser (Chromium)
+        run: npx --yes playwright install --with-deps chromium
+
+      - name: E2E critical suite
         run: npm run test:e2e
+
+      - name: Upload Playwright artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            playwright-report
+            test-results/playwright
+          if-no-files-found: ignore

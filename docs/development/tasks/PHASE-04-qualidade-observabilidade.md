@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-10
 **Sprint Atual:** Sprint 04
-**Status Geral:** 🟡 25% (3/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 50% (6/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (10 dias úteis)
 **Pré-requisito:** Fase 03 - Experiência de Conta e Pedido (✅ concluída em 2026-03-08)
 
@@ -14,16 +14,17 @@
 | Categoria                               | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | --------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Estratégia de qualidade e critérios     | 3      | 3         | 0            | 0        | 0         |
-| Cobertura automatizada do fluxo crítico | 3      | 0         | 0            | 3        | 0         |
+| Cobertura automatizada do fluxo crítico | 3      | 3         | 0            | 0        | 0         |
 | Observabilidade e logs seguros          | 3      | 0         | 0            | 3        | 0         |
 | CI gate e rollout monitorado            | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                               | **12** | **3**     | **0**        | **9**    | **0**     |
+| **TOTAL**                               | **12** | **6**     | **0**        | **6**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Baseline inicial de risco do fluxo de compra publicada na Sprint 04 (`S04-QLT-001`).
 - ✅ Baseline de metricas minimas com SLI/SLO e thresholds de alerta publicada (`S04-QLT-002`).
 - ✅ Estrategia de cobertura por camada e DoD de merge publicados com gate minimo no CI (`S04-QLT-003`).
+- ✅ Fluxo E2E crítico de compra implementado com fallback de falha e artefatos Playwright (`S04-TST-003`).
 - ⚠️ Logging operacional ainda depende de `console.*` em rotas críticas e precisa padronização com redaction de PII.
 
 ---
@@ -168,7 +169,7 @@ Implementar cobertura automatizada para reduzir regressões nos caminhos de maio
   **Dependências:** S04-TST-001  
   **Status:** ✅ Concluída (2026-03-10)
 
-- [ ] **S04-TST-003** - Introduzir cenário E2E de compra para validação de release
+- [x] **S04-TST-003** - Introduzir cenário E2E de compra para validação de release
 
   **Descrição curta:**
   - Validar jornada do usuário em nível de aplicação para detectar quebras de integração UI/API.
@@ -182,13 +183,13 @@ Implementar cobertura automatizada para reduzir regressões nos caminhos de maio
   **Arquivos/áreas afetadas:** `playwright.config.ts` (novo), `e2e/checkout-critical-flow.spec.ts` (novo), `.github/workflows/ci.yml`, `package.json`
 
   **Critérios de aceitação:**
-  - [ ] Cenário E2E crítico executa automaticamente em PR/release.
-  - [ ] Falha no fluxo crítico E2E bloqueia merge em branch protegida.
+  - [x] Cenário E2E crítico executa automaticamente em PR/release.
+  - [x] Falha no fluxo crítico E2E bloqueia merge em branch protegida.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 8h  
   **Dependências:** S04-TST-002  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-10)
 
 ### 📦 Observabilidade e logs seguros - Telemetria com contexto e redaction
 

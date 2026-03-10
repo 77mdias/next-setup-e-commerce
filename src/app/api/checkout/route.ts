@@ -12,6 +12,10 @@ import {
 } from "@/lib/stripe-config";
 
 const MAX_ITEM_QUANTITY = 1000;
+const E2E_CHECKOUT_MOCK_MODE = "true";
+const E2E_CHECKOUT_OUTCOME_HEADER = "x-e2e-checkout-outcome";
+
+type E2ECheckoutOutcome = "success" | "failed";
 
 const checkoutItemSchema = z
   .object({
@@ -149,6 +153,88 @@ function resolveShippingFeeCents(
   }
 
   return shippingFeeCents;
+}
+
+function isE2ECheckoutMockModeEnabled() {
+  return process.env.E2E_CHECKOUT_MOCK_MODE === E2E_CHECKOUT_MOCK_MODE;
+}
+
+function resolveE2ECheckoutOutcome(request: NextRequest): E2ECheckoutOutcome {
+  const requestedOutcome = request.headers
+    .get(E2E_CHECKOUT_OUTCOME_HEADER)
+    ?.trim()
+    .toLowerCase();
+
+  return requestedOutcome === "failed" ? "failed" : "success";
+}
+
+function buildE2EMockSessionId(orderId: number): string {
+  return `cs_e2e_${orderId}_${Date.now()}`;
+}
+
+function buildE2EOrderStatusHistoryNote(
+  outcome: E2ECheckoutOutcome,
+  orderStatus: string,
+  paymentStatus: string,
+) {
+  return [
+    "source:e2e",
+    "reason:mock_checkout_outcome",
+    `outcome:${outcome}`,
+    `orderStatus:${orderStatus}`,
+    `paymentStatus:${paymentStatus}`,
+  ].join("; ");
+}
+
+async function finalizeE2EMockCheckout(params: {
+  orderId: number;
+  sessionId: string;
+  userId: string;
+  outcome: E2ECheckoutOutcome;
+}) {
+  const nextState =
+    params.outcome === "failed"
+      ? {
+          orderStatus: "CANCELLED" as const,
+          paymentStatus: "FAILED" as const,
+          cancelReason: "Pagamento falhou (simulação E2E).",
+        }
+      : {
+          orderStatus: "PAID" as const,
+          paymentStatus: "PAID" as const,
+          cancelReason: null,
+        };
+
+  await db.$transaction(async (tx) => {
+    await tx.order.update({
+      where: { id: params.orderId },
+      data: {
+        status: nextState.orderStatus,
+        paymentStatus: nextState.paymentStatus,
+        stripeCheckoutSessionId: params.sessionId,
+        stripePaymentIntentId: params.sessionId,
+        stripePaymentId: params.sessionId,
+        paymentMethod: "stripe",
+        cancelledAt: params.outcome === "failed" ? new Date() : null,
+        cancelReason: nextState.cancelReason,
+        statusHistory: {
+          create: {
+            status: nextState.orderStatus,
+            notes: buildE2EOrderStatusHistoryNote(
+              params.outcome,
+              nextState.orderStatus,
+              nextState.paymentStatus,
+            ),
+            changedBy: params.userId,
+          },
+        },
+      },
+    });
+
+    await tx.cart.deleteMany({
+      where: { userId: params.userId },
+    });
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -548,6 +634,27 @@ export async function POST(request: NextRequest) {
         },
       }),
     );
+
+    if (isE2ECheckoutMockModeEnabled()) {
+      const mockOutcome = resolveE2ECheckoutOutcome(request);
+      const mockSessionId = buildE2EMockSessionId(order.id);
+      const baseUrl =
+        process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+      const redirectPath = mockOutcome === "failed" ? "failure" : "success";
+
+      await finalizeE2EMockCheckout({
+        orderId: order.id,
+        sessionId: mockSessionId,
+        userId: session.user.id,
+        outcome: mockOutcome,
+      });
+
+      return NextResponse.json({
+        sessionId: mockSessionId,
+        url: `${baseUrl}/orders/${redirectPath}?session_id=${mockSessionId}`,
+        orderId: order.id,
+      });
+    }
 
     let stripeSession: Awaited<
       ReturnType<typeof createStripeCheckoutSession>
