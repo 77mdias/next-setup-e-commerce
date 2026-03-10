@@ -33,6 +33,7 @@ type StructuredLogEntry = {
     reason?: string;
     sessionUserId?: string;
   } | null;
+  error?: unknown;
 };
 
 function parseStructuredLogEntry(logCall: unknown[]): StructuredLogEntry {
@@ -360,5 +361,44 @@ describe("GET /api/orders/[orderId] integration", () => {
     });
 
     warnSpy.mockRestore();
+  });
+
+  it("returns 500 and redacts PII in lookup failure logs", async () => {
+    const errorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    mockGetServerSession.mockResolvedValue({
+      user: { id: "user-owner", email: "owner@example.com" },
+    });
+    mockDb.order.findFirst.mockRejectedValue(
+      new Error(
+        "Falha ao consultar owner@example.com cpf 12345678900 token=sk_test_sensitive",
+      ),
+    );
+
+    const { request, params } = createRequest("123");
+    const response = await GET(request, { params });
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("Erro interno do servidor");
+
+    const structuredError = parseStructuredLogEntry(errorSpy.mock.calls[0]);
+
+    expect(structuredError).toMatchObject({
+      message: "orders.lookup_failed",
+      route: "/api/orders/[orderId]",
+    });
+
+    const serializedStructuredError = JSON.stringify(structuredError);
+    expect(serializedStructuredError).not.toContain("owner@example.com");
+    expect(serializedStructuredError).not.toContain("12345678900");
+    expect(serializedStructuredError).not.toContain("sk_test_sensitive");
+    expect(serializedStructuredError).toContain("[REDACTED_EMAIL]");
+    expect(serializedStructuredError).toContain("[REDACTED_CPF]");
+    expect(serializedStructuredError).toContain("[REDACTED_TOKEN]");
+
+    errorSpy.mockRestore();
   });
 });

@@ -1,5 +1,11 @@
 import Stripe from "stripe";
 
+import { createLogger } from "@/lib/logger";
+
+const stripeLogger = createLogger({
+  route: "/lib/stripe-config",
+});
+
 // Validação das variáveis de ambiente
 const validateStripeConfig = () => {
   const errors: string[] = [];
@@ -13,17 +19,21 @@ const validateStripeConfig = () => {
   }
 
   if (errors.length > 0) {
-    console.error("❌ Erros de configuração do Stripe:", errors);
+    stripeLogger.error("stripe.config.invalid", {
+      data: {
+        errors,
+      },
+    });
     throw new Error(`Configuração do Stripe inválida: ${errors.join(", ")}`);
   }
 
-  console.log("✅ Configuração do Stripe validada com sucesso");
-  console.log("🔧 Ambiente:", process.env.NODE_ENV);
-  console.log("🔧 Base URL:", process.env.NEXT_PUBLIC_BASE_URL);
-  console.log(
-    "🔧 Stripe Key:",
-    process.env.STRIPE_SECRET_KEY?.substring(0, 10) + "...",
-  );
+  stripeLogger.info("stripe.config.validated", {
+    data: {
+      environment: process.env.NODE_ENV ?? null,
+      baseUrl: process.env.NEXT_PUBLIC_BASE_URL ?? null,
+      hasStripeSecretKey: Boolean(process.env.STRIPE_SECRET_KEY),
+    },
+  });
 };
 
 // Validar configuração na inicialização
@@ -38,32 +48,40 @@ export const createStripeCheckoutSession = async (
   sessionData: Stripe.Checkout.SessionCreateParams,
 ) => {
   try {
-    console.log("🔧 Iniciando criação da sessão do Stripe");
-    console.log("🔧 Dados da sessão:", {
-      itemsCount: sessionData.line_items?.length || 0,
-      mode: sessionData.mode,
-      successUrl: sessionData.success_url,
-      cancelUrl: sessionData.cancel_url,
-      customerEmail: sessionData.customer_email,
+    stripeLogger.info("stripe.checkout_session.create_started", {
+      data: {
+        itemsCount: sessionData.line_items?.length ?? 0,
+        mode: sessionData.mode ?? null,
+        successUrl: sessionData.success_url ?? null,
+        cancelUrl: sessionData.cancel_url ?? null,
+        customerEmail: sessionData.customer_email ?? null,
+      },
     });
 
     const session = await stripe.checkout.sessions.create(sessionData);
 
-    console.log("✅ Sessão do Stripe criada com sucesso:", {
-      sessionId: session.id,
-      url: session.url,
+    stripeLogger.info("stripe.checkout_session.create_succeeded", {
+      data: {
+        sessionId: session.id,
+        hasUrl: Boolean(session.url),
+      },
     });
 
     return session;
   } catch (error) {
-    console.error("❌ Erro ao criar sessão do Stripe:", error);
+    stripeLogger.error("stripe.checkout_session.create_failed", {
+      error,
+    });
 
     if (error instanceof Stripe.errors.StripeError) {
-      console.error("❌ Erro específico do Stripe:", {
-        type: error.type,
-        code: error.code,
-        message: error.message,
-        decline_code: (error as any).decline_code,
+      stripeLogger.error("stripe.checkout_session.create_stripe_error", {
+        data: {
+          type: error.type,
+          code: error.code,
+          message: error.message,
+          declineCode:
+            (error as { decline_code?: string }).decline_code ?? null,
+        },
       });
     }
 
@@ -73,12 +91,22 @@ export const createStripeCheckoutSession = async (
 
 export const expireStripeCheckoutSession = async (sessionId: string) => {
   try {
-    console.log("🔧 Iniciando expiração da sessão do Stripe:", sessionId);
+    stripeLogger.info("stripe.checkout_session.expire_started", {
+      context: {
+        checkoutSessionId: sessionId,
+      },
+    });
     await stripe.checkout.sessions.expire(sessionId);
-    console.log("✅ Sessão do Stripe expirada com sucesso:", sessionId);
+    stripeLogger.info("stripe.checkout_session.expire_succeeded", {
+      context: {
+        checkoutSessionId: sessionId,
+      },
+    });
   } catch (error) {
-    console.error("❌ Erro ao expirar sessão do Stripe:", {
-      sessionId,
+    stripeLogger.error("stripe.checkout_session.expire_failed", {
+      context: {
+        checkoutSessionId: sessionId,
+      },
       error,
     });
     throw error;

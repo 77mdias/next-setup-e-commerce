@@ -12,6 +12,11 @@ import {
   DEFAULT_AUTH_CALLBACK_PATH,
   normalizeCallbackPath,
 } from "@/lib/callback-url";
+import { createLogger } from "@/lib/logger";
+
+const authLogger = createLogger({
+  route: "/api/auth/[...nextauth]",
+});
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
@@ -150,9 +155,11 @@ export const authOptions: NextAuthOptions = {
           if (!hasProvider) {
             // Retornar false para que o NextAuth redirecione para a página de erro
             // O NextAuth automaticamente adicionará o erro na URL
-            console.log(
-              "Provider não vinculado, retornando false para redirecionar para erro",
-            );
+            authLogger.warn("auth.oauth_provider_not_linked", {
+              data: {
+                provider: account?.provider ?? null,
+              },
+            });
             return false;
           }
         }

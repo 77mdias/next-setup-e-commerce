@@ -568,4 +568,49 @@ describe("POST /api/checkout integration", () => {
 
     consoleErrorSpy.mockRestore();
   });
+
+  it("redacts PII in checkout error logs", async () => {
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    mockCreateStripeCheckoutSession.mockRejectedValueOnce(
+      new Error(
+        "Falha para customer@example.com cpf 12345678900 token=sk_test_sensitive session_id=cs_test_sensitive",
+      ),
+    );
+
+    const response = await POST(
+      createCheckoutRequest({
+        storeId: "store-1",
+        items: [{ productId: "product-1", quantity: 1 }],
+        shippingMethod: "STANDARD",
+      }),
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("Erro interno do servidor");
+
+    const structuredLogs = consoleErrorSpy.mock.calls.map(
+      parseStructuredLogEntry,
+    );
+    const internalErrorLog = structuredLogs.find(
+      (logEntry) => logEntry.message === "checkout.internal_error",
+    );
+
+    expect(internalErrorLog).toBeDefined();
+    const serializedInternalErrorLog = JSON.stringify(internalErrorLog);
+
+    expect(serializedInternalErrorLog).not.toContain("customer@example.com");
+    expect(serializedInternalErrorLog).not.toContain("12345678900");
+    expect(serializedInternalErrorLog).not.toContain("sk_test_sensitive");
+    expect(serializedInternalErrorLog).not.toContain("cs_test_sensitive");
+    expect(serializedInternalErrorLog).toContain("[REDACTED_EMAIL]");
+    expect(serializedInternalErrorLog).toContain("[REDACTED_CPF]");
+    expect(serializedInternalErrorLog).toContain("[REDACTED_TOKEN]");
+
+    consoleErrorSpy.mockRestore();
+  });
 });

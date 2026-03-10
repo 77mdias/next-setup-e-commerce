@@ -51,6 +51,23 @@ vi.mock("@/lib/prisma", () => ({
 
 import { POST } from "@/app/api/webhooks/stripe/route";
 
+type StructuredLogEntry = {
+  message: string;
+  route: string | null;
+  eventId: string | null;
+  error: unknown;
+};
+
+function parseStructuredLogEntry(logCall: unknown[]): StructuredLogEntry {
+  const [serializedLog] = logCall;
+
+  if (typeof serializedLog !== "string") {
+    throw new Error("Structured log must be a JSON string");
+  }
+
+  return JSON.parse(serializedLog) as StructuredLogEntry;
+}
+
 function createWebhookRequest(payload: unknown) {
   return new NextRequest("http://localhost:3000/api/webhooks/stripe", {
     method: "POST",
@@ -766,5 +783,41 @@ describe("POST /api/webhooks/stripe integration", () => {
         processedAt: null,
       },
     });
+  });
+
+  it("redacts PII in signature verification failure logs", async () => {
+    const errorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    mockConstructEvent.mockImplementationOnce(() => {
+      throw new Error(
+        "Assinatura inválida para customer@example.com cpf 12345678900 token=whsec_test_sensitive",
+      );
+    });
+
+    const response = await POST(createWebhookRequest({ example: true }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("Invalid signature");
+
+    const structuredLogs = errorSpy.mock.calls.map(parseStructuredLogEntry);
+    const signatureErrorLog = structuredLogs.find(
+      (entry) =>
+        entry.message === "webhooks.stripe.signature_verification_failed",
+    );
+
+    expect(signatureErrorLog).toBeDefined();
+    const serializedSignatureErrorLog = JSON.stringify(signatureErrorLog);
+
+    expect(serializedSignatureErrorLog).not.toContain("customer@example.com");
+    expect(serializedSignatureErrorLog).not.toContain("12345678900");
+    expect(serializedSignatureErrorLog).not.toContain("whsec_test_sensitive");
+    expect(serializedSignatureErrorLog).toContain("[REDACTED_EMAIL]");
+    expect(serializedSignatureErrorLog).toContain("[REDACTED_CPF]");
+    expect(serializedSignatureErrorLog).toContain("[REDACTED_TOKEN]");
+
+    errorSpy.mockRestore();
   });
 });

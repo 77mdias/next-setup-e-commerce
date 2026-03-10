@@ -1,3 +1,5 @@
+import { redactLogValue } from "@/lib/log-redaction";
+
 type LogLevel = "info" | "warn" | "error";
 
 export type LoggerContext = {
@@ -155,10 +157,12 @@ function buildLogEntry(
   context: LoggerContext,
   payload?: LogPayload,
 ): StructuredLogEntry {
-  const mergedContext = normalizeContext({
-    ...context,
-    ...(payload?.context ?? {}),
-  });
+  const mergedContext = redactLogValue(
+    normalizeContext({
+      ...context,
+      ...(payload?.context ?? {}),
+    }),
+  ) as Record<string, unknown>;
   const knownContext = normalizeKnownContext(mergedContext);
   const additionalContextEntries = Object.entries(mergedContext).filter(
     ([key]) =>
@@ -180,8 +184,8 @@ function buildLogEntry(
       additionalContextEntries.length > 0
         ? Object.fromEntries(additionalContextEntries)
         : null,
-    data: normalizeValue(payload?.data ?? null),
-    error: normalizeValue(payload?.error ?? null),
+    data: redactLogValue(normalizeValue(payload?.data ?? null)),
+    error: redactLogValue(normalizeValue(payload?.error ?? null)),
   };
 }
 
@@ -207,7 +211,9 @@ function writeStructuredLog(
   console.info(serializedLog);
 }
 
-export function createLogger(baseContext: LoggerContext = {}): StructuredLogger {
+export function createLogger(
+  baseContext: LoggerContext = {},
+): StructuredLogger {
   const logWithLevel =
     (level: LogLevel) =>
     (message: string, payload?: LogPayload): void => {

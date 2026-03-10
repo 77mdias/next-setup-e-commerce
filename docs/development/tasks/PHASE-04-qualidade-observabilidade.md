@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-10
 **Sprint Atual:** Sprint 04
-**Status Geral:** 🟡 58% (7/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 67% (8/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (10 dias úteis)
 **Pré-requisito:** Fase 03 - Experiência de Conta e Pedido (✅ concluída em 2026-03-08)
 
@@ -15,9 +15,9 @@
 | --------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Estratégia de qualidade e critérios     | 3      | 3         | 0            | 0        | 0         |
 | Cobertura automatizada do fluxo crítico | 3      | 3         | 0            | 0        | 0         |
-| Observabilidade e logs seguros          | 3      | 1         | 0            | 2        | 0         |
+| Observabilidade e logs seguros          | 3      | 2         | 0            | 1        | 0         |
 | CI gate e rollout monitorado            | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                               | **12** | **7**     | **0**        | **5**    | **0**     |
+| **TOTAL**                               | **12** | **8**     | **0**        | **4**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
@@ -25,7 +25,7 @@
 - ✅ Baseline de metricas minimas com SLI/SLO e thresholds de alerta publicada (`S04-QLT-002`).
 - ✅ Estrategia de cobertura por camada e DoD de merge publicados com gate minimo no CI (`S04-QLT-003`).
 - ✅ Fluxo E2E crítico de compra implementado com fallback de falha e artefatos Playwright (`S04-TST-003`).
-- 🟡 Logger estruturado aplicado nas rotas críticas (`checkout`, `webhooks/stripe`, `orders`) com correlação por `requestId`; redaction de PII permanece pendente (`S04-OBS-002`).
+- ✅ Redaction central de PII aplicada em logs críticos de auth, checkout, webhooks e pedidos com testes de regressão (`S04-OBS-002`).
 
 ---
 
@@ -221,7 +221,7 @@ Padronizar telemetria operacional para permitir diagnóstico rápido sem exposi�
   **Dependências:** S04-QLT-002  
   **Status:** ✅ Concluída (2026-03-10)
 
-- [ ] **S04-OBS-002** - Aplicar redaction de PII em logs de auth, checkout e pedidos
+- [x] **S04-OBS-002** - Aplicar redaction de PII em logs de auth, checkout e pedidos
 
   **Descrição curta:**
   - Evitar exposição de dados pessoais e segredos em logs de aplicação.
@@ -235,13 +235,13 @@ Padronizar telemetria operacional para permitir diagnóstico rápido sem exposi�
   **Arquivos/áreas afetadas:** `src/lib/log-redaction.ts` (novo), `src/lib/auth.ts`, `src/app/api/checkout/route.ts`, `src/app/api/webhooks/stripe/route.ts`, `src/app/api/orders/[orderId]/route.ts`, `src/app/api/admin/remove-bg/__tests__/route.integration.test.ts`
 
   **Critérios de aceitação:**
-  - [ ] Logs de fluxos críticos não expõem e-mail/CPF/token em texto puro.
-  - [ ] Testes de segurança de logging falham se redaction for removida.
+  - [x] Logs de fluxos críticos não expõem e-mail/CPF/token em texto puro.
+  - [x] Testes de segurança de logging falham se redaction for removida.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** S04-OBS-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-10)
 
 - [ ] **S04-OBS-003** - Reduzir ruído operacional de warnings (hooks e imagens)
 

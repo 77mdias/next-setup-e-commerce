@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createLogger, createRequestLogger, resolveRequestId } from "@/lib/logger";
+import {
+  createLogger,
+  createRequestLogger,
+  resolveRequestId,
+} from "@/lib/logger";
 
 type ParsedLogEntry = {
   timestamp: string;
@@ -44,7 +48,9 @@ describe("logger", () => {
   });
 
   it("emits structured info log with correlated context fields", () => {
-    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => undefined);
+    const infoSpy = vi
+      .spyOn(console, "info")
+      .mockImplementation(() => undefined);
     const logger = createLogger({
       route: "/api/checkout",
       requestId: "req_checkout_1",
@@ -73,7 +79,7 @@ describe("logger", () => {
       orderId: 123,
       eventId: "evt_checkout_1",
       context: {
-        checkoutSessionId: "cs_123",
+        checkoutSessionId: "[REDACTED_TOKEN]",
       },
       data: {
         amountCents: 11500,
@@ -84,7 +90,9 @@ describe("logger", () => {
   });
 
   it("emits structured error log with normalized Error object", () => {
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const errorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
     const logger = createRequestLogger({
       headers: new Headers({
         "x-correlation-id": "corr-123",
@@ -116,5 +124,47 @@ describe("logger", () => {
     const parsedError = parsedLog.error as { message?: string; name?: string };
     expect(parsedError.message).toBe("stripe offline");
     expect(parsedError.name).toBe("Error");
+  });
+
+  it("redacts PII and tokens from context, data and error payloads", () => {
+    const errorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    const logger = createLogger({
+      route: "/api/checkout",
+      requestId: "req-redaction-1",
+    });
+
+    logger.error("checkout.failed", {
+      context: {
+        customerEmail: "customer@example.com",
+        customerCpf: "123.456.789-00",
+        checkoutSessionId: "cs_test_sensitive",
+      },
+      data: {
+        token: "sk_test_sensitive",
+        note: "Falha para customer@example.com com cpf 12345678900 token=abc123",
+      },
+      error: new Error(
+        "Erro para customer@example.com cpf 12345678900 token=abc123",
+      ),
+    });
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+
+    const [serializedLog] = errorSpy.mock.calls[0];
+    const parsedLog = parseLogPayload(serializedLog);
+    const serializedParsedLog = JSON.stringify(parsedLog);
+
+    expect(serializedParsedLog).not.toContain("customer@example.com");
+    expect(serializedParsedLog).not.toContain("123.456.789-00");
+    expect(serializedParsedLog).not.toContain("12345678900");
+    expect(serializedParsedLog).not.toContain("cs_test_sensitive");
+    expect(serializedParsedLog).not.toContain("sk_test_sensitive");
+    expect(serializedParsedLog).not.toContain("token=abc123");
+
+    expect(serializedParsedLog).toContain("[REDACTED_EMAIL]");
+    expect(serializedParsedLog).toContain("[REDACTED_CPF]");
+    expect(serializedParsedLog).toContain("[REDACTED_TOKEN]");
   });
 });
