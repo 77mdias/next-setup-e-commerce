@@ -3,6 +3,8 @@ import { expect, test } from "@playwright/test";
 const E2E_USER_EMAIL =
   process.env.E2E_USER_EMAIL ?? "e2e.customer@nextstore.local";
 const E2E_USER_PASSWORD = process.env.E2E_USER_PASSWORD ?? "E2eCheckout#123";
+const E2E_PRODUCT_QUERY =
+  process.env.E2E_PRODUCT_QUERY ?? "E2E Checkout Headset";
 
 async function signIn(page: any) {
   await page.goto("/auth/signin?callbackUrl=/products");
@@ -23,14 +25,64 @@ async function clearCart(page: any) {
   await page.request.delete("/api/cart");
 }
 
+async function resolveProductPath(page: any) {
+  const buildQuery = (query?: string) => {
+    const params = new URLSearchParams({
+      includeFacets: "0",
+      includeTotal: "0",
+      limit: "1",
+      sort: "newest",
+    });
+
+    if (query) {
+      params.set("query", query);
+    }
+
+    return params.toString();
+  };
+
+  const tryResolve = async (query?: string) => {
+    const response = await page.request.get(
+      `/api/products?${buildQuery(query)}`,
+    );
+    if (!response.ok()) {
+      return null;
+    }
+
+    const payload = await response.json();
+    const productId = payload?.products?.[0]?.id;
+
+    if (typeof productId !== "string" || productId.trim().length === 0) {
+      return null;
+    }
+
+    return `/product/${productId}`;
+  };
+
+  const preferredProductPath = await tryResolve(E2E_PRODUCT_QUERY);
+  if (preferredProductPath) {
+    return preferredProductPath;
+  }
+
+  const fallbackProductPath = await tryResolve();
+  if (fallbackProductPath) {
+    return fallbackProductPath;
+  }
+
+  throw new Error(
+    `No product available for E2E checkout flow (query='${E2E_PRODUCT_QUERY}')`,
+  );
+}
+
 async function addProductToCart(page: any) {
-  await page
-    .getByRole("button", { name: /View Product/i })
-    .first()
-    .click();
+  const productPath = await resolveProductPath(page);
+
+  await page.goto(productPath);
   await page.waitForURL(/\/product\/.+/);
 
-  await page.getByRole("button", { name: /Add to Cart/i }).click();
+  const addToCartButton = page.getByRole("button", { name: /Add to Cart/i });
+  await expect(addToCartButton).toBeVisible({ timeout: 15_000 });
+  await addToCartButton.click();
   await page.waitForURL(/\/carrinho/);
   await expect(
     page.getByRole("button", { name: /Proceed to Checkout/i }),
