@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { authOptions } from "@/lib/auth";
+import { createRequestLogger } from "@/lib/logger";
 import { INITIAL_ORDER_STATE } from "@/lib/order-state-machine";
 import { db } from "@/lib/prisma";
 import {
@@ -238,6 +239,11 @@ async function finalizeE2EMockCheckout(params: {
 }
 
 export async function POST(request: NextRequest) {
+  const logger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/checkout",
+  });
+
   try {
     const session = await getServerSession(authOptions);
 
@@ -634,6 +640,7 @@ export async function POST(request: NextRequest) {
         },
       }),
     );
+    const orderLogger = logger.child({ orderId: order.id });
 
     if (isE2ECheckoutMockModeEnabled()) {
       const mockOutcome = resolveE2ECheckoutOutcome(request);
@@ -733,20 +740,21 @@ export async function POST(request: NextRequest) {
           where: { userId: session.user.id },
         });
       } catch (clearCartError) {
-        console.error(
-          `Erro ao limpar carrinho do usuário ${session.user.id} após checkout do pedido ${order.id}:`,
-          clearCartError,
-        );
+        orderLogger.error("checkout.cart_clear_failed", {
+          error: clearCartError,
+        });
       }
     } catch (checkoutError) {
       if (stripeSession?.id) {
         try {
           await expireStripeCheckoutSession(stripeSession.id);
         } catch (expireError) {
-          console.error(
-            `Erro ao expirar sessão Stripe ${stripeSession.id} durante rollback do pedido ${order.id}:`,
-            expireError,
-          );
+          orderLogger.error("checkout.stripe_session_expire_failed", {
+            context: {
+              checkoutSessionId: stripeSession.id,
+            },
+            error: expireError,
+          });
         }
       }
 
@@ -755,10 +763,9 @@ export async function POST(request: NextRequest) {
           where: { id: order.id },
         });
       } catch (rollbackError) {
-        console.error(
-          `Erro ao executar rollback do pedido ${order.id}:`,
-          rollbackError,
-        );
+        orderLogger.error("checkout.rollback_order_delete_failed", {
+          error: rollbackError,
+        });
       }
 
       throw checkoutError;
@@ -776,7 +783,7 @@ export async function POST(request: NextRequest) {
       orderId: order.id,
     });
   } catch (error) {
-    console.error("Erro ao criar checkout:", error);
+    logger.error("checkout.internal_error", { error });
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 },

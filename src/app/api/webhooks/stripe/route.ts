@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { OrderStatus, PaymentStatus } from "@prisma/client";
 import Stripe from "stripe";
 
+import { createRequestLogger, type StructuredLogger } from "@/lib/logger";
 import { validateOrderStateTransition } from "@/lib/order-state-machine";
 import { db } from "@/lib/prisma";
 
@@ -206,7 +207,7 @@ function isPrismaUniqueConstraintError(
   return (error as { code?: string }).code === "P2002";
 }
 
-function resolveProcessingTimeoutMs() {
+function resolveProcessingTimeoutMs(logger: StructuredLogger) {
   const timeoutFromEnv = process.env.STRIPE_WEBHOOK_PROCESSING_TIMEOUT_MS;
 
   if (!timeoutFromEnv) {
@@ -216,9 +217,12 @@ function resolveProcessingTimeoutMs() {
   const parsedTimeout = Number(timeoutFromEnv);
 
   if (!Number.isFinite(parsedTimeout) || parsedTimeout <= 0) {
-    console.warn(
-      "⚠️ STRIPE_WEBHOOK_PROCESSING_TIMEOUT_MS inválido. Usando valor padrão.",
-    );
+    logger.warn("webhooks.stripe.processing_timeout_invalid", {
+      data: {
+        timeoutFromEnv,
+        fallbackTimeoutMs: DEFAULT_PROCESSING_TIMEOUT_MS,
+      },
+    });
 
     return DEFAULT_PROCESSING_TIMEOUT_MS;
   }
@@ -229,6 +233,7 @@ function resolveProcessingTimeoutMs() {
 async function registerOrShortCircuitEvent(
   event: Stripe.Event,
   payload: string,
+  logger: StructuredLogger,
 ): Promise<EventRegistrationResult> {
   const now = new Date();
 
@@ -291,7 +296,7 @@ async function registerOrShortCircuitEvent(
       };
     }
 
-    const processingTimeoutMs = resolveProcessingTimeoutMs();
+    const processingTimeoutMs = resolveProcessingTimeoutMs(logger);
     const staleProcessingBefore = new Date(now.getTime() - processingTimeoutMs);
 
     const staleClaim = await db.stripeWebhookEvent.updateMany({
@@ -352,21 +357,44 @@ async function clearUserCartAfterPaidOrder(
 async function processWebhookEvent(
   database: WebhookMutationClient,
   event: Stripe.Event,
+  logger: StructuredLogger,
 ): Promise<WebhookProcessResult> {
+  const eventLogger = logger.child({
+    eventId: event.id,
+  });
+
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
-      const orderId = session.metadata?.orderId;
+      const rawOrderId = session.metadata?.orderId;
+      const parsedOrderId = resolveOrderId(rawOrderId);
       const checkoutSessionId = session.id;
       const paymentIntentId = resolvePaymentIntentId(session.payment_intent);
 
-      console.log("🔍 ID do pedido:", orderId);
-      console.log("📋 Metadata completa:", session.metadata);
-      console.log("💰 Status do pagamento:", session.payment_status);
-      console.log("💳 ID do payment intent:", paymentIntentId);
+      eventLogger.info("webhooks.stripe.checkout_completed_received", {
+        context: {
+          orderId: parsedOrderId,
+        },
+        data: {
+          eventType: event.type,
+          paymentStatus: session.payment_status,
+          checkoutSessionId,
+          paymentIntentId,
+          hasMetadataOrderId: Boolean(rawOrderId),
+        },
+      });
 
-      if (!orderId) {
-        console.warn("⚠️ ID do pedido não encontrado nos metadados");
+      if (!parsedOrderId) {
+        eventLogger.warn(
+          "webhooks.stripe.checkout_completed_missing_order_id",
+          {
+            data: {
+              eventType: event.type,
+              checkoutSessionId,
+              paymentIntentId,
+            },
+          },
+        );
         return {
           completed: true,
           response: NextResponse.json({
@@ -378,7 +406,7 @@ async function processWebhookEvent(
 
       const existingOrder = await database.order.findUnique({
         where: {
-          id: Number(orderId),
+          id: parsedOrderId,
         },
         include: {
           store: { select: { slug: true } },
@@ -386,23 +414,44 @@ async function processWebhookEvent(
       });
 
       if (!existingOrder) {
-        console.error("❌ Pedido não encontrado no banco de dados:", orderId);
+        eventLogger.error(
+          "webhooks.stripe.checkout_completed_order_not_found",
+          {
+            context: {
+              orderId: parsedOrderId,
+            },
+            data: {
+              eventType: event.type,
+              checkoutSessionId,
+              paymentIntentId,
+            },
+          },
+        );
+
         return {
           completed: false,
-          failureReason: `Order ${orderId} not found`,
+          failureReason: `Order ${parsedOrderId} not found`,
           response: NextResponse.json(
-            { error: "Order not found", orderId },
+            {
+              error: "Order not found",
+              orderId: rawOrderId ?? String(parsedOrderId),
+            },
             { status: 404 },
           ),
         };
       }
 
-      console.log(
-        "📊 Pedido encontrado, status atual:",
-        existingOrder.status,
-        "paymentStatus:",
-        existingOrder.paymentStatus,
-      );
+      const orderLogger = eventLogger.child({
+        orderId: existingOrder.id,
+      });
+
+      orderLogger.info("webhooks.stripe.checkout_completed_order_loaded", {
+        data: {
+          eventType: event.type,
+          currentOrderStatus: existingOrder.status,
+          currentPaymentStatus: existingOrder.paymentStatus,
+        },
+      });
 
       const paidTransition = validateOrderStateTransition({
         from: {
@@ -418,16 +467,19 @@ async function processWebhookEvent(
       if (!paidTransition.valid) {
         const transitionFailureReason = `${paidTransition.reason} (orderId: ${existingOrder.id})`;
 
-        console.warn("⚠️ Transição de sucesso rejeitada pela matriz", {
-          eventId: event.id,
-          eventType: event.type,
-          orderId: existingOrder.id,
-          currentOrderStatus: existingOrder.status,
-          currentPaymentStatus: existingOrder.paymentStatus,
-          targetOrderStatus: "PAID",
-          targetPaymentStatus: "PAID",
-          reason: paidTransition.reason,
-        });
+        orderLogger.warn(
+          "webhooks.stripe.checkout_completed_transition_rejected",
+          {
+            data: {
+              eventType: event.type,
+              currentOrderStatus: existingOrder.status,
+              currentPaymentStatus: existingOrder.paymentStatus,
+              targetOrderStatus: "PAID",
+              targetPaymentStatus: "PAID",
+              reason: paidTransition.reason,
+            },
+          },
+        );
 
         return {
           completed: false,
@@ -444,12 +496,12 @@ async function processWebhookEvent(
       }
 
       if (paidTransition.isNoop) {
-        console.log("ℹ️ Evento de sucesso ignorado por transição noop", {
-          eventId: event.id,
-          eventType: event.type,
-          orderId: existingOrder.id,
-          currentOrderStatus: existingOrder.status,
-          currentPaymentStatus: existingOrder.paymentStatus,
+        orderLogger.info("webhooks.stripe.checkout_completed_transition_noop", {
+          data: {
+            eventType: event.type,
+            currentOrderStatus: existingOrder.status,
+            currentPaymentStatus: existingOrder.paymentStatus,
+          },
         });
 
         return {
@@ -476,14 +528,14 @@ async function processWebhookEvent(
       });
 
       if (paidResult.count === 0) {
-        console.log(
-          "ℹ️ Confirmação de pagamento ignorada por mudança concorrente de estado",
+        orderLogger.info(
+          "webhooks.stripe.checkout_completed_concurrent_state_change",
           {
-            eventId: event.id,
-            eventType: event.type,
-            orderId: existingOrder.id,
-            currentOrderStatus: existingOrder.status,
-            currentPaymentStatus: existingOrder.paymentStatus,
+            data: {
+              eventType: event.type,
+              currentOrderStatus: existingOrder.status,
+              currentPaymentStatus: existingOrder.paymentStatus,
+            },
           },
         );
 
@@ -493,13 +545,15 @@ async function processWebhookEvent(
         };
       }
 
-      console.log("✅ Pedido atualizado com sucesso:", {
-        orderId: existingOrder.id,
-        newStatus: "PAID",
-        paymentStatus: "PAID",
-        stripeCheckoutSessionId:
-          existingOrder.stripeCheckoutSessionId ?? checkoutSessionId,
-        stripePaymentIntentId: paymentIntentId,
+      orderLogger.info("webhooks.stripe.checkout_completed_order_paid", {
+        data: {
+          eventType: event.type,
+          newStatus: "PAID",
+          newPaymentStatus: "PAID",
+          stripeCheckoutSessionId:
+            existingOrder.stripeCheckoutSessionId ?? checkoutSessionId,
+          stripePaymentIntentId: paymentIntentId,
+        },
       });
 
       await database.orderStatusHistory.create({
@@ -528,10 +582,12 @@ async function processWebhookEvent(
         },
       });
 
-      console.log("💰 Registro de pagamento criado com sucesso:", {
-        paymentId: payment.id,
-        amount: payment.amount,
-        status: payment.status,
+      orderLogger.info("webhooks.stripe.checkout_completed_payment_created", {
+        data: {
+          paymentId: payment.id,
+          amount: payment.amount,
+          status: payment.status,
+        },
       });
 
       await clearUserCartAfterPaidOrder(database, existingOrder.userId);
@@ -547,16 +603,20 @@ async function processWebhookEvent(
     case "charge.failed": {
       const failureContext = resolveFailureEventContext(event);
       const failureOrder = await resolveFailureOrder(database, failureContext);
+      const failureLogger = eventLogger.child({
+        orderId: failureContext.orderId,
+      });
 
       if (!failureOrder.order) {
-        console.warn("⚠️ Evento de falha sem pedido correlacionado", {
-          eventId: event.id,
-          eventType: event.type,
-          lookupSource: failureOrder.lookupSource,
-          orderId: failureContext.orderId,
-          paymentIntentId: failureContext.paymentIntentId,
-          checkoutSessionId: failureContext.checkoutSessionId,
+        failureLogger.warn("webhooks.stripe.failure_event_order_not_found", {
+          data: {
+            eventType: event.type,
+            lookupSource: failureOrder.lookupSource,
+            paymentIntentId: failureContext.paymentIntentId,
+            checkoutSessionId: failureContext.checkoutSessionId,
+          },
         });
+
         return {
           completed: true,
           response: NextResponse.json({ received: true }),
@@ -564,6 +624,9 @@ async function processWebhookEvent(
       }
 
       const { order } = failureOrder;
+      const orderLogger = eventLogger.child({
+        orderId: order.id,
+      });
 
       const cancellationTransition = validateOrderStateTransition({
         from: {
@@ -577,14 +640,15 @@ async function processWebhookEvent(
       });
 
       if (!cancellationTransition.valid) {
-        console.log("ℹ️ Evento de falha ignorado por transição inválida", {
-          eventId: event.id,
-          eventType: event.type,
-          orderId: order.id,
-          lookupSource: failureOrder.lookupSource,
-          currentOrderStatus: order.status,
-          currentPaymentStatus: order.paymentStatus,
+        orderLogger.info("webhooks.stripe.failure_event_transition_invalid", {
+          data: {
+            eventType: event.type,
+            lookupSource: failureOrder.lookupSource,
+            currentOrderStatus: order.status,
+            currentPaymentStatus: order.paymentStatus,
+          },
         });
+
         return {
           completed: true,
           response: NextResponse.json({ received: true }),
@@ -592,13 +656,13 @@ async function processWebhookEvent(
       }
 
       if (cancellationTransition.isNoop) {
-        console.log("ℹ️ Evento de falha ignorado por transição noop", {
-          eventId: event.id,
-          eventType: event.type,
-          orderId: order.id,
-          lookupSource: failureOrder.lookupSource,
-          currentOrderStatus: order.status,
-          currentPaymentStatus: order.paymentStatus,
+        orderLogger.info("webhooks.stripe.failure_event_transition_noop", {
+          data: {
+            eventType: event.type,
+            lookupSource: failureOrder.lookupSource,
+            currentOrderStatus: order.status,
+            currentPaymentStatus: order.paymentStatus,
+          },
         });
 
         return {
@@ -638,21 +702,21 @@ async function processWebhookEvent(
           },
         });
 
-        console.log("❌ Pedido cancelado devido a falha no pagamento", {
-          eventId: event.id,
-          eventType: event.type,
-          orderId: order.id,
-          lookupSource: failureOrder.lookupSource,
-          cancelReason: failureContext.cancelReason,
+        orderLogger.info("webhooks.stripe.failure_event_order_cancelled", {
+          data: {
+            eventType: event.type,
+            lookupSource: failureOrder.lookupSource,
+            cancelReason: failureContext.cancelReason,
+          },
         });
       } else {
-        console.log(
-          "ℹ️ Cancelamento ignorado por mudança concorrente de estado",
+        orderLogger.info(
+          "webhooks.stripe.failure_event_concurrent_state_change",
           {
-            eventId: event.id,
-            eventType: event.type,
-            orderId: order.id,
-            lookupSource: failureOrder.lookupSource,
+            data: {
+              eventType: event.type,
+              lookupSource: failureOrder.lookupSource,
+            },
           },
         );
       }
@@ -664,7 +728,11 @@ async function processWebhookEvent(
     }
 
     default:
-      console.log("ℹ️ Evento não processado:", event.type);
+      eventLogger.info("webhooks.stripe.event_ignored", {
+        data: {
+          eventType: event.type,
+        },
+      });
       return {
         completed: true,
         response: NextResponse.json({ received: true }),
@@ -672,7 +740,10 @@ async function processWebhookEvent(
   }
 }
 
-async function processWebhookEventAtomically(event: Stripe.Event) {
+async function processWebhookEventAtomically(
+  event: Stripe.Event,
+  logger: StructuredLogger,
+) {
   return db.$transaction(async (tx) => {
     const result = await processWebhookEvent(
       {
@@ -683,6 +754,7 @@ async function processWebhookEventAtomically(event: Stripe.Event) {
         stripeWebhookEvent: tx.stripeWebhookEvent,
       },
       event,
+      logger,
     );
 
     if (result.completed) {
@@ -718,9 +790,14 @@ async function processWebhookEventAtomically(event: Stripe.Event) {
 }
 
 export async function POST(request: NextRequest) {
+  const logger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/webhooks/stripe",
+  });
+
   // Verificar se as variáveis de ambiente estão configuradas
   if (!process.env.STRIPE_WEBHOOK_SECRET_KEY) {
-    console.error("STRIPE_WEBHOOK_SECRET_KEY não está configurada");
+    logger.error("webhooks.stripe.missing_webhook_secret");
     return NextResponse.json(
       { error: "Webhook secret not configured" },
       { status: 500 },
@@ -729,7 +806,7 @@ export async function POST(request: NextRequest) {
 
   // Verificar se a chave secreta do Stripe está configurada
   if (!process.env.STRIPE_SECRET_KEY) {
-    console.error("❌ Chave secreta do Stripe não encontrada");
+    logger.error("webhooks.stripe.missing_stripe_secret");
     return NextResponse.json(
       { error: "Missing Stripe secret key" },
       { status: 500 },
@@ -743,7 +820,7 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get("stripe-signature");
 
   if (!signature) {
-    console.error("Stripe signature não encontrada nos headers");
+    logger.error("webhooks.stripe.missing_signature_header");
     return NextResponse.json(
       { error: "Missing stripe signature" },
       { status: 400 },
@@ -753,7 +830,7 @@ export async function POST(request: NextRequest) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET_KEY;
 
   if (!webhookSecret) {
-    console.error("❌ Chave secreta do webhook do Stripe não encontrada");
+    logger.error("webhooks.stripe.missing_webhook_secret_after_read");
     return NextResponse.json(
       { error: "Missing Stripe webhook secret key" },
       { status: 500 },
@@ -761,39 +838,53 @@ export async function POST(request: NextRequest) {
   }
 
   const text = await request.text();
-  console.log("📄 Corpo da requisição recebido, tamanho:", text.length);
+  logger.info("webhooks.stripe.payload_received", {
+    data: {
+      payloadLength: text.length,
+    },
+  });
 
   let event: Stripe.Event;
 
   try {
     event = stripe.webhooks.constructEvent(text, signature, webhookSecret);
   } catch (error) {
-    console.error("Webhook signature verification failed:", error);
+    logger.error("webhooks.stripe.signature_verification_failed", { error });
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  console.log("🔍 Evento recebido:", event.type, "id:", event.id);
+  const eventLogger = logger.child({
+    eventId: event.id,
+  });
+  eventLogger.info("webhooks.stripe.event_received", {
+    data: {
+      eventType: event.type,
+    },
+  });
 
   try {
-    const eventRegistration = await registerOrShortCircuitEvent(event, text);
+    const eventRegistration = await registerOrShortCircuitEvent(
+      event,
+      text,
+      eventLogger,
+    );
 
     if (!eventRegistration.claimed) {
       return eventRegistration.response;
     }
 
-    return await processWebhookEventAtomically(event);
+    return await processWebhookEventAtomically(event, eventLogger);
   } catch (error) {
     const errorMessage = toErrorMessage(error);
 
-    console.error("❌ Erro ao processar webhook:", error);
+    eventLogger.error("webhooks.stripe.processing_failed", { error });
 
     try {
       await markWebhookEventFailed(event.id, errorMessage);
     } catch (persistError) {
-      console.error(
-        "❌ Erro ao persistir falha do evento webhook:",
-        persistError,
-      );
+      eventLogger.error("webhooks.stripe.persist_failure_failed", {
+        error: persistError,
+      });
     }
 
     return NextResponse.json(

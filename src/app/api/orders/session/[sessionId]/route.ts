@@ -3,6 +3,7 @@ import { db } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import type { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
+import { createRequestLogger, type StructuredLogger } from "@/lib/logger";
 import { runDemoOrderAutomationForOrder } from "@/lib/order-demo-automation";
 import { buildOrderStatusHistory } from "@/lib/order-status-history";
 import {
@@ -63,27 +64,40 @@ function buildOrderSessionInclude(): Prisma.OrderInclude {
   };
 }
 
-function logOrderSessionLookupFailure(error: unknown) {
+function logOrderSessionLookupFailure(
+  logger: StructuredLogger,
+  error: unknown,
+) {
   if (process.env.NODE_ENV === "production") {
-    console.error("Erro ao buscar pedido por sessão");
+    logger.error("orders.session.lookup_failed");
     return;
   }
 
   if (error instanceof Error) {
-    console.error("Erro ao buscar pedido por sessão:", {
-      name: error.name,
-      message: error.message,
+    logger.error("orders.session.lookup_failed", {
+      data: {
+        name: error.name,
+        message: error.message,
+      },
+      error,
     });
     return;
   }
 
-  console.error("Erro ao buscar pedido por sessão:", error);
+  logger.error("orders.session.lookup_failed", {
+    error,
+  });
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> },
 ) {
+  const logger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/orders/session/[sessionId]",
+  });
+
   try {
     const session = await getServerSession(authOptions);
     const { sessionId } = await params;
@@ -132,10 +146,12 @@ export async function GET(
         }
       }
     } catch (automationError) {
-      console.error(
-        "⚠️ Falha ao executar automação demo para o pedido da sessão:",
-        automationError,
-      );
+      logger.warn("orders.session.demo_automation_failed", {
+        context: {
+          orderId: order.id,
+        },
+        error: automationError,
+      });
     }
 
     return NextResponse.json({
@@ -149,7 +165,7 @@ export async function GET(
       }),
     });
   } catch (error) {
-    logOrderSessionLookupFailure(error);
+    logOrderSessionLookupFailure(logger, error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 },

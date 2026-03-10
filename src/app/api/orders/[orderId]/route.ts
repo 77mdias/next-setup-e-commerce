@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { createRequestLogger, type StructuredLogger } from "@/lib/logger";
 import { runDemoOrderAutomationForOrder } from "@/lib/order-demo-automation";
 import { buildOrderStatusHistory } from "@/lib/order-status-history";
 import { db } from "@/lib/prisma";
@@ -47,22 +48,35 @@ function normalizeEmail(email: string | null | undefined): string | null {
   return normalizedEmail.length > 0 ? normalizedEmail : null;
 }
 
-function logLegacyOrderNeedsManualReview(payload: {
-  orderId: number;
-  sessionUserId: string;
-  reason:
-    | "missing_session_email"
-    | "missing_order_email"
-    | "email_mismatch_or_unmapped";
-}) {
+function logLegacyOrderNeedsManualReview(
+  payload: {
+    orderId: number;
+    sessionUserId: string;
+    reason:
+      | "missing_session_email"
+      | "missing_order_email"
+      | "email_mismatch_or_unmapped";
+  },
+  logger: StructuredLogger,
+) {
+  const baseContext = {
+    orderId: payload.orderId,
+    reason: payload.reason,
+  };
+
   if (process.env.NODE_ENV === "production") {
-    console.warn(
-      `[orders][legacy-ownership] orderId=${payload.orderId} reason=${payload.reason}`,
-    );
+    logger.warn("orders.legacy_ownership_manual_review", {
+      context: baseContext,
+    });
     return;
   }
 
-  console.warn("[orders][legacy-ownership]", payload);
+  logger.warn("orders.legacy_ownership_manual_review", {
+    context: {
+      ...baseContext,
+      sessionUserId: payload.sessionUserId,
+    },
+  });
 }
 
 function normalizeOrderId(rawOrderId: string): number | null {
@@ -82,9 +96,14 @@ function normalizeOrderId(rawOrderId: string): number | null {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ orderId: string }> },
 ) {
+  const logger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/orders/[orderId]",
+  });
+
   try {
     const { orderId: rawOrderId } = await params;
     const session = await getServerSession(authOptions);
@@ -154,15 +173,18 @@ export async function GET(
         });
 
         if (legacyOrder) {
-          logLegacyOrderNeedsManualReview({
-            orderId: legacyOrder.id,
-            sessionUserId: session.user.id,
-            reason: !normalizedSessionEmail
-              ? "missing_session_email"
-              : legacyOrder.customerEmail
-                ? "email_mismatch_or_unmapped"
-                : "missing_order_email",
-          });
+          logLegacyOrderNeedsManualReview(
+            {
+              orderId: legacyOrder.id,
+              sessionUserId: session.user.id,
+              reason: !normalizedSessionEmail
+                ? "missing_session_email"
+                : legacyOrder.customerEmail
+                  ? "email_mismatch_or_unmapped"
+                  : "missing_order_email",
+            },
+            logger,
+          );
         }
       }
     }
@@ -191,10 +213,12 @@ export async function GET(
         }
       }
     } catch (automationError) {
-      console.error(
-        "⚠️ Falha ao executar automação demo para o pedido:",
-        automationError,
-      );
+      logger.warn("orders.demo_automation_failed", {
+        context: {
+          orderId: order.id,
+        },
+        error: automationError,
+      });
     }
 
     // Formatar os dados para a resposta
@@ -246,7 +270,7 @@ export async function GET(
 
     return NextResponse.json(formattedOrder);
   } catch (error) {
-    console.error("❌ Erro ao buscar pedido:", error);
+    logger.error("orders.lookup_failed", { error });
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 },

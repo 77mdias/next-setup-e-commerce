@@ -86,6 +86,25 @@ const baseProduct = {
   specifications: { ram: "16GB" },
 };
 
+type StructuredLogEntry = {
+  message: string;
+  route: string | null;
+  orderId: number | string | null;
+  error?: {
+    message?: string | null;
+  } | null;
+};
+
+function parseStructuredLogEntry(logCall: unknown[]): StructuredLogEntry {
+  const [serializedLog] = logCall;
+
+  if (typeof serializedLog !== "string") {
+    throw new Error("Structured log must be a JSON string");
+  }
+
+  return JSON.parse(serializedLog) as StructuredLogEntry;
+}
+
 function createCheckoutRequest(
   payload: unknown,
   headers?: Record<string, string>,
@@ -530,10 +549,22 @@ describe("POST /api/checkout integration", () => {
     expect(mockDb.order.delete).toHaveBeenCalledWith({
       where: { id: 123 },
     });
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Erro ao executar rollback do pedido 123"),
-      expect.any(Error),
+
+    const structuredLogs = consoleErrorSpy.mock.calls.map(
+      parseStructuredLogEntry,
     );
+    const rollbackFailureLog = structuredLogs.find(
+      (logEntry) =>
+        logEntry.message === "checkout.rollback_order_delete_failed",
+    );
+
+    expect(rollbackFailureLog).toMatchObject({
+      route: "/api/checkout",
+      orderId: 123,
+      error: {
+        message: "Falha ao deletar pedido",
+      },
+    });
 
     consoleErrorSpy.mockRestore();
   });

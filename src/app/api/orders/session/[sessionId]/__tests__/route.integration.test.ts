@@ -26,6 +26,24 @@ import { GET } from "@/app/api/orders/session/[sessionId]/route";
 
 const mutableEnv = process.env as Record<string, string | undefined>;
 
+type StructuredLogEntry = {
+  message: string;
+  route: string | null;
+  requestId: string | null;
+  context: Record<string, unknown> | null;
+  error: unknown;
+};
+
+function parseStructuredLogEntry(logCall: unknown[]): StructuredLogEntry {
+  const [serializedLog] = logCall;
+
+  if (typeof serializedLog !== "string") {
+    throw new Error("Structured log must be a JSON string");
+  }
+
+  return JSON.parse(serializedLog) as StructuredLogEntry;
+}
+
 function createRequest(sessionId: string) {
   return {
     request: new NextRequest(
@@ -326,7 +344,16 @@ describe("GET /api/orders/session/[sessionId] integration", () => {
 
       expect(response.status).toBe(500);
       expect(body.error).toBe("Erro interno do servidor");
-      expect(errorSpy).toHaveBeenCalledWith("Erro ao buscar pedido por sessão");
+
+      const structuredError = parseStructuredLogEntry(errorSpy.mock.calls[0]);
+      expect(structuredError).toMatchObject({
+        message: "orders.session.lookup_failed",
+        route: "/api/orders/session/[sessionId]",
+      });
+      expect(typeof structuredError.requestId).toBe("string");
+      expect(structuredError.requestId?.length).toBeGreaterThan(0);
+      expect(structuredError.context).toBeNull();
+      expect(structuredError.error).toBeNull();
 
       const serializedLogCalls = JSON.stringify(errorSpy.mock.calls);
       expect(serializedLogCalls).not.toContain("cs_owner_1");

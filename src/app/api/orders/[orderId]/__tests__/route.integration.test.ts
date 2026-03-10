@@ -25,6 +25,26 @@ vi.mock("@/lib/prisma", () => ({
 
 import { GET } from "@/app/api/orders/[orderId]/route";
 
+type StructuredLogEntry = {
+  message: string;
+  route: string | null;
+  orderId: number | string | null;
+  context?: {
+    reason?: string;
+    sessionUserId?: string;
+  } | null;
+};
+
+function parseStructuredLogEntry(logCall: unknown[]): StructuredLogEntry {
+  const [serializedLog] = logCall;
+
+  if (typeof serializedLog !== "string") {
+    throw new Error("Structured log must be a JSON string");
+  }
+
+  return JSON.parse(serializedLog) as StructuredLogEntry;
+}
+
 function createRequest(orderId: string) {
   return {
     request: new NextRequest(`http://localhost:3000/api/orders/${orderId}`, {
@@ -327,14 +347,17 @@ describe("GET /api/orders/[orderId] integration", () => {
 
     expect(response.status).toBe(404);
     expect(body.error).toBe("Pedido não encontrado");
-    expect(warnSpy).toHaveBeenCalledWith(
-      "[orders][legacy-ownership]",
-      expect.objectContaining({
-        orderId: 123,
+    const structuredWarning = parseStructuredLogEntry(warnSpy.mock.calls[0]);
+
+    expect(structuredWarning).toMatchObject({
+      message: "orders.legacy_ownership_manual_review",
+      route: "/api/orders/[orderId]",
+      orderId: 123,
+      context: {
         sessionUserId: "user-owner",
         reason: "email_mismatch_or_unmapped",
-      }),
-    );
+      },
+    });
 
     warnSpy.mockRestore();
   });

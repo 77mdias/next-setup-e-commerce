@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-10
 **Sprint Atual:** Sprint 04
-**Status Geral:** 🟡 50% (6/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 58% (7/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (10 dias úteis)
 **Pré-requisito:** Fase 03 - Experiência de Conta e Pedido (✅ concluída em 2026-03-08)
 
@@ -15,9 +15,9 @@
 | --------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Estratégia de qualidade e critérios     | 3      | 3         | 0            | 0        | 0         |
 | Cobertura automatizada do fluxo crítico | 3      | 3         | 0            | 0        | 0         |
-| Observabilidade e logs seguros          | 3      | 0         | 0            | 3        | 0         |
+| Observabilidade e logs seguros          | 3      | 1         | 0            | 2        | 0         |
 | CI gate e rollout monitorado            | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                               | **12** | **6**     | **0**        | **6**    | **0**     |
+| **TOTAL**                               | **12** | **7**     | **0**        | **5**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
@@ -25,7 +25,7 @@
 - ✅ Baseline de metricas minimas com SLI/SLO e thresholds de alerta publicada (`S04-QLT-002`).
 - ✅ Estrategia de cobertura por camada e DoD de merge publicados com gate minimo no CI (`S04-QLT-003`).
 - ✅ Fluxo E2E crítico de compra implementado com fallback de falha e artefatos Playwright (`S04-TST-003`).
-- ⚠️ Logging operacional ainda depende de `console.*` em rotas críticas e precisa padronização com redaction de PII.
+- 🟡 Logger estruturado aplicado nas rotas críticas (`checkout`, `webhooks/stripe`, `orders`) com correlação por `requestId`; redaction de PII permanece pendente (`S04-OBS-002`).
 
 ---
 
@@ -199,7 +199,7 @@ Padronizar telemetria operacional para permitir diagnóstico rápido sem exposi�
 
 #### OBS.1 - Logging e higiene operacional
 
-- [ ] **S04-OBS-001** - Introduzir logger estruturado central com correlação de contexto
+- [x] **S04-OBS-001** - Introduzir logger estruturado central com correlação de contexto
 
   **Descrição curta:**
   - Substituir uso difuso de `console.*` em fluxos críticos por logger padronizado.
@@ -213,13 +213,13 @@ Padronizar telemetria operacional para permitir diagnóstico rápido sem exposi�
   **Arquivos/áreas afetadas:** `src/lib/logger.ts` (novo), `src/app/api/checkout/route.ts`, `src/app/api/webhooks/stripe/route.ts`, `src/app/api/orders/session/[sessionId]/route.ts`, `src/app/api/orders/[orderId]/route.ts`
 
   **Critérios de aceitação:**
-  - [ ] Logs de rotas críticas seguem formato estruturado único.
-  - [ ] Endpoints críticos deixam de depender de `console.*` para observabilidade principal.
+  - [x] Logs de rotas críticas seguem formato estruturado único.
+  - [x] Endpoints críticos deixam de depender de `console.*` para observabilidade principal.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** S04-QLT-002  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-10)
 
 - [ ] **S04-OBS-002** - Aplicar redaction de PII em logs de auth, checkout e pedidos
 
