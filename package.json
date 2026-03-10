@@ -21,7 +21,10 @@
     "check-images": "node scripts/check-processed-images.js",
     "seed": "prisma db seed",
     "orders:backfill-user-id": "node scripts/backfill-order-user-id.js",
-    "test:integration": "vitest run --config vitest.integration.config.ts"
+    "test:e2e": "playwright test --config playwright.config.ts --grep @critical",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:integration:critical": "vitest run --config vitest.integration.config.ts src/app/api/checkout/__tests__/route.integration.test.ts src/app/api/webhooks/stripe/__tests__/route.integration.test.ts \"src/app/api/orders/[orderId]/__tests__/route.integration.test.ts\" \"src/app/api/orders/session/[sessionId]/__tests__/route.integration.test.ts\" src/app/orders/__tests__/page.integration.test.ts",
+    "test:unit:critical": "vitest run src/hooks/useCheckout.helpers.test.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

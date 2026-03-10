@@ -71,6 +71,46 @@ Criar base de confiabilidade continua para releases.
 - `Go`: ultimas `24h` com `5xx_rate <= 0.5%` em `checkout`, `webhooks/stripe` e `orders`; `payment.failed_rate <= 3.0%`; sem alerta critico ativo por `>=30m`.
 - `No-Go`: qualquer alerta critico ativo (`ALR-PAY-001`, `ALR-LAT-001`, `ALR-ERR-001`) ou violacao de SLO em duas janelas consecutivas de decisao de release.
 
+### Estrategia de cobertura por camada (S04-QLT-003)
+
+#### Matriz cenario x camada de teste
+
+| Prioridade | Cenario critico                                                                                       | Unit (regra)                                                                                          | Integration (contrato API/UI)                                                                                                               | E2E (jornada)                                                                                       | Estado atual |
+| ---------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------ |
+| P0         | `POST /api/checkout` rejeita payload adulterado e recalcula totais canonicamente                      | `src/hooks/useCheckout.helpers.test.ts` (normalizacao/erros de checkout)                             | `src/app/api/checkout/__tests__/route.integration.test.ts`                                                                                  | `e2e/checkout-critical-flow.spec.ts` (planejado em `S04-TST-003`)                                 | Parcial      |
+| P0         | Checkout executa rollback de pedido ao falhar criacao/persistencia de sessao Stripe                  | `src/lib/order-state-machine.test.ts` (planejado em `S04-TST-001`)                                   | `src/app/api/checkout/__tests__/route.integration.test.ts`                                                                                  | `e2e/checkout-critical-flow.spec.ts` (caminho de falha de pagamento, planejado em `S04-TST-003`) | Parcial      |
+| P0         | `POST /api/webhooks/stripe` deduplica `event.id` e trata redelivery/concorrencia                      | `src/lib/order-state-machine.test.ts` (planejado em `S04-TST-001`)                                   | `src/app/api/webhooks/stripe/__tests__/route.integration.test.ts`                                                                           | `e2e/checkout-critical-flow.spec.ts` (assert de idempotencia funcional, planejado em `S04-TST-003`) | Parcial      |
+| P0         | Owner acessa pedido e nao-owner recebe `404` em leitura por `orderId` e `sessionId`                 | `src/hooks/useCheckout.helpers.test.ts` (mapeamento de erro ownership-safe)                          | `src/app/api/orders/[orderId]/__tests__/route.integration.test.ts`, `src/app/api/orders/session/[sessionId]/__tests__/route.integration.test.ts` | `e2e/checkout-critical-flow.spec.ts` (owner vs nao-owner, planejado em `S04-TST-003`)            | Parcial      |
+| P0         | Retorno de `orders/success` e `orders/failure` preserva fluxo seguro por `session_id`                | `src/hooks/useCheckout.helpers.test.ts` (mensagens de recuperacao)                                   | `src/app/orders/__tests__/page.integration.test.ts`                                                                                         | `e2e/checkout-critical-flow.spec.ts` (success/failure real, planejado em `S04-TST-003`)          | Parcial      |
+| P1         | CRUD/migracao de carrinho preserva itens e ownership                                                   | `src/hooks/useCheckout.helpers.test.ts` (normalizacao de itens)                                      | `src/app/api/cart/__tests__/*.integration.test.ts` e `src/app/api/cart/migrate/__tests__/*.integration.test.ts` (planejado em `S04-TST-*`) | `e2e/cart-checkout-regression.spec.ts` (planejado apos `S04-TST-003`)                             | Gap aberto   |
+| P1         | Middleware protege `checkout/carrinho/pedido` e callback de auth preserva redirect                    | Unit de utilitarios de auth/middleware (planejado em trilha `S04-TST-*`)                             | Contratos de rota com auth em suites `orders` e `checkout` (parcial)                                                                        | Cenario E2E autenticacao + retorno de pedido (planejado apos `S04-TST-003`)                       | Gap aberto   |
+
+#### Contrato minimo por camada (stack e confiabilidade)
+
+- Unit:
+  - Stack: `Vitest` em modo rapido, sem dependencia de rede/servicos externos.
+  - Escopo: regras deterministicas (`helpers`, `state machine`, validacoes de transicao).
+  - Objetivo: feedback rapido para regressao de regra de dominio.
+- Integration:
+  - Stack: `Vitest` com `vitest.integration.config.ts` e suites `*.integration.test.ts`.
+  - Escopo: contrato HTTP de APIs criticas (`checkout`, `webhooks/stripe`, `orders`) e fluxo de pagina de retorno.
+  - Objetivo: detectar regressao de contrato entre camada de dominio, auth e persistencia.
+- E2E:
+  - Stack: `Playwright` com `playwright.config.ts` e tags `@critical`.
+  - Escopo: jornada completa de compra (add-to-cart -> checkout -> sucesso/falha -> consulta de pedido).
+  - Regras anti-flaky: `workers=1` em CI, `retries=2` em CI, `trace` no primeiro retry, `video/screenshot` em falha.
+
+#### Definition of Done de qualidade para merge (branches protegidas)
+
+| Gate minimo de merge | Comando | Politica |
+| -------------------- | ------- | -------- |
+| Qualidade estatica | `npm run typecheck`, `npm run lint`, `npm run build` | Bloqueante em `pull_request` e `main` |
+| Unitario critico (baseline) | `npm run test:unit:critical` | Bloqueante para regressao de regra deterministica |
+| Integracao critica P0 | `npm run test:integration:critical` | Bloqueante para fluxos P0 (`checkout`, `webhook`, `orders`) |
+| E2E critico de compra | `npm run test:e2e` | Referenciado no CI com execucao condicional ate existir suite `e2e/*.spec.ts` |
+
+Referencia de pipeline: `.github/workflows/ci.yml` (job `quality`, etapas `Unit critical baseline`, `Critical integration suite (P0)` e `E2E critical suite (conditional)`).
+
 ## Etapa 2 - Design
 
 - Estruturar suite de testes (unit + integration + e2e).

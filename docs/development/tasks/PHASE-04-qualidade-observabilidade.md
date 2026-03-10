@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 04: Qualidade, Testes e Observabilidade
 
 **Status:** 🟢 ATIVA
-**Última atualização:** 2026-03-08
+**Última atualização:** 2026-03-10
 **Sprint Atual:** Sprint 04
-**Status Geral:** 🟡 17% (2/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 25% (3/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (10 dias úteis)
 **Pré-requisito:** Fase 03 - Experiência de Conta e Pedido (✅ concluída em 2026-03-08)
 
@@ -13,17 +13,17 @@
 
 | Categoria                               | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | --------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Estratégia de qualidade e critérios     | 3      | 2         | 0            | 1        | 0         |
+| Estratégia de qualidade e critérios     | 3      | 3         | 0            | 0        | 0         |
 | Cobertura automatizada do fluxo crítico | 3      | 0         | 0            | 3        | 0         |
 | Observabilidade e logs seguros          | 3      | 0         | 0            | 3        | 0         |
 | CI gate e rollout monitorado            | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                               | **12** | **2**     | **0**        | **10**   | **0**     |
+| **TOTAL**                               | **12** | **3**     | **0**        | **9**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Baseline inicial de risco do fluxo de compra publicada na Sprint 04 (`S04-QLT-001`).
 - ✅ Baseline de metricas minimas com SLI/SLO e thresholds de alerta publicada (`S04-QLT-002`).
-- ⚠️ CI atual ainda não executa suíte crítica de testes como gate bloqueante de merge.
+- ✅ Estrategia de cobertura por camada e DoD de merge publicados com gate minimo no CI (`S04-QLT-003`).
 - ⚠️ Logging operacional ainda depende de `console.*` em rotas críticas e precisa padronização com redaction de PII.
 
 ---
@@ -94,7 +94,7 @@ Definir o que será medido e testado antes de ampliar cobertura de forma indiscr
   **Dependências:** S04-QLT-001  
   **Status:** ✅ Concluída (2026-03-08)
 
-- [ ] **S04-QLT-003** - Definir estratégia de cobertura por camada (unit + integration + e2e)
+- [x] **S04-QLT-003** - Definir estratégia de cobertura por camada (unit + integration + e2e)
 
   **Descrição curta:**
   - Converter critérios de risco em plano de testes executável e incremental.
@@ -108,13 +108,13 @@ Definir o que será medido e testado antes de ampliar cobertura de forma indiscr
   **Arquivos/áreas afetadas:** `docs/ROADMAP/SPRINTS/sprint-04-qualidade-observabilidade.md`, `vitest.integration.config.ts`, `playwright.config.ts` (novo), `package.json`
 
   **Critérios de aceitação:**
-  - [ ] Matriz cenário x camada de teste publicada e versionada.
-  - [ ] Critérios de execução mínima para merge definidos e referenciados no CI.
+  - [x] Matriz cenário x camada de teste publicada e versionada.
+  - [x] Critérios de execução mínima para merge definidos e referenciados no CI.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 4h  
   **Dependências:** S04-QLT-001, S04-QLT-002  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-10)
 
 ### 📦 Cobertura automatizada do fluxo crítico - Testes executáveis por camada
 

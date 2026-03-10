@@ -100,3 +100,13 @@ jobs:
 
       - name: Next.js production build
         run: npm run build
+
+      - name: Unit critical baseline
+        run: npm run test:unit:critical
+
+      - name: Critical integration suite (P0)
+        run: npm run test:integration:critical
+
+      - name: E2E critical suite (conditional)
+        if: ${{ hashFiles('e2e/**/*.spec.ts', 'e2e/**/*.test.ts') != '' }}
+        run: npm run test:e2e
