@@ -2,10 +2,9 @@ import { expect, test } from "@playwright/test";
 
 const E2E_USER_EMAIL =
   process.env.E2E_USER_EMAIL ?? "e2e.customer@nextstore.local";
-const E2E_USER_PASSWORD =
-  process.env.E2E_USER_PASSWORD ?? "E2eCheckout#123";
+const E2E_USER_PASSWORD = process.env.E2E_USER_PASSWORD ?? "E2eCheckout#123";
 
-async function signIn(page: Parameters<typeof test>[0]["page"]) {
+async function signIn(page: any) {
   await page.goto("/auth/signin?callbackUrl=/products");
 
   await page.getByLabel("Email").fill(E2E_USER_EMAIL);
@@ -13,15 +12,20 @@ async function signIn(page: Parameters<typeof test>[0]["page"]) {
   await page.getByRole("button", { name: /Initialize Session/i }).click();
 
   await page.waitForURL(/\/products/);
-  await expect(page.getByRole("heading", { name: /All Products/i })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /All Products/i }),
+  ).toBeVisible();
 }
 
-async function clearCart(page: Parameters<typeof test>[0]["page"]) {
+async function clearCart(page: any) {
   await page.request.delete("/api/cart");
 }
 
-async function addProductToCart(page: Parameters<typeof test>[0]["page"]) {
-  await page.getByRole("button", { name: /View Product/i }).first().click();
+async function addProductToCart(page: any) {
+  await page
+    .getByRole("button", { name: /View Product/i })
+    .first()
+    .click();
   await page.waitForURL(/\/product\/.+/);
 
   await page.getByRole("button", { name: /Add to Cart/i }).click();
@@ -31,7 +35,7 @@ async function addProductToCart(page: Parameters<typeof test>[0]["page"]) {
   ).toBeVisible();
 }
 
-async function proceedToCheckout(page: Parameters<typeof test>[0]["page"]) {
+async function proceedToCheckout(page: any) {
   await page.getByRole("button", { name: /Proceed to Checkout/i }).click();
   await page.waitForURL(/\/checkout/);
   await expect(
@@ -39,12 +43,9 @@ async function proceedToCheckout(page: Parameters<typeof test>[0]["page"]) {
   ).toBeVisible();
 }
 
-async function completeCheckout(
-  page: Parameters<typeof test>[0]["page"],
-  outcome: "success" | "failed",
-) {
+async function completeCheckout(page: any, outcome: "success" | "failed") {
   if (outcome === "failed") {
-    await page.route("**/api/checkout", async (route) => {
+    await page.route("**/api/checkout", async (route: any) => {
       await route.continue({
         headers: {
           ...route.request().headers(),
@@ -82,6 +83,8 @@ async function completeCheckout(
 test.describe("checkout critical flow", () => {
   test("@critical completes purchase journey and exposes order status after return", async ({
     page,
+  }: {
+    page: any;
   }) => {
     await signIn(page);
     await clearCart(page);
@@ -91,13 +94,19 @@ test.describe("checkout critical flow", () => {
     const { orderId, checkoutFailed } = await completeCheckout(page, "success");
     expect(checkoutFailed).toBe(false);
 
-    await expect(page.getByRole("heading", { name: /My Orders/i })).toBeVisible();
-    await expect(page.getByText(`ORD-${orderId.padStart(5, "0")}`)).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /My Orders/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(`ORD-${orderId.padStart(5, "0")}`),
+    ).toBeVisible();
     await expect(page.getByText("Payment approved")).toBeVisible();
   });
 
   test("@critical executes failed-payment fallback and keeps cancellation context visible", async ({
     page,
+  }: {
+    page: any;
   }) => {
     await signIn(page);
     await clearCart(page);
@@ -107,8 +116,12 @@ test.describe("checkout critical flow", () => {
     const { orderId, checkoutFailed } = await completeCheckout(page, "failed");
     expect(checkoutFailed).toBe(true);
 
-    await expect(page.getByRole("heading", { name: /My Orders/i })).toBeVisible();
-    await expect(page.getByText(`ORD-${orderId.padStart(5, "0")}`)).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /My Orders/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(`ORD-${orderId.padStart(5, "0")}`),
+    ).toBeVisible();
     await expect(page.getByText(/Cancellation reason:/i)).toBeVisible();
   });
 });
