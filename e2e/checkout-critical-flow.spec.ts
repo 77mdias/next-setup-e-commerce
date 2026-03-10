@@ -7,8 +7,10 @@ const E2E_USER_PASSWORD = process.env.E2E_USER_PASSWORD ?? "E2eCheckout#123";
 async function signIn(page: any) {
   await page.goto("/auth/signin?callbackUrl=/products");
 
-  await page.getByLabel("Email").fill(E2E_USER_EMAIL);
-  await page.getByLabel("Password").fill(E2E_USER_PASSWORD);
+  await page.getByRole("textbox", { name: /^Email$/ }).fill(E2E_USER_EMAIL);
+  await page
+    .getByRole("textbox", { name: /^Password$/ })
+    .fill(E2E_USER_PASSWORD);
   await page.getByRole("button", { name: /Initialize Session/i }).click();
 
   await page.waitForURL(/\/products/);
