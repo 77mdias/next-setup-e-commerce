@@ -1,4 +1,4 @@
-import { expect, test } from "playwright/test";
+import { expect, test } from "@playwright/test";
 
 const E2E_USER_EMAIL =
   process.env.E2E_USER_EMAIL ?? "e2e.customer@nextstore.local";

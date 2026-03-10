@@ -127,8 +127,11 @@ jobs:
       - name: Prepare deterministic E2E data
         run: npm run e2e:prepare
 
+      - name: Install Playwright test runtime
+        run: npm install --no-save @playwright/test
+
       - name: Install Playwright browser (Chromium)
-        run: npx --yes playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium
 
       - name: E2E critical suite
         run: npm run test:e2e
