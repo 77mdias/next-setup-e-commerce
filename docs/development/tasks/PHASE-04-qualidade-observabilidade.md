@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 04: Qualidade, Testes e Observabilidade
 
 **Status:** 🟢 ATIVA
-**Última atualização:** 2026-03-10
+**Última atualização:** 2026-03-11
 **Sprint Atual:** Sprint 04
-**Status Geral:** 🟡 67% (8/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟢 92% (11/12 tarefas completas) - FASE ATIVA
 **ETA:** 1 sprint (10 dias úteis)
 **Pré-requisito:** Fase 03 - Experiência de Conta e Pedido (✅ concluída em 2026-03-08)
 
@@ -15,9 +15,9 @@
 | --------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Estratégia de qualidade e critérios     | 3      | 3         | 0            | 0        | 0         |
 | Cobertura automatizada do fluxo crítico | 3      | 3         | 0            | 0        | 0         |
-| Observabilidade e logs seguros          | 3      | 2         | 0            | 1        | 0         |
-| CI gate e rollout monitorado            | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                               | **12** | **8**     | **0**        | **4**    | **0**     |
+| Observabilidade e logs seguros          | 3      | 3         | 0            | 0        | 0         |
+| CI gate e rollout monitorado            | 3      | 2         | 0            | 1        | 0         |
+| **TOTAL**                               | **12** | **11**    | **0**        | **1**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
@@ -26,6 +26,7 @@
 - ✅ Estrategia de cobertura por camada e DoD de merge publicados com gate minimo no CI (`S04-QLT-003`).
 - ✅ Fluxo E2E crítico de compra implementado com fallback de falha e artefatos Playwright (`S04-TST-003`).
 - ✅ Redaction central de PII aplicada em logs críticos de auth, checkout, webhooks e pedidos com testes de regressão (`S04-OBS-002`).
+- ✅ Checklist operacional de monitoramento pós-deploy da Sprint 04 formalizado com evidências e decisão de estabilidade (`S04-RLS-002`).
 
 ---
 
@@ -295,7 +296,7 @@ Transformar qualidade e observabilidade em critérios objetivos de liberação. 
   **Dependências:** S04-TST-002, S04-TST-003  
   **Status:** ✅ Concluída (2026-03-11)
 
-- [ ] **S04-RLS-002** - Implementar checklist de monitoramento pós-deploy da Sprint 04
+- [x] **S04-RLS-002** - Implementar checklist de monitoramento pós-deploy da Sprint 04
 
   **Descrição curta:**
   - Validar estabilidade da release com observação ativa logo após deploy.
@@ -309,13 +310,13 @@ Transformar qualidade e observabilidade em critérios objetivos de liberação. 
   **Arquivos/áreas afetadas:** `docs/ROADMAP/SPRINTS/sprint-04-qualidade-observabilidade.md`, `docs/ROADMAP/Logs/S04-RLS-002.md` (novo)
 
   **Critérios de aceitação:**
-  - [ ] Checklist pós-deploy executável e reutilizável por release.
-  - [ ] Evidências operacionais registradas com decisão explícita de estabilidade.
+  - [x] Checklist pós-deploy executável e reutilizável por release.
+  - [x] Evidências operacionais registradas com decisão explícita de estabilidade.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 3h  
   **Dependências:** S04-QLT-002, S04-OBS-001, S04-RLS-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-11)
 
 - [ ] **S04-RLS-003** - Formalizar plano de rollback e critérios de go/no-go
 
@@ -346,7 +347,7 @@ Transformar qualidade e observabilidade em critérios objetivos de liberação. 
 - **Suites necessárias:** Unitário (Vitest), integração de APIs críticas (Vitest integration), E2E de compra (Playwright), smoke pós-deploy.
 - **Cobertura alvo:** 100% dos cenários P0 da Sprint 04 e >=80% de branches nos módulos críticos (`checkout`, `webhooks/stripe`, `orders`).
 - **Comandos de verificação:** `npm run lint`, `npm run typecheck`, `npm run build`, `npm run test:integration`, `npm run test:unit` (novo), `npm run test:e2e` (novo).
-- **Estado atual:** ⚠️ Em evolução; CI já executa lint/typecheck/build, mas gate de testes críticos e observabilidade estruturada ainda dependem das tasks S04-TST/S04-OBS/S04-RLS.
+- **Estado atual:** ⚠️ Em evolução; CI gate e checklist pós-deploy já formalizados, com pendência principal no plano de rollback (`S04-RLS-003`).
 
 ---
 
@@ -362,8 +363,8 @@ Transformar qualidade e observabilidade em critérios objetivos de liberação. 
 ## ✅ Checklist de Encerramento da Fase
 
 - [ ] Todas as tarefas da Fase 04 marcadas como concluídas.
-- [ ] Gate de CI com lint, build e testes críticos ativado e bloqueante.
-- [ ] Fluxo crítico de compra coberto por testes automatizados (unit/integration/e2e).
-- [ ] Logs estruturados sem exposição de PII nos pontos críticos da aplicação.
-- [ ] Checklist pós-deploy executado com monitoramento e evidências registradas.
+- [x] Gate de CI com lint, build e testes críticos ativado e bloqueante.
+- [x] Fluxo crítico de compra coberto por testes automatizados (unit/integration/e2e).
+- [x] Logs estruturados sem exposição de PII nos pontos críticos da aplicação.
+- [x] Checklist pós-deploy executado com monitoramento e evidências registradas.
 - [ ] Plano de rollback e aprovação final (engenharia, QA e produto) documentados.

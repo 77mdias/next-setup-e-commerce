@@ -127,8 +127,41 @@ Referencia de pipeline: `.github/workflows/ci.yml` (job `quality`, etapas `Unit 
 - Gate de CI com lint + build + testes criticos.
 - Monitoramento pos-deploy com checklist de validacao.
 
+### Checklist operacional pos-deploy (S04-RLS-002)
+
+- **Janela operacional:** 60 minutos apos cada release em producao.
+- **Frequencia:** obrigatorio para toda release da Sprint 04.
+- **Canal oficial de reporte:** `#incidentes-release`.
+- **Responsaveis minimos na janela:** engenharia on-call (checkout, pagamentos e orders), QA de release e produto.
+
+| Janela | Verificacao obrigatoria | Criterio de estabilidade | Evidencia minima |
+| ------ | ----------------------- | ------------------------ | ---------------- |
+| `T+00` a `T+10` | Confirmar deploy concluido sem erro e validar que nao existe alerta critico ativo (`ALR-PAY-001`, `ALR-LAT-001`, `ALR-ERR-001`) | Nenhum alerta critico ativo por `>=10m` | Screenshot/export do dashboard + registro no canal oficial |
+| `T+10` a `T+30` | Checar metricas criticas (`api.checkout.5xx_rate`, `api.checkout.p95_latency_ms`, `api.webhook_stripe.5xx_rate`, `api.webhook_stripe.p95_latency_ms`, `api.orders.5xx_rate`, `api.orders.p95_latency_ms`, `payment.failed_rate`) | Sem threshold critico violado; warning exige investigacao imediata e dono definido | Tabela preenchida com valores observados e dono por metrica |
+| `T+30` a `T+45` | Executar smoke funcional do fluxo critico (`checkout` sucesso, falha controlada e consulta de pedido por owner) | Fluxos executam sem erro bloqueante e sem regressao de ownership/status | Log de execucao + links para suite/resultado de smoke |
+| `T+45` a `T+60` | Consolidar status, abrir incidente se necessario e registrar decisao final de estabilidade | Decisao explicita `GO` ou `NO-GO` com justificativa e responsaveis | Registro no `docs/ROADMAP/Logs/S04-RLS-002.md` e mensagem final no canal |
+
+#### Formato padrao de evidencia por release
+
+```md
+### Execucao pos-deploy - <release_id>
+- Inicio/fim da janela: <timestamp>
+- Canal: #incidentes-release
+- Responsaveis presentes: <nomes/papeis>
+
+| Item | Resultado | Evidencia |
+| ---- | --------- | --------- |
+| Alertas criticos (`ALR-*`) | <ok|falha> | <link ou anexo> |
+| Metricas criticas (erro/latencia/pagamento) | <ok|falha> | <valores + fonte> |
+| Smoke funcional do fluxo critico | <ok|falha> | <suite/manual + artefatos> |
+
+- Decisao final de estabilidade: <GO|NO-GO>
+- Justificativa objetiva: <texto curto>
+```
+
 ## Criterios de aceite
 
 - Fluxo critico de compra coberto por testes automatizados.
 - Logs sem dados sensiveis expostos.
 - Pipeline bloqueia merge quando teste critico falha.
+- Checklist pos-deploy executavel e reutilizavel com evidencias operacionais.
