@@ -21,12 +21,14 @@
 > Liste no mínimo 5 regras essenciais. Use subtítulos enumerados com blocos ❌/✅ para comparação.
 
 ### {{1. Regra crítica}}
+
 ```bash
 ❌ NEVER: {{exemplo proibido}}
 ✅ ALWAYS: {{comando/caminho correto}}
 ```
 
 ### {{2. Regra crítica}}
+
 ```typescript
 ❌ NEVER: {{antipadrão}}
 ✅ ALWAYS: {{padrão recomendado}}
@@ -56,17 +58,20 @@ _(Repita até cobrir todas as regras obrigatórias do stack)_.
 > Separe por contexto (Development, Database, Testing, etc.). Inclua make targets ou npm scripts.
 
 ### Development
+
 ```bash
 {{make dev}}
 {{make dev-build}}
 ```
 
 ### Database / Tooling
+
 ```bash
 {{comandos}}
 ```
 
 ### Testing
+
 ```bash
 {{make test}}
 {{npm test}}
@@ -77,17 +82,20 @@ _(Repita até cobrir todas as regras obrigatórias do stack)_.
 ## 📝 Coding Standards
 
 ### Naming
+
 - **Services:** {{UsersService}}
 - **Components/Controllers:** {{}}
 - **DTOs/Interfaces:** {{}}
 
 ### Formatting
+
 - Indentação: {{2 spaces}}
 - Quotes: {{single}}
 - Semicolons: {{required}}
 - Lint/format command: `{{npm run format}}`
 
 ### Style Guides (opcional)
+
 - {{Clean architecture, BEM, Atomic design, etc.}}
 
 ---
@@ -95,14 +103,17 @@ _(Repita até cobrir todas as regras obrigatórias do stack)_.
 ## 🧪 Testing Rules
 
 ### Backend / {{Stack}}
+
 - **Locais dos testes:** `{{path}}`
 - **Ferramentas:** {{Jest, Cypress, etc.}}
 - **Cobertura alvo:** {{>80%}}
 
 ### Frontend / {{Stack}}
+
 - {{Detalhes equivalentes}}
 
 ### Mandatory Commands Before Push
+
 ```bash
 {{make test}}
 {{npm test -- --watch=false}}
@@ -113,6 +124,7 @@ _(Repita até cobrir todas as regras obrigatórias do stack)_.
 ## 📋 Commit & PR Guidelines
 
 ### Commit Format
+
 ```
 <type>(<scope>): <subject> (TASK-ID)
 ```
@@ -121,6 +133,7 @@ _(Repita até cobrir todas as regras obrigatórias do stack)_.
 - **Regras:** {{imperative mood, 72 chars, sem ponto final, referenciar task}}
 
 ### PR Checklist
+
 1. **Título:** `[TASK-ID] {{Resumo}}`
 2. **Testes:** anexar resultados
 3. **Screenshots:** quando UI
@@ -164,12 +177,12 @@ _(Repita até cobrir todas as regras obrigatórias do stack)_.
 
 ## 📚 Quick Documentation Lookup (opcional tabela)
 
-| Necessidade | Documento |
-| ----------- | --------- |
-| {{Stack guide}} | `{{path}}` |
-| {{Docker}} | `docs/infrastructure/DOCKER.md` |
-| {{Database}} | `docs/database/DATABASE.md` |
-| {{Roadmap}} | `docs/development/ROADMAP.md` |
+| Necessidade     | Documento                       |
+| --------------- | ------------------------------- |
+| {{Stack guide}} | `{{path}}`                      |
+| {{Docker}}      | `docs/infrastructure/DOCKER.md` |
+| {{Database}}    | `docs/database/DATABASE.md`     |
+| {{Roadmap}}     | `docs/development/ROADMAP.md`   |
 
 _(Adapte linhas conforme os recursos relevantes do stack.)_
 
