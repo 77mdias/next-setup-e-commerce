@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  generateVerificationTokenPair,
+  hashVerificationToken,
+  sendVerificationEmail,
+} from "@/lib/email";
 import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
 
@@ -20,10 +25,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Buscar usuário com o token
+    const tokenHash = hashVerificationToken(token);
+
+    // Buscar usuário com hash de token válido
     const user = await db.user.findFirst({
       where: {
-        emailVerificationToken: token,
+        emailVerificationTokenHash: tokenHash,
         emailVerificationExpires: {
           gt: new Date(), // Token ainda não expirou
         },
@@ -43,7 +50,7 @@ export async function GET(request: NextRequest) {
       data: {
         isActive: true,
         emailVerified: new Date(),
-        emailVerificationToken: null,
+        emailVerificationTokenHash: null,
         emailVerificationExpires: null,
       },
     });
@@ -51,6 +58,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       message: "Email verificado com sucesso! Sua conta foi ativada.",
       success: true,
+      email: user.email,
     });
   } catch (error) {
     logger.error("auth.verify_email.request_failed", { error });
@@ -97,19 +105,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Gerar novo token
-    const { generateVerificationToken, sendVerificationEmail } =
-      await import("@/lib/email").catch(() => {
-        throw new Error("Erro ao importar módulo de email");
-      });
-    const verificationToken = generateVerificationToken();
+    // Gerar novo token seguro
+    const { token: verificationToken, tokenHash: verificationTokenHash } =
+      generateVerificationTokenPair();
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
-    // Atualizar token no banco
+    // Atualizar hash do token no banco
     await db.user.update({
       where: { id: user.id },
       data: {
-        emailVerificationToken: verificationToken,
+        emailVerificationTokenHash: verificationTokenHash,
         emailVerificationExpires: verificationExpires,
       },
     });

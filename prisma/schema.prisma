@@ -23,7 +23,7 @@ model User {
   updatedAt                DateTime             @updatedAt
   image                    String?
   emailVerificationExpires DateTime?
-  emailVerificationToken   String?
+  emailVerificationTokenHash String?            @map("emailVerificationToken")
   resetPasswordExpires     DateTime?
   resetPasswordToken       String?
   accounts                 Account[]
@@ -37,6 +37,7 @@ model User {
   stores                   Store[]
   wishlist                 Wishlist[]
 
+  @@index([emailVerificationTokenHash], map: "users_emailVerificationToken_idx")
   @@map("users")
 }
 

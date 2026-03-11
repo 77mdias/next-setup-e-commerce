@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-11
 **Sprint Atual:** Sprint 05
-**Status Geral:** 🟡 0% (0/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 8% (1/12 tarefas completas) - FASE ATIVA
 **ETA:** 2 semanas apos kickoff da Sprint 05
 **Pré-requisito:** Fase 04 - Qualidade, Testes e Observabilidade (✅ concluída em 2026-03-11)
 
@@ -13,15 +13,15 @@
 
 | Categoria                                    | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | -------------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Tokens e ciclo de identidade seguro          | 3      | 0         | 0            | 3        | 0         |
+| Tokens e ciclo de identidade seguro          | 3      | 1         | 0            | 2        | 0         |
 | Política de senha e anti-enumeração          | 3      | 0         | 0            | 3        | 0         |
 | Hardening de transporte, anti-abuso e logs   | 3      | 0         | 0            | 3        | 0         |
 | Testes, homologação e governança de release  | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                                    | **12** | **0**     | **0**        | **12**   | **0**     |
+| **TOTAL**                                    | **12** | **1**     | **0**        | **11**   | **0**     |
 
 ### 🎯 Principais Indicadores
 
-- ⚠️ Geração de token de verificação ainda usa aleatoriedade não criptográfica em `src/lib/email.ts`.
+- ✅ Geração de token de verificação migrou para aleatoriedade criptográfica com persistência por hash.
 - ⚠️ Transporte SMTP ainda possui `rejectUnauthorized: false` em fluxos de autenticação por email.
 - ⚠️ Endpoint público `/api/auth/user-info` expõe sinais de existência/estado de conta.
 - ⚠️ Endpoint `/api/remove-bg` segue sem autenticação obrigatória e sem limite de taxa dedicado.
@@ -52,7 +52,7 @@ Eliminar armazenamento/validação de token em plaintext e reduzir risco de comp
 
 #### SEC.1 - Token lifecycle seguro
 
-- [ ] **S05-SEC-001** - Migrar token de verificação de email para geração criptográfica com persistência por hash
+- [x] **S05-SEC-001** - Migrar token de verificação de email para geração criptográfica com persistência por hash
 
   **Descrição curta:**
   - O fluxo atual usa token não criptográfico e armazenamento direto no banco.
@@ -66,13 +66,13 @@ Eliminar armazenamento/validação de token em plaintext e reduzir risco de comp
   **Arquivos/áreas afetadas:** `src/lib/email.ts`, `src/app/api/auth/register/route.ts`, `src/app/api/auth/verify-email/route.ts`, `prisma/schema.prisma`, `prisma/migrations/*`
 
   **Critérios de aceitação:**
-  - [ ] Token de verificação não é armazenado em plaintext.
-  - [ ] Fluxo de verificação segue funcional e invalida token após consumo.
+  - [x] Token de verificação não é armazenado em plaintext.
+  - [x] Fluxo de verificação segue funcional e invalida token após consumo.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** nenhuma  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-11)
 
 - [ ] **S05-SEC-002** - Migrar reset de senha para token hash + consumo one-time
 

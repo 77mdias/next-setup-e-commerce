@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
-import { sendVerificationEmail, generateVerificationToken } from "@/lib/email";
+import {
+  generateVerificationTokenPair,
+  sendVerificationEmail,
+} from "@/lib/email";
 import { createRequestLogger } from "@/lib/logger";
 
 // Função para validar senha com requisitos de segurança
@@ -108,8 +111,9 @@ export async function POST(request: NextRequest) {
     // Hash da senha
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Gerar token de verificação
-    const verificationToken = generateVerificationToken();
+    // Gerar token de verificação seguro
+    const { token: verificationToken, tokenHash: verificationTokenHash } =
+      generateVerificationTokenPair();
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
     // Criar o usuário
@@ -121,7 +125,7 @@ export async function POST(request: NextRequest) {
         cpf: normalizedCpf,
         role: UserRole.CUSTOMER,
         isActive: false, // Usuário inativo até verificar email
-        emailVerificationToken: verificationToken,
+        emailVerificationTokenHash: verificationTokenHash,
         emailVerificationExpires: verificationExpires,
       },
       select: {
