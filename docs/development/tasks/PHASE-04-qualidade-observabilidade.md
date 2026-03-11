@@ -243,7 +243,7 @@ Padronizar telemetria operacional para permitir diagnóstico rápido sem exposi�
   **Dependências:** S04-OBS-001  
   **Status:** ✅ Concluída (2026-03-10)
 
-- [ ] **S04-OBS-003** - Reduzir ruído operacional de warnings (hooks e imagens)
+- [x] **S04-OBS-003** - Reduzir ruído operacional de warnings (hooks e imagens)
 
   **Descrição curta:**
   - Diminuir warnings recorrentes de build/test para facilitar detecção de problemas reais.
@@ -257,13 +257,13 @@ Padronizar telemetria operacional para permitir diagnóstico rápido sem exposi�
   **Arquivos/áreas afetadas:** `src/components/products/products-catalog.tsx`, `src/components/orders/orders-page-content.tsx`, `src/app/checkout/page.tsx`, `src/app/[slug]/checkout/page.tsx`, `docs/ROADMAP/Logs/S04-OBS-003.md` (novo)
 
   **Critérios de aceitação:**
-  - [ ] Warnings recorrentes de hooks/imagens reduzidos nos fluxos críticos de compra.
-  - [ ] Baseline de warnings e exceções documentado para revisão de release.
+  - [x] Warnings recorrentes de hooks/imagens reduzidos nos fluxos críticos de compra.
+  - [x] Baseline de warnings e exceções documentado para revisão de release.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 4h  
   **Dependências:** S04-OBS-001  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-11)
 
 ### 📦 CI gate e rollout monitorado - Merge protegido e validação pós-deploy
 
