@@ -11,6 +11,7 @@ const {
   mockDb: {
     user: {
       findUnique: vi.fn(),
+      updateMany: vi.fn(),
       update: vi.fn(),
     },
   },
@@ -67,6 +68,7 @@ describe("POST /api/auth/forgot-password integration", () => {
       name: "Customer",
       email: "customer@example.com",
     });
+    mockDb.user.updateMany.mockResolvedValue({ count: 0 });
     mockDb.user.update.mockResolvedValue({ id: "user-1" });
     mockSendMail.mockResolvedValue({ messageId: "message-1" });
   });
@@ -89,8 +91,24 @@ describe("POST /api/auth/forgot-password integration", () => {
       where: { email: "customer@example.com" },
     });
 
+    expect(mockDb.user.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "user-1",
+        resetPasswordExpires: {
+          lte: expect.any(Date),
+        },
+        resetPasswordTokenHash: {
+          not: null,
+        },
+      },
+      data: {
+        resetPasswordTokenHash: null,
+        resetPasswordExpires: null,
+      },
+    });
+
     expect(mockDb.user.update).toHaveBeenCalledWith({
-      where: { email: "customer@example.com" },
+      where: { id: "user-1" },
       data: {
         resetPasswordTokenHash: "hashed-reset-token",
         resetPasswordExpires: expect.any(Date),
@@ -123,6 +141,7 @@ describe("POST /api/auth/forgot-password integration", () => {
     expect(body.message).toBe(
       "Se o email existir, você receberá um link para redefinir sua senha",
     );
+    expect(mockDb.user.updateMany).not.toHaveBeenCalled();
     expect(mockDb.user.update).not.toHaveBeenCalled();
     expect(mockSendMail).not.toHaveBeenCalled();
   });

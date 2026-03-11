@@ -11,6 +11,7 @@ const {
     user: {
       findFirst: vi.fn(),
       findUnique: vi.fn(),
+      updateMany: vi.fn(),
       update: vi.fn(),
     },
   },
@@ -60,6 +61,7 @@ function createPostRequest(payload: Record<string, unknown>) {
 describe("/api/auth/verify-email integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockDb.user.updateMany.mockResolvedValue({ count: 1 });
   });
 
   it("validates token using hash and invalidates token after successful verification", async () => {
@@ -84,10 +86,20 @@ describe("/api/auth/verify-email integration", () => {
           gt: expect.any(Date),
         },
       },
+      select: {
+        id: true,
+        email: true,
+      },
     });
 
-    expect(mockDb.user.update).toHaveBeenCalledWith({
-      where: { id: "user-1" },
+    expect(mockDb.user.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "user-1",
+        emailVerificationTokenHash: "hashed-token",
+        emailVerificationExpires: {
+          gt: expect.any(Date),
+        },
+      },
       data: {
         isActive: true,
         emailVerified: expect.any(Date),
@@ -106,7 +118,18 @@ describe("/api/auth/verify-email integration", () => {
 
     expect(response.status).toBe(400);
     expect(body.message).toBe("Token inválido ou expirado");
-    expect(mockDb.user.update).not.toHaveBeenCalled();
+    expect(mockDb.user.updateMany).toHaveBeenCalledWith({
+      where: {
+        emailVerificationExpires: {
+          lte: expect.any(Date),
+        },
+        emailVerificationTokenHash: "hashed-token",
+      },
+      data: {
+        emailVerificationTokenHash: null,
+        emailVerificationExpires: null,
+      },
+    });
   });
 
   it("resends verification email persisting only token hash", async () => {
@@ -131,6 +154,22 @@ describe("/api/auth/verify-email integration", () => {
 
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
+
+    expect(mockDb.user.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "user-1",
+        emailVerificationExpires: {
+          lte: expect.any(Date),
+        },
+        emailVerificationTokenHash: {
+          not: null,
+        },
+      },
+      data: {
+        emailVerificationTokenHash: null,
+        emailVerificationExpires: null,
+      },
+    });
 
     expect(mockDb.user.update).toHaveBeenCalledWith({
       where: { id: "user-1" },

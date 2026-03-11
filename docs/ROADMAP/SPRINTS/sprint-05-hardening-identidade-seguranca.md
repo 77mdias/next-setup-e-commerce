@@ -34,6 +34,19 @@ Fechar riscos remanescentes de autenticacao, tokens, transporte e abuso de API p
   - `/api/remove-bg`.
 - Padronizar logging de seguranca sem PII sensivel.
 
+### Politica de TTL e invalidacao de tokens (S05-SEC-003)
+
+- TTL oficial:
+  - `email verification`: 24 horas.
+  - `reset password`: 1 hora.
+- Regras de invalidacao no backend:
+  - Emissao/reenvio (`register`, `verify-email POST`, `forgot-password`) sempre sobrescreve hash + expiracao anteriores.
+  - Consumo (`verify-email GET`, `reset-password POST`) aceita apenas token com hash correspondente e expiracao maior que `now`.
+  - Tentativa com token expirado aciona limpeza imediata do hash expirado correspondente.
+- Rotina periodica opcional:
+  - dry-run: `node scripts/cleanup-expired-auth-tokens.js`
+  - apply: `npm run tokens:cleanup-expired`
+
 ## Etapa 4 - Testes e homologacao (S05-SEC-003)
 
 - Testes de integracao para fluxos de token (geracao, expiracao, invalidacao e reuso).

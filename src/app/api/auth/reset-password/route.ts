@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { cleanupExpiredResetPasswordTokens } from "@/lib/auth-token-lifecycle";
 import { createRequestLogger } from "@/lib/logger";
 import { hashSecurityToken } from "@/lib/secure-token";
 
@@ -15,6 +16,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail =
       typeof email === "string" ? email.trim().toLowerCase() : "";
     const normalizedToken = typeof token === "string" ? token.trim() : "";
+    const now = new Date();
 
     if (!normalizedEmail || !newPassword) {
       return NextResponse.json(
@@ -46,7 +48,7 @@ export async function POST(request: NextRequest) {
         email: normalizedEmail,
         resetPasswordTokenHash: tokenHash,
         resetPasswordExpires: {
-          gt: new Date(),
+          gt: now,
         },
       },
       data: {
@@ -57,6 +59,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (resetResult.count === 0) {
+      await cleanupExpiredResetPasswordTokens({
+        email: normalizedEmail,
+        referenceDate: now,
+        tokenHash,
+      });
+
       return NextResponse.json(
         { error: "Token inválido, expirado ou já utilizado" },
         { status: 400 },

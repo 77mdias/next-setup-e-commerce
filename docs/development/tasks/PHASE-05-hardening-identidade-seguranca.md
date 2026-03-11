@@ -3,7 +3,7 @@
 **Status:** 🟢 ATIVA
 **Última atualização:** 2026-03-11
 **Sprint Atual:** Sprint 05
-**Status Geral:** 🟡 17% (2/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 25% (3/12 tarefas completas) - FASE ATIVA
 **ETA:** 2 semanas apos kickoff da Sprint 05
 **Pré-requisito:** Fase 04 - Qualidade, Testes e Observabilidade (✅ concluída em 2026-03-11)
 
@@ -13,11 +13,11 @@
 
 | Categoria                                   | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ------------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Tokens e ciclo de identidade seguro         | 3      | 2         | 0            | 1        | 0         |
+| Tokens e ciclo de identidade seguro         | 3      | 3         | 0            | 0        | 0         |
 | Política de senha e anti-enumeração         | 3      | 0         | 0            | 3        | 0         |
 | Hardening de transporte, anti-abuso e logs  | 3      | 0         | 0            | 3        | 0         |
 | Testes, homologação e governança de release | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                                   | **12** | **2**     | **0**        | **10**   | **0**     |
+| **TOTAL**                                   | **12** | **3**     | **0**        | **9**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
@@ -97,7 +97,7 @@ Eliminar armazenamento/validação de token em plaintext e reduzir risco de comp
   **Dependências:** S05-SEC-001  
   **Status:** 🟢 Concluída (2026-03-11)
 
-- [ ] **S05-SEC-003** - Padronizar invalidação e limpeza de tokens expirados
+- [x] **S05-SEC-003** - Padronizar invalidação e limpeza de tokens expirados
 
   **Descrição curta:**
   - A limpeza/invalidação precisa ser previsível para evitar acúmulo de credenciais expiradas.
@@ -111,13 +111,13 @@ Eliminar armazenamento/validação de token em plaintext e reduzir risco de comp
   **Arquivos/áreas afetadas:** `src/app/api/auth/verify-email/route.ts`, `src/app/api/auth/forgot-password/route.ts`, `scripts/*` (se necessário), `docs/ROADMAP/SPRINTS/sprint-05-hardening-identidade-seguranca.md`
 
   **Critérios de aceitação:**
-  - [ ] Tokens expirados são tratados de forma determinística e segura.
-  - [ ] Reenvio de token não deixa múltiplos tokens válidos concorrentes.
+  - [x] Tokens expirados são tratados de forma determinística e segura.
+  - [x] Reenvio de token não deixa múltiplos tokens válidos concorrentes.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 4h  
   **Dependências:** S05-SEC-001, S05-SEC-002  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-11)
 
 ### 📦 Política de senha e anti-enumeração - Contrato de autenticação consistente
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
+import { getEmailVerificationTokenExpiry } from "@/lib/auth-token-lifecycle";
 import {
   generateVerificationTokenPair,
   sendVerificationEmail,
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest) {
     const { name, email, password, cpf, callbackUrl } = await request.json();
     const normalizedCpf =
       typeof cpf === "string" && cpf.trim().length > 0 ? cpf.trim() : null;
+    const now = new Date();
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -114,7 +116,7 @@ export async function POST(request: NextRequest) {
     // Gerar token de verificação seguro
     const { token: verificationToken, tokenHash: verificationTokenHash } =
       generateVerificationTokenPair();
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+    const verificationExpires = getEmailVerificationTokenExpiry(now);
 
     // Criar o usuário
     const user = await db.user.create({

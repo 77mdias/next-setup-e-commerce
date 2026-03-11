@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import nodemailer from "nodemailer";
+import {
+  cleanupExpiredResetPasswordTokens,
+  getResetPasswordTokenExpiry,
+} from "@/lib/auth-token-lifecycle";
 import { normalizeCallbackPath } from "@/lib/callback-url";
 import { createRequestLogger } from "@/lib/logger";
 import { generateSecurityTokenPair } from "@/lib/secure-token";
@@ -15,6 +19,7 @@ export async function POST(request: NextRequest) {
     const { email, callbackUrl } = await request.json();
     const normalizedEmail =
       typeof email === "string" ? email.trim().toLowerCase() : "";
+    const now = new Date();
 
     if (!normalizedEmail) {
       return NextResponse.json(
@@ -39,14 +44,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    await cleanupExpiredResetPasswordTokens({
+      referenceDate: now,
+      userId: user.id,
+    });
+
     // Gerar token único
     const { token: resetToken, tokenHash: resetTokenHash } =
       generateSecurityTokenPair();
-    const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+    const resetTokenExpiry = getResetPasswordTokenExpiry(now);
 
-    // Salvar apenas o hash do token no banco
+    // Salvar apenas o hash do token no banco.
+    // O valor anterior (se existir) é sobrescrito e invalidado imediatamente.
     await db.user.update({
-      where: { email: normalizedEmail },
+      where: { id: user.id },
       data: {
         resetPasswordTokenHash: resetTokenHash,
         resetPasswordExpires: resetTokenExpiry,

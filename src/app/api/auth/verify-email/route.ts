@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  cleanupExpiredVerificationTokens,
+  getEmailVerificationTokenExpiry,
+} from "@/lib/auth-token-lifecycle";
+import {
   generateVerificationTokenPair,
   hashVerificationToken,
   sendVerificationEmail,
@@ -17,6 +21,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const token = searchParams.get("token");
+    const now = new Date();
 
     if (!token) {
       return NextResponse.json(
@@ -32,28 +37,50 @@ export async function GET(request: NextRequest) {
       where: {
         emailVerificationTokenHash: tokenHash,
         emailVerificationExpires: {
-          gt: new Date(), // Token ainda não expirou
+          gt: now, // Token ainda não expirou
         },
+      },
+      select: {
+        id: true,
+        email: true,
       },
     });
 
     if (!user) {
+      await cleanupExpiredVerificationTokens({
+        referenceDate: now,
+        tokenHash,
+      });
+
       return NextResponse.json(
         { message: "Token inválido ou expirado" },
         { status: 400 },
       );
     }
 
-    // Ativar o usuário e limpar o token
-    await db.user.update({
-      where: { id: user.id },
+    // Consumir token de forma atômica para evitar reuso concorrente.
+    const verificationResult = await db.user.updateMany({
+      where: {
+        id: user.id,
+        emailVerificationTokenHash: tokenHash,
+        emailVerificationExpires: {
+          gt: now,
+        },
+      },
       data: {
         isActive: true,
-        emailVerified: new Date(),
+        emailVerified: now,
         emailVerificationTokenHash: null,
         emailVerificationExpires: null,
       },
     });
+
+    if (verificationResult.count === 0) {
+      return NextResponse.json(
+        { message: "Token inválido ou expirado" },
+        { status: 400 },
+      );
+    }
 
     return NextResponse.json({
       message: "Email verificado com sucesso! Sua conta foi ativada.",
@@ -78,8 +105,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const { email, callbackUrl } = await request.json();
+    const normalizedEmail =
+      typeof email === "string" ? email.trim().toLowerCase() : "";
+    const now = new Date();
 
-    if (!email) {
+    if (!normalizedEmail) {
       return NextResponse.json(
         { message: "Email é obrigatório" },
         { status: 400 },
@@ -88,7 +118,7 @@ export async function POST(request: NextRequest) {
 
     // Buscar usuário
     const user = await db.user.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { email: normalizedEmail },
     });
 
     if (!user) {
@@ -97,6 +127,11 @@ export async function POST(request: NextRequest) {
         { status: 404 },
       );
     }
+
+    await cleanupExpiredVerificationTokens({
+      referenceDate: now,
+      userId: user.id,
+    });
 
     if (user.isActive) {
       return NextResponse.json(
@@ -108,9 +143,10 @@ export async function POST(request: NextRequest) {
     // Gerar novo token seguro
     const { token: verificationToken, tokenHash: verificationTokenHash } =
       generateVerificationTokenPair();
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+    const verificationExpires = getEmailVerificationTokenExpiry(now);
 
-    // Atualizar hash do token no banco
+    // Atualizar hash do token no banco.
+    // O valor anterior (se existir) é sobrescrito e imediatamente invalidado.
     await db.user.update({
       where: { id: user.id },
       data: {
@@ -121,7 +157,7 @@ export async function POST(request: NextRequest) {
 
     // Enviar novo email
     const emailResult = await sendVerificationEmail(
-      email,
+      normalizedEmail,
       verificationToken,
       callbackUrl,
     );

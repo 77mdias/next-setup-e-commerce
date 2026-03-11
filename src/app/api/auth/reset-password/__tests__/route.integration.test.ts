@@ -80,7 +80,7 @@ describe("POST /api/auth/reset-password integration", () => {
   });
 
   it("returns consistent response for invalid, expired or already used token", async () => {
-    mockDb.user.updateMany.mockResolvedValue({ count: 0 });
+    mockDb.user.updateMany.mockResolvedValueOnce({ count: 0 });
 
     const response = await POST(
       createRequest({
@@ -93,6 +93,19 @@ describe("POST /api/auth/reset-password integration", () => {
 
     expect(response.status).toBe(400);
     expect(body.error).toBe("Token inválido, expirado ou já utilizado");
+    expect(mockDb.user.updateMany).toHaveBeenNthCalledWith(2, {
+      where: {
+        email: "customer@example.com",
+        resetPasswordExpires: {
+          lte: expect.any(Date),
+        },
+        resetPasswordTokenHash: "hashed-reset-token",
+      },
+      data: {
+        resetPasswordTokenHash: null,
+        resetPasswordExpires: null,
+      },
+    });
   });
 
   it("returns 400 when reset token is missing", async () => {
