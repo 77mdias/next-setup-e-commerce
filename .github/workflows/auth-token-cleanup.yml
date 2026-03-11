@@ -1,0 +1,54 @@
+name: Cleanup Expired Auth Tokens
+
+on:
+  schedule:
+    # 03:30 UTC (00:30 em America/Sao_Paulo, sem considerar horário de verão)
+    - cron: "30 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: auth-token-cleanup-production
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    name: Cleanup Expired Auth Tokens
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.PRODUCTION_DIRECT_URL || secrets.PRODUCTION_DATABASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Validate required secrets
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "Missing required secret: PRODUCTION_DATABASE_URL"
+            exit 1
+          fi
+          if [ -z "$DIRECT_URL" ]; then
+            echo "Missing required secret: PRODUCTION_DIRECT_URL (or fallback DATABASE_URL)"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Snapshot expired tokens (dry-run)
+        run: node scripts/cleanup-expired-auth-tokens.js
+
+      - name: Cleanup expired tokens
+        run: npm run tokens:cleanup-expired

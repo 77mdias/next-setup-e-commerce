@@ -46,6 +46,7 @@ Fechar riscos remanescentes de autenticacao, tokens, transporte e abuso de API p
 - Rotina periodica opcional:
   - dry-run: `node scripts/cleanup-expired-auth-tokens.js`
   - apply: `npm run tokens:cleanup-expired`
+  - automacao recomendada: GitHub Actions em `.github/workflows/auth-token-cleanup.yml` (schedule diario + execucao manual)
 
 ## Etapa 4 - Testes e homologacao (S05-SEC-003)
 
