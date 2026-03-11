@@ -79,6 +79,32 @@ describe("POST /api/auth/reset-password integration", () => {
     });
   });
 
+  it("blocks weak password using shared policy response payload", async () => {
+    const response = await POST(
+      createRequest({
+        email: "customer@example.com",
+        newPassword: "weak",
+        token: "valid-token",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.message).toBe("Senha não atende aos requisitos de segurança");
+    expect(body.error).toBe("Senha não atende aos requisitos de segurança");
+    expect(body.details).toEqual(
+      expect.arrayContaining([
+        "A senha deve ter pelo menos 8 caracteres",
+        "A senha deve conter pelo menos uma letra maiúscula (A-Z)",
+        "A senha deve conter pelo menos um número (0-9)",
+        "A senha deve conter pelo menos um caractere especial (!@#$%^&*()_+-=[]{}|;':\",./<>?)",
+      ]),
+    );
+    expect(mockHashSecurityToken).not.toHaveBeenCalled();
+    expect(mockBcryptHash).not.toHaveBeenCalled();
+    expect(mockDb.user.updateMany).not.toHaveBeenCalled();
+  });
+
   it("returns consistent response for invalid, expired or already used token", async () => {
     mockDb.user.updateMany.mockResolvedValueOnce({ count: 0 });
 

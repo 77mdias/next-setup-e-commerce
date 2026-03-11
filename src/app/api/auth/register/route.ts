@@ -8,46 +8,7 @@ import {
   sendVerificationEmail,
 } from "@/lib/email";
 import { createRequestLogger } from "@/lib/logger";
-
-// Função para validar senha com requisitos de segurança
-function validatePassword(password: string): {
-  isValid: boolean;
-  errors: string[];
-} {
-  const errors: string[] = [];
-
-  // Mínimo 8 caracteres
-  if (password.length < 8) {
-    errors.push("A senha deve ter pelo menos 8 caracteres");
-  }
-
-  // Pelo menos uma letra maiúscula
-  if (!/[A-Z]/.test(password)) {
-    errors.push("A senha deve conter pelo menos uma letra maiúscula (A-Z)");
-  }
-
-  // Pelo menos uma letra minúscula
-  if (!/[a-z]/.test(password)) {
-    errors.push("A senha deve conter pelo menos uma letra minúscula (a-z)");
-  }
-
-  // Pelo menos um número
-  if (!/\d/.test(password)) {
-    errors.push("A senha deve conter pelo menos um número (0-9)");
-  }
-
-  // Pelo menos um caractere especial
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    errors.push(
-      "A senha deve conter pelo menos um caractere especial (!@#$%^&*()_+-=[]{}|;':\",./<>?)",
-    );
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  };
-}
+import { createPasswordPolicyErrorPayload } from "@/lib/password-policy";
 
 export async function POST(request: NextRequest) {
   const logger = createRequestLogger({
@@ -69,15 +30,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Validação de senha robusta
-    const passwordValidation = validatePassword(password);
-    if (!passwordValidation.isValid) {
-      return NextResponse.json(
-        {
-          message: "Senha não atende aos requisitos de segurança",
-          details: passwordValidation.errors,
-        },
-        { status: 400 },
-      );
+    const passwordPolicyError = createPasswordPolicyErrorPayload(password);
+    if (passwordPolicyError.details.length > 0) {
+      return NextResponse.json(passwordPolicyError, {
+        status: 400,
+      });
     }
 
     // Verificar se o usuário já existe

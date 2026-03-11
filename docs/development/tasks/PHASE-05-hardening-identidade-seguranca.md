@@ -127,7 +127,7 @@ Remover divergência de regras entre cadastro e reset e bloquear vazamento de si
 
 #### AUT.1 - Regras de autenticação e privacidade de conta
 
-- [ ] **S05-AUT-001** - Unificar política de senha em módulo compartilhado (register + reset)
+- [x] **S05-AUT-001** - Unificar política de senha em módulo compartilhado (register + reset)
 
   **Descrição curta:**
   - Cadastro exige senha forte, mas reset aceita regra mais fraca.
@@ -141,13 +141,13 @@ Remover divergência de regras entre cadastro e reset e bloquear vazamento de si
   **Arquivos/áreas afetadas:** `src/app/api/auth/register/route.ts`, `src/app/api/auth/reset-password/route.ts`, `src/lib/*password*` (novo), `src/**/*.test.ts`
 
   **Critérios de aceitação:**
-  - [ ] Cadastro e reset usam exatamente a mesma política de senha.
-  - [ ] Casos inválidos são bloqueados no backend com resposta consistente.
+  - [x] Cadastro e reset usam exatamente a mesma política de senha.
+  - [x] Casos inválidos são bloqueados no backend com resposta consistente.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 5h  
   **Dependências:** nenhuma  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-11)
 
 - [ ] **S05-AUT-002** - Alinhar UX de redefinição de senha com política única
 

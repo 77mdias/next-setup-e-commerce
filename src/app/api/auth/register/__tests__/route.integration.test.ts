@@ -55,6 +55,33 @@ describe("POST /api/auth/register integration", () => {
     mockSendVerificationEmail.mockResolvedValue({ success: true });
   });
 
+  it("blocks weak password using shared policy response payload", async () => {
+    const response = await POST(
+      createRequest({
+        name: "Test User",
+        email: "user@example.com",
+        password: "weak",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.message).toBe("Senha não atende aos requisitos de segurança");
+    expect(body.error).toBe("Senha não atende aos requisitos de segurança");
+    expect(body.details).toEqual(
+      expect.arrayContaining([
+        "A senha deve ter pelo menos 8 caracteres",
+        "A senha deve conter pelo menos uma letra maiúscula (A-Z)",
+        "A senha deve conter pelo menos um número (0-9)",
+        "A senha deve conter pelo menos um caractere especial (!@#$%^&*()_+-=[]{}|;':\",./<>?)",
+      ]),
+    );
+
+    expect(mockDb.user.findUnique).not.toHaveBeenCalled();
+    expect(mockDb.user.create).not.toHaveBeenCalled();
+    expect(mockSendVerificationEmail).not.toHaveBeenCalled();
+  });
+
   it("stores only the token hash and sends raw token via email", async () => {
     const response = await POST(
       createRequest({

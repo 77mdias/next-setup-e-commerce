@@ -3,6 +3,7 @@ import { db } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { cleanupExpiredResetPasswordTokens } from "@/lib/auth-token-lifecycle";
 import { createRequestLogger } from "@/lib/logger";
+import { createPasswordPolicyErrorPayload } from "@/lib/password-policy";
 import { hashSecurityToken } from "@/lib/secure-token";
 
 export async function POST(request: NextRequest) {
@@ -32,11 +33,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (newPassword.length < 6) {
-      return NextResponse.json(
-        { error: "A senha deve ter pelo menos 6 caracteres" },
-        { status: 400 },
-      );
+    const passwordPolicyError = createPasswordPolicyErrorPayload(newPassword);
+    if (passwordPolicyError.details.length > 0) {
+      return NextResponse.json(passwordPolicyError, {
+        status: 400,
+      });
     }
 
     const tokenHash = hashSecurityToken(normalizedToken);
