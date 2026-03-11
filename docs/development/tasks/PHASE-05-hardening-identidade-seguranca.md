@@ -11,13 +11,13 @@
 
 ## 📊 Resumo de Progresso
 
-| Categoria                                    | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
-| -------------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Tokens e ciclo de identidade seguro          | 3      | 1         | 0            | 2        | 0         |
-| Política de senha e anti-enumeração          | 3      | 0         | 0            | 3        | 0         |
-| Hardening de transporte, anti-abuso e logs   | 3      | 0         | 0            | 3        | 0         |
-| Testes, homologação e governança de release  | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                                    | **12** | **1**     | **0**        | **11**   | **0**     |
+| Categoria                                   | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
+| ------------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
+| Tokens e ciclo de identidade seguro         | 3      | 1         | 0            | 2        | 0         |
+| Política de senha e anti-enumeração         | 3      | 0         | 0            | 3        | 0         |
+| Hardening de transporte, anti-abuso e logs  | 3      | 0         | 0            | 3        | 0         |
+| Testes, homologação e governança de release | 3      | 0         | 0            | 3        | 0         |
+| **TOTAL**                                   | **12** | **1**     | **0**        | **11**   | **0**     |
 
 ### 🎯 Principais Indicadores
 

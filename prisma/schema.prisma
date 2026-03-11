@@ -10,32 +10,32 @@ datasource db {
 }
 
 model User {
-  id                       String               @id @default(uuid())
-  email                    String               @unique
-  password                 String?
-  name                     String?
-  phone                    String?
-  cpf                      String?              @unique
-  role                     UserRole             @default(CUSTOMER)
-  emailVerified            DateTime?
-  isActive                 Boolean              @default(false)
-  createdAt                DateTime             @default(now())
-  updatedAt                DateTime             @updatedAt
-  image                    String?
-  emailVerificationExpires DateTime?
-  emailVerificationTokenHash String?            @map("emailVerificationToken")
-  resetPasswordExpires     DateTime?
-  resetPasswordToken       String?
-  accounts                 Account[]
-  addresses                Address[]
-  cart                     Cart[]
-  statusChanges            OrderStatusHistory[]
-  orders                   Order[]
-  reviews                  Review[]
-  sessions                 Session[]
-  stockMovements           StockMovement[]
-  stores                   Store[]
-  wishlist                 Wishlist[]
+  id                         String               @id @default(uuid())
+  email                      String               @unique
+  password                   String?
+  name                       String?
+  phone                      String?
+  cpf                        String?              @unique
+  role                       UserRole             @default(CUSTOMER)
+  emailVerified              DateTime?
+  isActive                   Boolean              @default(false)
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime             @updatedAt
+  image                      String?
+  emailVerificationExpires   DateTime?
+  emailVerificationTokenHash String?              @map("emailVerificationToken")
+  resetPasswordExpires       DateTime?
+  resetPasswordToken         String?
+  accounts                   Account[]
+  addresses                  Address[]
+  cart                       Cart[]
+  statusChanges              OrderStatusHistory[]
+  orders                     Order[]
+  reviews                    Review[]
+  sessions                   Session[]
+  stockMovements             StockMovement[]
+  stores                     Store[]
+  wishlist                   Wishlist[]
 
   @@index([emailVerificationTokenHash], map: "users_emailVerificationToken_idx")
   @@map("users")

@@ -1,21 +1,18 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-  mockDb,
-  mockGenerateVerificationTokenPair,
-  mockSendVerificationEmail,
-} = vi.hoisted(() => ({
-  mockDb: {
-    user: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      delete: vi.fn(),
+const { mockDb, mockGenerateVerificationTokenPair, mockSendVerificationEmail } =
+  vi.hoisted(() => ({
+    mockDb: {
+      user: {
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        delete: vi.fn(),
+      },
     },
-  },
-  mockGenerateVerificationTokenPair: vi.fn(),
-  mockSendVerificationEmail: vi.fn(),
-}));
+    mockGenerateVerificationTokenPair: vi.fn(),
+    mockSendVerificationEmail: vi.fn(),
+  }));
 
 vi.mock("@/lib/prisma", () => ({
   db: mockDb,
