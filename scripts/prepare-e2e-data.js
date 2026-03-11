@@ -31,7 +31,7 @@ async function upsertUser() {
       role: UserRole.CUSTOMER,
       isActive: true,
       emailVerified: new Date(),
-      emailVerificationToken: null,
+      emailVerificationTokenHash: null,
       emailVerificationExpires: null,
     },
     create: {
