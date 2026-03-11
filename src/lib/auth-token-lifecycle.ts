@@ -13,7 +13,9 @@ type ExpiredTokenCleanupScope = {
   userId?: string;
 };
 
-function buildScopeFilter(scope: ExpiredTokenCleanupScope): Prisma.UserWhereInput {
+function buildScopeFilter(
+  scope: ExpiredTokenCleanupScope,
+): Prisma.UserWhereInput {
   const where: Prisma.UserWhereInput = {};
 
   if (scope.userId) {
@@ -27,7 +29,9 @@ function buildScopeFilter(scope: ExpiredTokenCleanupScope): Prisma.UserWhereInpu
   return where;
 }
 
-export function getEmailVerificationTokenExpiry(referenceDate = new Date()): Date {
+export function getEmailVerificationTokenExpiry(
+  referenceDate = new Date(),
+): Date {
   return new Date(referenceDate.getTime() + EMAIL_VERIFICATION_TOKEN_TTL_MS);
 }
 
@@ -90,36 +94,38 @@ export type AuthTokenCleanupResult = {
 export async function cleanupExpiredAuthTokens(
   referenceDate = new Date(),
 ): Promise<AuthTokenCleanupResult> {
-  const [verificationCleanupResult, resetCleanupResult] = await db.$transaction([
-    db.user.updateMany({
-      where: {
-        emailVerificationTokenHash: {
-          not: null,
+  const [verificationCleanupResult, resetCleanupResult] = await db.$transaction(
+    [
+      db.user.updateMany({
+        where: {
+          emailVerificationTokenHash: {
+            not: null,
+          },
+          emailVerificationExpires: {
+            lte: referenceDate,
+          },
         },
-        emailVerificationExpires: {
-          lte: referenceDate,
+        data: {
+          emailVerificationTokenHash: null,
+          emailVerificationExpires: null,
         },
-      },
-      data: {
-        emailVerificationTokenHash: null,
-        emailVerificationExpires: null,
-      },
-    }),
-    db.user.updateMany({
-      where: {
-        resetPasswordTokenHash: {
-          not: null,
+      }),
+      db.user.updateMany({
+        where: {
+          resetPasswordTokenHash: {
+            not: null,
+          },
+          resetPasswordExpires: {
+            lte: referenceDate,
+          },
         },
-        resetPasswordExpires: {
-          lte: referenceDate,
+        data: {
+          resetPasswordTokenHash: null,
+          resetPasswordExpires: null,
         },
-      },
-      data: {
-        resetPasswordTokenHash: null,
-        resetPasswordExpires: null,
-      },
-    }),
-  ]);
+      }),
+    ],
+  );
 
   return {
     cleanedEmailVerificationTokens: verificationCleanupResult.count,
