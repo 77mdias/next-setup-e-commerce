@@ -273,7 +273,7 @@ Transformar qualidade e observabilidade em critérios objetivos de liberação. 
 
 #### RLS.1 - Governança de release
 
-- [ ] **S04-RLS-001** - Tornar pipeline CI bloqueante com lint, build e testes críticos
+- [x] **S04-RLS-001** - Tornar pipeline CI bloqueante com lint, build e testes críticos
 
   **Descrição curta:**
   - Garantir que regressões críticas impeçam merge antes de chegar em produção.
@@ -287,13 +287,13 @@ Transformar qualidade e observabilidade em critérios objetivos de liberação. 
   **Arquivos/áreas afetadas:** `.github/workflows/ci.yml`, `package.json`, `docs/ROADMAP/Logs/S04-RLS-001.md` (novo)
 
   **Critérios de aceitação:**
-  - [ ] Merge bloqueado automaticamente quando qualquer teste crítico falhar.
-  - [ ] Pipeline executa lint, build e suíte crítica com resultado rastreável.
+  - [x] Merge bloqueado automaticamente quando qualquer teste crítico falhar.
+  - [x] Pipeline executa lint, build e suíte crítica com resultado rastreável.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 5h  
   **Dependências:** S04-TST-002, S04-TST-003  
-  **Status:** 🔴 Pendente
+  **Status:** ✅ Concluída (2026-03-11)
 
 - [ ] **S04-RLS-002** - Implementar checklist de monitoramento pós-deploy da Sprint 04
 

@@ -17,7 +17,7 @@ jobs:
   quality:
     name: Quality Gates
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     services:
       postgres:
         image: postgres:16
@@ -128,7 +128,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: E2E critical suite
-        run: npm run test:e2e
+        run: npm run test:e2e:critical:ci
 
       - name: Upload Playwright artifacts
         if: ${{ always() }}
