@@ -159,9 +159,51 @@ Referencia de pipeline: `.github/workflows/ci.yml` (job `quality`, etapas `Unit 
 - Justificativa objetiva: <texto curto>
 ```
 
+### Plano de rollback e decisao de go/no-go (S04-RLS-003)
+
+- **RTO alvo:** ate 20 minutos apos decisao `NO-GO` com rollback.
+- **Escopo de reversao:** release vigente da Sprint 04 em fluxos criticos (`checkout`, `webhooks/stripe`, `orders`) e configuracoes operacionais associadas.
+- **Responsaveis:**
+  - engenharia on-call (checkout/pagamentos/orders): execucao tecnica do rollback e validacao de recuperacao;
+  - QA de release: revalidacao de smoke funcional pos-rollback;
+  - produto: comunicacao de janela, decisao final de `GO`/`NO-GO` e atualizacao de stakeholders.
+- **Gatilhos objetivos de rollback:**
+  - falha em qualquer gate critico da release (`npm run lint`, `npm run build`, `npm run test:unit:critical`, `npm run test:integration:critical`, `npm run test:e2e:critical:ci`);
+  - alerta critico ativo (`ALR-PAY-001`, `ALR-LAT-001`, `ALR-ERR-001`) por `>=10m` na janela operacional;
+  - violacao de SLO em duas janelas consecutivas de decisao ou `payment.failed_rate > 8.0%` por `15m` com volume `>=20`;
+  - regressao em smoke P0 (checkout sucesso, falha controlada ou consulta de pedido por owner).
+- **Sequencia operacional de rollback:**
+  1. Declarar `NO-GO`, congelar novos deploys e abrir incidente no canal `#incidentes-release`.
+  2. Reverter para a release estavel anterior e confirmar versao ativa em producao.
+  3. Reexecutar validacoes minimas (`npm run lint`, `npm run build`) e smoke funcional P0.
+  4. Confirmar recuperacao das metricas criticas sem alerta critico ativo por `>=15m`.
+  5. Registrar causa, horario, responsaveis e decisao final no log `docs/ROADMAP/Logs/S04-RLS-003.md`.
+- **Criterio de saida de rollback:**
+  - release anterior restaurada com sucesso;
+  - smoke funcional P0 aprovado por QA;
+  - metricas criticas estabilizadas sem alerta critico ativo por `>=15m`;
+  - comunicacao final enviada por produto com status operacional.
+
+#### Matriz formal de decisao go/no-go
+
+| Decisao | Condicoes objetivas | Acao operacional |
+| ------- | ------------------- | ---------------- |
+| `GO` | Gate critico verde + sem alerta critico ativo por `>=30m` + smoke P0 sem regressao | Prosseguir com release e concluir janela `T+60` |
+| `NO-GO` (rollback imediato) | Qualquer gatilho de rollback acionado | Executar sequencia de rollback e registrar incidente |
+| `NO-GO` (hold controlado) | Warning persistente sem gatilho critico, com risco nao resolvido | Manter freeze de deploy, reavaliar em ate `15m` com engenharia + QA + produto |
+
+#### Aprovacao de encerramento operacional da Sprint 04
+
+| Papel | Escopo aprovado | Evidencia | Status |
+| ----- | --------------- | --------- | ------ |
+| Engenharia | Gatilhos, sequencia de rollback, RTO e criterio de saida | Secao "Plano de rollback e decisao de go/no-go (S04-RLS-003)" + `docs/ROADMAP/Logs/S04-RLS-003.md` | ✅ |
+| QA | Criterio de smoke P0 e validacao pos-rollback | Secao "Matriz formal de decisao go/no-go" + `docs/ROADMAP/Logs/S04-RLS-003.md` | ✅ |
+| Produto | Governanca de janela, comunicacao e decisao final `GO`/`NO-GO` | `docs/ROADMAP/Logs/S04-RLS-003.md` (secao "Aprovacao de engenharia, QA e produto") | ✅ |
+
 ## Criterios de aceite
 
 - Fluxo critico de compra coberto por testes automatizados.
 - Logs sem dados sensiveis expostos.
 - Pipeline bloqueia merge quando teste critico falha.
 - Checklist pos-deploy executavel e reutilizavel com evidencias operacionais.
+- Plano de rollback com RTO, responsaveis e criterio formal de `GO`/`NO-GO` publicado.
