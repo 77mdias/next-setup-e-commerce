@@ -100,7 +100,9 @@ describe("GET /api/auth/user-info integration", () => {
   });
 
   it("redacts PII and tokens in lookup error logs", async () => {
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const errorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
     mockDb.user.findUnique.mockRejectedValue(
       new Error(
