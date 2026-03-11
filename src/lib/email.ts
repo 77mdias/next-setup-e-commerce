@@ -1,5 +1,10 @@
 import nodemailer from "nodemailer";
 import { normalizeCallbackPath } from "@/lib/callback-url";
+import { createLogger } from "@/lib/logger";
+
+const emailLogger = createLogger({
+  route: "/lib/email",
+});
 
 // Configuração do transporter de email
 const transporter = nodemailer.createTransport({
@@ -58,7 +63,12 @@ export async function sendVerificationEmail(
     await transporter.sendMail(mailOptions);
     return { success: true };
   } catch (error) {
-    console.error("Erro ao enviar email:", error);
+    emailLogger.error("email.verification_send_failed", {
+      context: {
+        email,
+      },
+      error,
+    });
     return { success: false, error };
   }
 }

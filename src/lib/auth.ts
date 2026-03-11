@@ -18,6 +18,22 @@ const authLogger = createLogger({
   route: "/api/auth/[...nextauth]",
 });
 
+function isSecureSessionCookieEnabled() {
+  if (process.env.NEXTAUTH_COOKIE_SECURE === "true") {
+    return true;
+  }
+
+  if (process.env.NEXTAUTH_COOKIE_SECURE === "false") {
+    return false;
+  }
+
+  if (process.env.E2E_CHECKOUT_MOCK_MODE === "true") {
+    return false;
+  }
+
+  return process.env.NODE_ENV === "production";
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
   providers: [
@@ -108,7 +124,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
+        secure: isSecureSessionCookieEnabled(),
       },
     },
   },

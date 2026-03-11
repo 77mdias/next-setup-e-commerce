@@ -124,9 +124,6 @@ jobs:
       - name: Prisma migrate deploy (E2E baseline)
         run: npm run prisma:migrate:deploy
 
-      - name: Prepare deterministic E2E data
-        run: npm run e2e:prepare
-
       - name: Install Playwright browser (Chromium)
         run: npx playwright install --with-deps chromium
 

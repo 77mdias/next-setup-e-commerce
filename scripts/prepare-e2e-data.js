@@ -11,6 +11,12 @@ const E2E_STORE_SLUG = process.env.E2E_STORE_SLUG || "nextstore-e2e";
 const E2E_BRAND_SLUG = process.env.E2E_BRAND_SLUG || "e2e-brand";
 const E2E_CATEGORY_SLUG = process.env.E2E_CATEGORY_SLUG || "e2e-category";
 const E2E_PRODUCT_SKU = process.env.E2E_PRODUCT_SKU || "E2E-CHECKOUT-001";
+const E2E_PREPARE_MAX_ATTEMPTS = Number(
+  process.env.E2E_PREPARE_MAX_ATTEMPTS || 3,
+);
+const E2E_PREPARE_RETRY_BASE_MS = Number(
+  process.env.E2E_PREPARE_RETRY_BASE_MS || 1500,
+);
 
 async function upsertUser() {
   const passwordHash = await bcrypt.hash(E2E_USER_PASSWORD, 12);
@@ -264,7 +270,62 @@ async function main() {
   );
 }
 
-main()
+function isRetryablePreparationError(error) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const maybeError = error;
+  const errorCode =
+    typeof maybeError.code === "string" ? maybeError.code : null;
+  const errorMessage =
+    typeof maybeError.message === "string" ? maybeError.message : String(error);
+
+  if (errorCode && ["P2024", "P1001", "P1008"].includes(errorCode)) {
+    return true;
+  }
+
+  return (
+    errorMessage.includes(
+      "Timed out fetching a new connection from the connection pool",
+    ) || errorMessage.includes("Can't reach database server")
+  );
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function runWithRetry() {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= E2E_PREPARE_MAX_ATTEMPTS; attempt += 1) {
+    try {
+      await main();
+      return;
+    } catch (error) {
+      lastError = error;
+
+      const shouldRetry =
+        attempt < E2E_PREPARE_MAX_ATTEMPTS &&
+        isRetryablePreparationError(error);
+
+      if (!shouldRetry) {
+        throw error;
+      }
+
+      const retryDelayMs = E2E_PREPARE_RETRY_BASE_MS * attempt;
+      console.warn(
+        `[e2e:prepare] attempt ${attempt}/${E2E_PREPARE_MAX_ATTEMPTS} failed with transient DB error, retrying in ${retryDelayMs}ms`,
+      );
+      await sleep(retryDelayMs);
+    }
+  }
+
+  throw lastError;
+}
+
+runWithRetry()
   .catch((error) => {
     console.error("Failed to prepare E2E data:", error);
     process.exitCode = 1;

@@ -3,8 +3,14 @@ import { db } from "@/lib/prisma";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
 import { normalizeCallbackPath } from "@/lib/callback-url";
+import { createRequestLogger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
+  const logger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/auth/forgot-password",
+  });
+
   try {
     const { email, callbackUrl } = await request.json();
 
@@ -96,7 +102,7 @@ export async function POST(request: NextRequest) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Erro ao processar solicitação de reset de senha:", error);
+    logger.error("auth.forgot_password.request_failed", { error });
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 },

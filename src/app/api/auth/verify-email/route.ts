@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+
+import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
+  const logger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/auth/verify-email",
+  });
+
   try {
     const { searchParams } = new URL(request.url);
     const token = searchParams.get("token");
@@ -46,7 +53,7 @@ export async function GET(request: NextRequest) {
       success: true,
     });
   } catch (error) {
-    console.error("Erro ao verificar email:", error);
+    logger.error("auth.verify_email.request_failed", { error });
     return NextResponse.json(
       { message: "Erro interno do servidor" },
       { status: 500 },
@@ -56,6 +63,11 @@ export async function GET(request: NextRequest) {
 
 // Rota para reenviar email de verificação
 export async function POST(request: NextRequest) {
+  const logger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/auth/verify-email",
+  });
+
   try {
     const { email, callbackUrl } = await request.json();
 
@@ -86,11 +98,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Gerar novo token
-    const { generateVerificationToken, sendVerificationEmail } = await import(
-      "@/lib/email"
-    ).catch(() => {
-      throw new Error("Erro ao importar módulo de email");
-    });
+    const { generateVerificationToken, sendVerificationEmail } =
+      await import("@/lib/email").catch(() => {
+        throw new Error("Erro ao importar módulo de email");
+      });
     const verificationToken = generateVerificationToken();
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
@@ -122,7 +133,7 @@ export async function POST(request: NextRequest) {
       success: true,
     });
   } catch (error) {
-    console.error("Erro ao reenviar email:", error);
+    logger.error("auth.verify_email.resend_failed", { error });
     return NextResponse.json(
       { message: "Erro interno do servidor" },
       { status: 500 },

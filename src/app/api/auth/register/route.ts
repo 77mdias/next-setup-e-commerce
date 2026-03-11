@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
 import { sendVerificationEmail, generateVerificationToken } from "@/lib/email";
+import { createRequestLogger } from "@/lib/logger";
 
 // Função para validar senha com requisitos de segurança
 function validatePassword(password: string): {
@@ -45,6 +46,11 @@ function validatePassword(password: string): {
 }
 
 export async function POST(request: NextRequest) {
+  const logger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/auth/register",
+  });
+
   try {
     const { name, email, password, cpf, callbackUrl } = await request.json();
     const normalizedCpf =
@@ -135,6 +141,12 @@ export async function POST(request: NextRequest) {
     );
 
     if (!emailResult.success) {
+      logger.error("auth.register.verification_email_failed", {
+        data: {
+          userId: user.id,
+          email,
+        },
+      });
       // Se falhar ao enviar email, deletar o usuário criado
       await db.user.delete({ where: { id: user.id } });
       return NextResponse.json(
@@ -150,7 +162,7 @@ export async function POST(request: NextRequest) {
       emailSent: true,
     });
   } catch (error) {
-    console.error("Erro ao criar usuário:", error);
+    logger.error("auth.register.create_failed", { error });
     return NextResponse.json(
       { message: "Erro interno do servidor" },
       { status: 500 },

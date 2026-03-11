@@ -1,15 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
+
+import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
+  const logger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/auth/user-info",
+  });
+
   try {
     const { searchParams } = new URL(request.url);
     const email = searchParams.get("email");
 
-    console.log("API user-info - Email recebido:", email);
+    logger.info("auth.user_info.request_received", {
+      data: {
+        emailProvided: Boolean(email),
+      },
+    });
 
     if (!email) {
-      console.log("API user-info - Email não fornecido");
+      logger.warn("auth.user_info.missing_email");
       return NextResponse.json(
         { error: "Email é obrigatório" },
         { status: 400 },
@@ -29,16 +40,23 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
-      console.log("API user-info - Usuário não encontrado para email:", email);
+      logger.info("auth.user_info.user_not_found", {
+        data: {
+          email,
+        },
+      });
       return NextResponse.json(
         { error: "Usuário não encontrado" },
         { status: 404 },
       );
     }
 
-    console.log("API user-info - Usuário encontrado:", {
-      hasPassword: !!user.password,
-      oauthProviders: user.accounts.map((acc) => acc.provider),
+    logger.info("auth.user_info.user_resolved", {
+      data: {
+        email,
+        hasPassword: Boolean(user.password),
+        oauthProviders: user.accounts.map((acc) => acc.provider),
+      },
     });
 
     // Determinar se o usuário tem senha
@@ -53,7 +71,7 @@ export async function GET(request: NextRequest) {
       email: user.email,
     });
   } catch (error) {
-    console.error("Erro ao buscar informações do usuário:", error);
+    logger.error("auth.user_info.lookup_failed", { error });
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 },

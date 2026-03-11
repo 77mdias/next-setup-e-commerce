@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "start:e2e": "E2E_CHECKOUT_MOCK_MODE=true NEXT_PUBLIC_BASE_URL=http://localhost:3000 next start -p 3000",
+    "start:e2e": "E2E_CHECKOUT_MOCK_MODE=true NEXTAUTH_COOKIE_SECURE=false NEXT_PUBLIC_BASE_URL=http://127.0.0.1:3100 NEXTAUTH_URL=http://127.0.0.1:3100 next start -p 3100",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -23,7 +23,7 @@
     "seed": "prisma db seed",
     "e2e:prepare": "node scripts/prepare-e2e-data.js",
     "orders:backfill-user-id": "node scripts/backfill-order-user-id.js",
-    "test:e2e": "playwright test --config playwright.config.ts --grep @critical",
+    "test:e2e": "NEXT_PUBLIC_BASE_URL=http://127.0.0.1:3100 NEXTAUTH_URL=http://127.0.0.1:3100 NEXTAUTH_COOKIE_SECURE=false npm run build && NEXT_PUBLIC_BASE_URL=http://127.0.0.1:3100 NEXTAUTH_URL=http://127.0.0.1:3100 NEXTAUTH_COOKIE_SECURE=false E2E_PREPARE_MAX_ATTEMPTS=6 E2E_PREPARE_RETRY_BASE_MS=2000 npm run e2e:prepare && NEXT_PUBLIC_BASE_URL=http://127.0.0.1:3100 NEXTAUTH_URL=http://127.0.0.1:3100 NEXTAUTH_COOKIE_SECURE=false playwright test --config playwright.config.ts --grep @critical",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:integration:critical": "vitest run --config vitest.integration.config.ts src/app/api/checkout/__tests__/route.integration.test.ts src/app/api/webhooks/stripe/__tests__/route.integration.test.ts \"src/app/api/orders/[orderId]/__tests__/route.integration.test.ts\" \"src/app/api/orders/session/[sessionId]/__tests__/route.integration.test.ts\" src/app/orders/__tests__/page.integration.test.ts",
     "test:unit": "vitest run --config vitest.unit.config.ts",

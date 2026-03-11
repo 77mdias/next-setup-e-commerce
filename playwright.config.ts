@@ -1,5 +1,5 @@
 const isCI = process.env.CI === "true";
-const baseURL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+const baseURL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://127.0.0.1:3100";
 
 const playwrightConfig = {
   testDir: "./e2e",
@@ -30,7 +30,8 @@ const playwrightConfig = {
   webServer: {
     command: "npm run start:e2e",
     url: baseURL,
-    reuseExistingServer: !isCI,
+    // Deterministic E2E: always boot dedicated server with E2E env.
+    reuseExistingServer: false,
     timeout: 180_000,
   },
 };

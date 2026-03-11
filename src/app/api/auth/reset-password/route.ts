@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { createRequestLogger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
+  const logger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/auth/reset-password",
+  });
+
   try {
     const { email, newPassword, token } = await request.json();
 
@@ -63,7 +69,7 @@ export async function POST(request: NextRequest) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Erro ao redefinir senha:", error);
+    logger.error("auth.reset_password.request_failed", { error });
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 },

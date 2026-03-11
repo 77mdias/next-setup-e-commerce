@@ -115,7 +115,7 @@ Definir o que será medido e testado antes de ampliar cobertura de forma indiscr
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 4h  
   **Dependências:** S04-QLT-001, S04-QLT-002  
-  **Status:** ✅ Concluída (2026-03-10)
+  **Status:** ✅ Concluída (2026-03-10; hardening complementar 2026-03-11 em `docs/ROADMAP/Logs/S04-OBS-002.md`)
 
 ### 📦 Cobertura automatizada do fluxo crítico - Testes executáveis por camada
 

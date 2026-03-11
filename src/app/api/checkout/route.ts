@@ -243,6 +243,7 @@ export async function POST(request: NextRequest) {
     headers: request.headers,
     route: "/api/checkout",
   });
+  const requestOrigin = request.nextUrl.origin;
 
   try {
     const session = await getServerSession(authOptions);
@@ -645,9 +646,8 @@ export async function POST(request: NextRequest) {
     if (isE2ECheckoutMockModeEnabled()) {
       const mockOutcome = resolveE2ECheckoutOutcome(request);
       const mockSessionId = buildE2EMockSessionId(order.id);
-      const baseUrl =
-        process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
       const redirectPath = mockOutcome === "failed" ? "failure" : "success";
+      const checkoutReturnPath = `/orders/${redirectPath}?session_id=${mockSessionId}`;
 
       await finalizeE2EMockCheckout({
         orderId: order.id,
@@ -658,7 +658,8 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         sessionId: mockSessionId,
-        url: `${baseUrl}/orders/${redirectPath}?session_id=${mockSessionId}`,
+        // Relative path keeps the same browser origin/cookies during mocked redirects.
+        url: checkoutReturnPath,
         orderId: order.id,
       });
     }
@@ -668,8 +669,8 @@ export async function POST(request: NextRequest) {
     > | null = null;
 
     try {
-      const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/orders/success?session_id={CHECKOUT_SESSION_ID}`;
-      const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/orders/failure?session_id={CHECKOUT_SESSION_ID}`;
+      const successUrl = `${requestOrigin}/orders/success?session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = `${requestOrigin}/orders/failure?session_id={CHECKOUT_SESSION_ID}`;
 
       stripeSession = await createStripeCheckoutSession({
         payment_method_types: ["card"],

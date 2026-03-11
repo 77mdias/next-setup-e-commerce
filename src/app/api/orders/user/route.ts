@@ -4,12 +4,18 @@ import { getServerSession } from "next-auth";
 import { OrderStatus } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
+import { createRequestLogger } from "@/lib/logger";
 import { runDemoOrderAutomationForUser } from "@/lib/order-demo-automation";
 import { buildOrderStatusHistory } from "@/lib/order-status-history";
 
 const validOrderStatuses = new Set<OrderStatus>(Object.values(OrderStatus));
 
 export async function GET(request: NextRequest) {
+  const logger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/orders/user",
+  });
+
   try {
     const session = await getServerSession(authOptions);
 
@@ -23,10 +29,12 @@ export async function GET(request: NextRequest) {
     try {
       await runDemoOrderAutomationForUser(session.user.id);
     } catch (automationError) {
-      console.error(
-        "⚠️ Falha ao executar automação demo de pedidos do usuário:",
-        automationError,
-      );
+      logger.warn("orders.user.demo_automation_failed", {
+        context: {
+          userId: session.user.id,
+        },
+        error: automationError,
+      });
     }
 
     const { searchParams } = new URL(request.url);
@@ -139,7 +147,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("❌ Erro ao buscar pedidos:", error);
+    logger.error("orders.user.lookup_failed", { error });
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 },
