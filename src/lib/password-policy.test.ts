@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import {
   createPasswordPolicyErrorPayload,
   PASSWORD_POLICY_ERROR_MESSAGE,
