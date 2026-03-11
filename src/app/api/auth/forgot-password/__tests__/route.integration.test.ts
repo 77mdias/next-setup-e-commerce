@@ -98,7 +98,9 @@ describe("POST /api/auth/forgot-password integration", () => {
     });
 
     const updateArgs = mockDb.user.update.mock.calls[0][0];
-    expect(updateArgs.data.resetPasswordTokenHash).not.toBe("plain-reset-token");
+    expect(updateArgs.data.resetPasswordTokenHash).not.toBe(
+      "plain-reset-token",
+    );
 
     expect(mockSendMail).toHaveBeenCalledTimes(1);
     const sendMailArgs = mockSendMail.mock.calls[0][0];
