@@ -25,7 +25,7 @@ model User {
   emailVerificationExpires   DateTime?
   emailVerificationTokenHash String?              @map("emailVerificationToken")
   resetPasswordExpires       DateTime?
-  resetPasswordToken         String?
+  resetPasswordTokenHash     String?              @map("resetPasswordToken")
   accounts                   Account[]
   addresses                  Address[]
   cart                       Cart[]
@@ -38,6 +38,7 @@ model User {
   wishlist                   Wishlist[]
 
   @@index([emailVerificationTokenHash], map: "users_emailVerificationToken_idx")
+  @@index([resetPasswordTokenHash], map: "users_resetPasswordToken_idx")
   @@map("users")
 }
 

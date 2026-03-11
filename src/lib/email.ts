@@ -1,13 +1,15 @@
-import { createHash, randomBytes } from "node:crypto";
 import nodemailer from "nodemailer";
 import { normalizeCallbackPath } from "@/lib/callback-url";
 import { createLogger } from "@/lib/logger";
+import {
+  generateSecurityToken,
+  generateSecurityTokenPair,
+  hashSecurityToken,
+} from "@/lib/secure-token";
 
 const emailLogger = createLogger({
   route: "/lib/email",
 });
-
-const EMAIL_VERIFICATION_TOKEN_SIZE_BYTES = 32;
 
 // Configuração do transporter de email
 const transporter = nodemailer.createTransport({
@@ -78,21 +80,16 @@ export async function sendVerificationEmail(
 
 // Funções para geração e hash de token de verificação
 export function generateVerificationToken(): string {
-  return randomBytes(EMAIL_VERIFICATION_TOKEN_SIZE_BYTES).toString("hex");
+  return generateSecurityToken();
 }
 
 export function hashVerificationToken(token: string): string {
-  return createHash("sha256").update(token).digest("hex");
+  return hashSecurityToken(token);
 }
 
 export function generateVerificationTokenPair(): {
   token: string;
   tokenHash: string;
 } {
-  const token = generateVerificationToken();
-
-  return {
-    token,
-    tokenHash: hashVerificationToken(token),
-  };
+  return generateSecurityTokenPair();
 }

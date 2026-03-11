@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { createRequestLogger } from "@/lib/logger";
+import { hashSecurityToken } from "@/lib/secure-token";
 
 export async function POST(request: NextRequest) {
   const logger = createRequestLogger({
@@ -11,15 +12,18 @@ export async function POST(request: NextRequest) {
 
   try {
     const { email, newPassword, token } = await request.json();
+    const normalizedEmail =
+      typeof email === "string" ? email.trim().toLowerCase() : "";
+    const normalizedToken = typeof token === "string" ? token.trim() : "";
 
-    if (!email || !newPassword) {
+    if (!normalizedEmail || !newPassword) {
       return NextResponse.json(
         { error: "Email e nova senha são obrigatórios" },
         { status: 400 },
       );
     }
 
-    if (!token) {
+    if (!normalizedToken) {
       return NextResponse.json(
         { error: "Token de reset é obrigatório" },
         { status: 400 },
@@ -33,36 +37,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Buscar usuário com o token válido
-    const user = await db.user.findFirst({
+    const tokenHash = hashSecurityToken(normalizedToken);
+
+    // Consumir token de forma atômica para evitar reuso concorrente.
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    const resetResult = await db.user.updateMany({
       where: {
-        email,
-        resetPasswordToken: token,
+        email: normalizedEmail,
+        resetPasswordTokenHash: tokenHash,
         resetPasswordExpires: {
           gt: new Date(),
         },
       },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Token inválido ou expirado" },
-        { status: 400 },
-      );
-    }
-
-    // Criptografar nova senha
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
-
-    // Atualizar senha e limpar token
-    await db.user.update({
-      where: { id: user.id },
       data: {
         password: hashedPassword,
-        resetPasswordToken: null,
+        resetPasswordTokenHash: null,
         resetPasswordExpires: null,
       },
     });
+
+    if (resetResult.count === 0) {
+      return NextResponse.json(
+        { error: "Token inválido, expirado ou já utilizado" },
+        { status: 400 },
+      );
+    }
 
     return NextResponse.json(
       { message: "Senha redefinida com sucesso" },

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import nodemailer from "nodemailer";
-import crypto from "crypto";
 import { normalizeCallbackPath } from "@/lib/callback-url";
 import { createRequestLogger } from "@/lib/logger";
+import { generateSecurityTokenPair } from "@/lib/secure-token";
 
 export async function POST(request: NextRequest) {
   const logger = createRequestLogger({
@@ -13,8 +13,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const { email, callbackUrl } = await request.json();
+    const normalizedEmail =
+      typeof email === "string" ? email.trim().toLowerCase() : "";
 
-    if (!email) {
+    if (!normalizedEmail) {
       return NextResponse.json(
         { error: "Email é obrigatório" },
         { status: 400 },
@@ -23,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Verificar se o usuário existe
     const user = await db.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (!user) {
@@ -38,14 +40,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Gerar token único
-    const resetToken = crypto.randomBytes(32).toString("hex");
+    const { token: resetToken, tokenHash: resetTokenHash } =
+      generateSecurityTokenPair();
     const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
-    // Salvar token no banco
+    // Salvar apenas o hash do token no banco
     await db.user.update({
-      where: { email },
+      where: { email: normalizedEmail },
       data: {
-        resetPasswordToken: resetToken,
+        resetPasswordTokenHash: resetTokenHash,
         resetPasswordExpires: resetTokenExpiry,
       },
     });
@@ -89,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: email,
+      to: normalizedEmail,
       subject: "Redefinir senha - My Store",
       html: emailContent,
     });
