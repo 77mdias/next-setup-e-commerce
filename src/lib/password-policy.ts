@@ -14,6 +14,14 @@ const PASSWORD_POLICY_RULE_ERRORS = {
     "A senha deve conter pelo menos um caractere especial (!@#$%^&*()_+-=[]{}|;':\",./<>?)",
 } as const;
 
+export const PASSWORD_POLICY_REQUIREMENTS = [
+  PASSWORD_POLICY_RULE_ERRORS.minLength,
+  PASSWORD_POLICY_RULE_ERRORS.uppercase,
+  PASSWORD_POLICY_RULE_ERRORS.lowercase,
+  PASSWORD_POLICY_RULE_ERRORS.number,
+  PASSWORD_POLICY_RULE_ERRORS.specialCharacter,
+] as const;
+
 export type PasswordPolicyValidationResult = {
   isValid: boolean;
   errors: string[];

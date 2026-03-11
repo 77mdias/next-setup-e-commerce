@@ -149,7 +149,7 @@ Remover divergência de regras entre cadastro e reset e bloquear vazamento de si
   **Dependências:** nenhuma  
   **Status:** 🟢 Concluída (2026-03-11)
 
-- [ ] **S05-AUT-002** - Alinhar UX de redefinição de senha com política única
+- [x] **S05-AUT-002** - Alinhar UX de redefinição de senha com política única
 
   **Descrição curta:**
   - A UI de reset ainda comunica regra mínima antiga e pode divergir do backend.
@@ -163,13 +163,13 @@ Remover divergência de regras entre cadastro e reset e bloquear vazamento de si
   **Arquivos/áreas afetadas:** `src/app/auth/reset-password/components/ResetPasswordForm.tsx`, `src/app/auth/register/**`, `src/components/auth/**`
 
   **Critérios de aceitação:**
-  - [ ] Mensagens e validações de senha no frontend refletem regra oficial.
-  - [ ] Erros de validação são acionáveis e consistentes entre UI e API.
+  - [x] Mensagens e validações de senha no frontend refletem regra oficial.
+  - [x] Erros de validação são acionáveis e consistentes entre UI e API.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 4h  
   **Dependências:** S05-AUT-001  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-11)
 
 - [ ] **S05-AUT-003** - Remover enumeração de conta em endpoints públicos de auth
 

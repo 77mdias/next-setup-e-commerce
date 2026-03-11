@@ -12,6 +12,11 @@ import {
   DEFAULT_AUTH_CALLBACK_PATH,
   normalizeCallbackPath,
 } from "@/lib/callback-url";
+import {
+  PASSWORD_POLICY_ERROR_MESSAGE,
+  PASSWORD_POLICY_REQUIREMENTS,
+  validatePasswordPolicy,
+} from "@/lib/password-policy";
 
 export default function ResetPasswordForm() {
   const [email, setEmail] = useState("");
@@ -21,6 +26,9 @@ export default function ResetPasswordForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [passwordPolicyErrors, setPasswordPolicyErrors] = useState<string[]>(
+    [],
+  );
   const [success, setSuccess] = useState(false);
   const [token, setToken] = useState("");
 
@@ -30,6 +38,9 @@ export default function ResetPasswordForm() {
 
   const callbackUrl = normalizeCallbackPath(searchParams.get("callbackUrl"));
   const tokenParam = searchParams.get("token");
+  const unmetPasswordRequirements = new Set(
+    validatePasswordPolicy(newPassword).errors,
+  );
 
   // Verificar se há token na URL
   useEffect(() => {
@@ -42,6 +53,7 @@ export default function ResetPasswordForm() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setPasswordPolicyErrors([]);
 
     // Validações
     if (!email) {
@@ -50,8 +62,10 @@ export default function ResetPasswordForm() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError("A nova senha deve ter pelo menos 6 caracteres");
+    const passwordValidation = validatePasswordPolicy(newPassword);
+    if (!passwordValidation.isValid) {
+      setError(PASSWORD_POLICY_ERROR_MESSAGE);
+      setPasswordPolicyErrors(passwordValidation.errors);
       setIsLoading(false);
       return;
     }
@@ -78,8 +92,17 @@ export default function ResetPasswordForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Erro ao redefinir senha");
+        const details = Array.isArray(data.details)
+          ? data.details.filter(
+              (detail: unknown): detail is string =>
+                typeof detail === "string" && detail.trim().length > 0,
+            )
+          : [];
+
+        setPasswordPolicyErrors(details);
+        setError(data.error || data.message || "Erro ao redefinir senha");
       } else {
+        setPasswordPolicyErrors([]);
         setSuccess(true);
         showNotification({
           type: "general",
@@ -95,6 +118,7 @@ export default function ResetPasswordForm() {
         }, 3000);
       }
     } catch (error) {
+      setPasswordPolicyErrors([]);
       setError("Erro ao redefinir senha. Tente novamente.");
     } finally {
       setIsLoading(false);
@@ -105,6 +129,7 @@ export default function ResetPasswordForm() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setPasswordPolicyErrors([]);
 
     if (!email) {
       setError("Email é obrigatório");
@@ -181,7 +206,10 @@ export default function ResetPasswordForm() {
                 required
                 placeholder="Digite seu email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError("");
+                }}
                 className="border-gray-600 bg-[var(--card-product)] text-white placeholder-gray-400"
               />
             </div>
@@ -248,6 +276,16 @@ export default function ResetPasswordForm() {
                 {error}
               </div>
             )}
+            {passwordPolicyErrors.length > 0 && (
+              <div className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <p className="font-medium">Requisitos pendentes da senha:</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {passwordPolicyErrors.map((policyError) => (
+                    <li key={policyError}>{policyError}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className="space-y-4">
               <div>
@@ -262,37 +300,69 @@ export default function ResetPasswordForm() {
                   required
                   placeholder="Email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError("");
+                  }}
                   className="border-gray-600 bg-[var(--card-product)] text-white placeholder-gray-400"
                 />
               </div>
 
-              <div className="relative">
-                <label htmlFor="newPassword" className="sr-only">
-                  Nova senha
-                </label>
-                <Input
-                  id="newPassword"
-                  name="newPassword"
-                  type={showNewPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  required
-                  placeholder="Nova senha"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="border-gray-600 bg-[var(--card-product)] pr-10 text-white placeholder-gray-400"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 flex items-center pr-3"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                >
-                  {showNewPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  )}
-                </button>
+              <div>
+                <div className="relative">
+                  <label htmlFor="newPassword" className="sr-only">
+                    Nova senha
+                  </label>
+                  <Input
+                    id="newPassword"
+                    name="newPassword"
+                    type={showNewPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    required
+                    placeholder="Nova senha"
+                    value={newPassword}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      setError("");
+                      setPasswordPolicyErrors([]);
+                    }}
+                    className="border-gray-600 bg-[var(--card-product)] pr-10 text-white placeholder-gray-400"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    {showNewPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </button>
+                </div>
+                <div className="mt-2 rounded-md border border-gray-700 bg-[var(--card-product)]/60 px-3 py-2">
+                  <p className="text-xs font-medium text-gray-300">
+                    A senha precisa conter:
+                  </p>
+                  <ul className="mt-1 space-y-1 text-xs">
+                    {PASSWORD_POLICY_REQUIREMENTS.map((requirement) => {
+                      const isMet =
+                        newPassword.length > 0 &&
+                        !unmetPasswordRequirements.has(requirement);
+
+                      return (
+                        <li
+                          key={requirement}
+                          className={
+                            isMet ? "text-emerald-400" : "text-gray-400"
+                          }
+                        >
+                          {isMet ? "[OK]" : "[  ]"} {requirement}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               </div>
 
               <div className="relative">
@@ -307,7 +377,10 @@ export default function ResetPasswordForm() {
                   required
                   placeholder="Confirmar nova senha"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setError("");
+                  }}
                   className="border-gray-600 bg-[var(--card-product)] pr-10 text-white placeholder-gray-400"
                 />
                 <button
