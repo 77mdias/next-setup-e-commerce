@@ -62,7 +62,7 @@ Fechar riscos remanescentes de autenticacao, tokens, transporte e abuso de API p
 | Reset de senha com token valido          | Senha alterada uma unica vez e token invalidado                 | Suite `src/app/api/auth/reset-password/__tests__/*.integration.test.ts` | [ ]    |
 | Reuso de token de reset/verificacao      | Endpoint rejeita token usado/expirado sem detalhe sensivel      | Suites de `reset-password` e `verify-email`                             | [ ]    |
 | Enumeracao de conta via endpoint publico | Resposta generica independente de email existente               | Suite `src/app/api/auth/__tests__/*` + smoke manual                     | [ ]    |
-| Rate limiting de auth/remove-bg          | Excesso de tentativas retorna `429` e nao quebra fluxo legitimo | Suite de integracao + log operacional da release                        | [ ]    |
+| Rate limiting de auth/remove-bg          | Excesso de tentativas retorna `429` e nao quebra fluxo legitimo | Suite de integracao + log operacional da release                        | [x]    |
 
 ### Plano de rollback (S05-SEC-003)
 

@@ -297,7 +297,7 @@ Converter as mudanças de segurança em critérios objetivos de release com cobe
   **Dependências:** S05-SEC-002, S05-AUT-003  
   **Status:** 🟢 Concluída (2026-03-12)
 
-- [ ] **S05-QA-002** - Validar rate limiting e hardening de remove-bg em testes de carga leve
+- [x] **S05-QA-002** - Validar rate limiting e hardening de remove-bg em testes de carga leve
 
   **Descrição curta:**
   - Precisamos garantir defesa a abuso sem bloquear tráfego legítimo.
@@ -311,13 +311,13 @@ Converter as mudanças de segurança em critérios objetivos de release com cobe
   **Arquivos/áreas afetadas:** `src/app/api/auth/**/__tests__/*.integration.test.ts`, `src/app/api/remove-bg/**/__tests__/*.integration.test.ts`, `.github/workflows/ci.yml`, `package.json`
 
   **Critérios de aceitação:**
-  - [ ] Endpoints limitados por taxa respondem de forma consistente sob carga leve.
-  - [ ] CI detecta regressão de hardening antes de merge em branch protegida.
+  - [x] Endpoints limitados por taxa respondem de forma consistente sob carga leve.
+  - [x] CI detecta regressão de hardening antes de merge em branch protegida.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 5h  
   **Dependências:** S05-HRD-002, S05-HRD-003  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-12)
 
 - [ ] **S05-QA-003** - Executar checklist de homologação e plano de rollback da Sprint 05
 

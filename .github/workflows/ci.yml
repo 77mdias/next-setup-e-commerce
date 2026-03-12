@@ -118,6 +118,9 @@ jobs:
       - name: Unit critical baseline
         run: npm run test:unit:critical
 
+      - name: Security hardening integration suite
+        run: npm run test:integration:security
+
       - name: Critical integration suite (P0)
         run: npm run test:integration:critical
 
