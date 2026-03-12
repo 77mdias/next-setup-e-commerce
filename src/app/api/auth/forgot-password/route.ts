@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
-import nodemailer from "nodemailer";
 import {
   cleanupExpiredResetPasswordTokens,
   getResetPasswordTokenExpiry,
 } from "@/lib/auth-token-lifecycle";
-import { normalizeCallbackPath } from "@/lib/callback-url";
+import { sendPasswordResetEmail } from "@/lib/email";
 import { createRequestLogger } from "@/lib/logger";
 import { generateSecurityTokenPair } from "@/lib/secure-token";
 
@@ -64,49 +63,25 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const safeCallbackPath = normalizeCallbackPath(callbackUrl);
-    const callbackQuery = callbackUrl
-      ? `&callbackUrl=${encodeURIComponent(safeCallbackPath)}`
-      : "";
+    const emailResult = await sendPasswordResetEmail(
+      normalizedEmail,
+      resetToken,
+      user.name,
+      callbackUrl,
+    );
 
-    // Construir URL canônica de reset
-    const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}${callbackQuery}`;
-
-    // Configurar transporter de email
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
-
-    // Enviar email
-    const emailContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #333;">Redefinir sua senha</h2>
-        <p>Olá ${user.name || "Usuário"},</p>
-        <p>Você solicitou a redefinição da sua senha. Clique no link abaixo para criar uma nova senha:</p>
-        <p style="margin: 20px 0;">
-          <a href="${resetUrl}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
-            Redefinir senha
-          </a>
-        </p>
-        <p>Este link expira em 1 hora.</p>
-        <p>Se você não solicitou esta redefinição, ignore este email.</p>
-        <p>Obrigado,<br>Equipe da My Store</p>
-      </div>
-    `;
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: normalizedEmail,
-      subject: "Redefinir senha - My Store",
-      html: emailContent,
-    });
+    if (!emailResult.success) {
+      logger.error("auth.forgot_password.email_delivery_failed", {
+        context: {
+          emailProvided: true,
+        },
+        error: emailResult.error,
+      });
+      return NextResponse.json(
+        { error: "Erro interno do servidor" },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json(
       {

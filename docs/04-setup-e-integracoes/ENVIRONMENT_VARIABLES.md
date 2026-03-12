@@ -76,6 +76,12 @@ EMAIL_PASSWORD="your-app-password"
 3. Em "Como você faz login no Google", selecione "Senhas de app"
 4. Gere uma nova senha de app para este projeto
 
+**Segurança de transporte (TLS):**
+
+- O transporte SMTP da aplicação valida certificado TLS de forma estrita por padrão.
+- Não desabilite validação TLS em dev/prod (`rejectUnauthorized: false` não é suportado).
+- Para ambiente local, use provedor SMTP com certificado confiável e credenciais de app dedicadas.
+
 ## Como obter as chaves OAuth:
 
 ### GitHub:

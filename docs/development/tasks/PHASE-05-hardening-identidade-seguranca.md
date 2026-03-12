@@ -201,7 +201,7 @@ Reduzir superfície de abuso em produção com transporte seguro, proteção de 
 
 #### HRD.1 - Runtime security e proteção de API
 
-- [ ] **S05-HRD-001** - Aplicar TLS estrito e centralizar configuração de transporte de email
+- [x] **S05-HRD-001** - Aplicar TLS estrito e centralizar configuração de transporte de email
 
   **Descrição curta:**
   - Fluxos de email ainda usam configuração que aceita certificados não confiáveis.
@@ -215,13 +215,13 @@ Reduzir superfície de abuso em produção com transporte seguro, proteção de 
   **Arquivos/áreas afetadas:** `src/lib/email.ts`, `src/app/api/auth/forgot-password/route.ts`, `docs/04-setup-e-integracoes/ENVIRONMENT_VARIABLES.md`
 
   **Critérios de aceitação:**
-  - [ ] Não há configuração TLS insegura nos fluxos de email da aplicação.
-  - [ ] Verificação e reset continuam operando com configuração centralizada.
+  - [x] Não há configuração TLS insegura nos fluxos de email da aplicação.
+  - [x] Verificação e reset continuam operando com configuração centralizada.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 3h  
   **Dependências:** nenhuma  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-12)
 
 - [ ] **S05-HRD-002** - Implementar rate limiting nas rotas sensíveis de autenticação
 
