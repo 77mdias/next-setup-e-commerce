@@ -108,7 +108,7 @@ describe("POST /api/auth/reset-password integration", () => {
     expect(mockDb.user.updateMany).not.toHaveBeenCalled();
   });
 
-  it("returns consistent response for invalid, expired or already used token", async () => {
+  it("cleans up expired token state and returns the generic token error", async () => {
     mockDb.user.updateMany.mockResolvedValueOnce({ count: 0 });
 
     const response = await POST(
@@ -123,6 +123,49 @@ describe("POST /api/auth/reset-password integration", () => {
     expect(response.status).toBe(400);
     expect(body.error).toBe("Token inválido, expirado ou já utilizado");
     expect(mockDb.user.updateMany).toHaveBeenNthCalledWith(2, {
+      where: {
+        email: "customer@example.com",
+        resetPasswordExpires: {
+          lte: expect.any(Date),
+        },
+        resetPasswordTokenHash: "hashed-reset-token",
+      },
+      data: {
+        resetPasswordTokenHash: null,
+        resetPasswordExpires: null,
+      },
+    });
+  });
+
+  it("rejects token reuse after a successful reset with the same generic error", async () => {
+    mockDb.user.updateMany
+      .mockResolvedValueOnce({ count: 1 })
+      .mockResolvedValueOnce({ count: 0 })
+      .mockResolvedValueOnce({ count: 0 });
+
+    const firstResponse = await POST(
+      createRequest({
+        email: "customer@example.com",
+        newPassword: "StrongPass1!",
+        token: "plain-reset-token",
+      }),
+    );
+    const firstBody = await firstResponse.json();
+
+    const secondResponse = await POST(
+      createRequest({
+        email: "customer@example.com",
+        newPassword: "StrongPass1!",
+        token: "plain-reset-token",
+      }),
+    );
+    const secondBody = await secondResponse.json();
+
+    expect(firstResponse.status).toBe(200);
+    expect(firstBody.message).toBe("Senha redefinida com sucesso");
+    expect(secondResponse.status).toBe(400);
+    expect(secondBody.error).toBe("Token inválido, expirado ou já utilizado");
+    expect(mockDb.user.updateMany).toHaveBeenNthCalledWith(3, {
       where: {
         email: "customer@example.com",
         resetPasswordExpires: {

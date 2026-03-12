@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockDb, mockGenerateVerificationTokenPair, mockSendVerificationEmail } =
   vi.hoisted(() => ({
@@ -55,6 +55,10 @@ describe("POST /api/auth/register integration", () => {
     mockSendVerificationEmail.mockResolvedValue({ success: true });
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("blocks weak password using shared policy response payload", async () => {
     const response = await POST(
       createRequest({
@@ -83,6 +87,10 @@ describe("POST /api/auth/register integration", () => {
   });
 
   it("stores only the token hash and sends raw token via email", async () => {
+    const referenceDate = new Date("2026-03-12T10:00:00.000Z");
+    vi.useFakeTimers();
+    vi.setSystemTime(referenceDate);
+
     const response = await POST(
       createRequest({
         name: "Test User",
@@ -101,7 +109,7 @@ describe("POST /api/auth/register integration", () => {
         data: expect.objectContaining({
           email: "user@example.com",
           emailVerificationTokenHash: "hashed-verification-token",
-          emailVerificationExpires: expect.any(Date),
+          emailVerificationExpires: new Date("2026-03-13T10:00:00.000Z"),
         }),
       }),
     );

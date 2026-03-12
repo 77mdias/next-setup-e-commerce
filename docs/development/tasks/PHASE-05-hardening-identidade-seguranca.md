@@ -275,7 +275,7 @@ Converter as mudanças de segurança em critérios objetivos de release com cobe
 
 #### QA.1 - Qualidade e operação de segurança
 
-- [ ] **S05-QA-001** - Cobrir integração dos fluxos de token, senha e anti-enumeração
+- [x] **S05-QA-001** - Cobrir integração dos fluxos de token, senha e anti-enumeração
 
   **Descrição curta:**
   - A sprint altera contratos sensíveis de auth e precisa de cobertura para regressão.
@@ -289,13 +289,13 @@ Converter as mudanças de segurança em critérios objetivos de release com cobe
   **Arquivos/áreas afetadas:** `src/app/api/auth/**/__tests__/*.integration.test.ts`, `vitest.integration.config.ts`
 
   **Critérios de aceitação:**
-  - [ ] Regras críticas de token e senha estão cobertas por testes de integração.
-  - [ ] Cenários de enumeração falham com segurança sem quebrar UX.
+  - [x] Regras críticas de token e senha estão cobertas por testes de integração.
+  - [x] Cenários de enumeração falham com segurança sem quebrar UX.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** S05-SEC-002, S05-AUT-003  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-12)
 
 - [ ] **S05-QA-002** - Validar rate limiting e hardening de remove-bg em testes de carga leve
 

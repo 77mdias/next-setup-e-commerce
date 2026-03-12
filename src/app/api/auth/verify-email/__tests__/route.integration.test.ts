@@ -139,6 +139,42 @@ describe("/api/auth/verify-email integration", () => {
     });
   });
 
+  it("rejects token reuse after successful verification with the same public error", async () => {
+    mockHashVerificationToken.mockReturnValue("hashed-token");
+    mockDb.user.findFirst
+      .mockResolvedValueOnce({
+        id: "user-1",
+        email: "customer@example.com",
+      })
+      .mockResolvedValueOnce(null);
+    mockDb.user.updateMany
+      .mockResolvedValueOnce({ count: 1 })
+      .mockResolvedValueOnce({ count: 0 });
+
+    const firstResponse = await GET(createGetRequest("plain-token"));
+    const firstBody = await firstResponse.json();
+
+    const secondResponse = await GET(createGetRequest("plain-token"));
+    const secondBody = await secondResponse.json();
+
+    expect(firstResponse.status).toBe(200);
+    expect(firstBody.success).toBe(true);
+    expect(secondResponse.status).toBe(400);
+    expect(secondBody.message).toBe("Token inválido ou expirado");
+    expect(mockDb.user.updateMany).toHaveBeenNthCalledWith(2, {
+      where: {
+        emailVerificationExpires: {
+          lte: expect.any(Date),
+        },
+        emailVerificationTokenHash: "hashed-token",
+      },
+      data: {
+        emailVerificationTokenHash: null,
+        emailVerificationExpires: null,
+      },
+    });
+  });
+
   it("resends verification email persisting only token hash", async () => {
     mockDb.user.findUnique.mockResolvedValue({
       id: "user-1",
@@ -261,6 +297,44 @@ describe("/api/auth/verify-email integration", () => {
       message: neutralResendMessage,
       success: true,
     });
+  });
+
+  it("returns the same neutral resend payload for existing and unknown accounts", async () => {
+    mockDb.user.findUnique
+      .mockResolvedValueOnce({
+        id: "user-1",
+        email: "customer@example.com",
+        isActive: false,
+      })
+      .mockResolvedValueOnce(null);
+    mockGenerateVerificationTokenPair.mockReturnValue({
+      token: "plain-token",
+      tokenHash: "hashed-token",
+    });
+    mockSendVerificationEmail.mockResolvedValue({ success: true });
+
+    const existingResponse = await POST(
+      createPostRequest({
+        email: "customer@example.com",
+      }),
+    );
+    const existingBody = await existingResponse.json();
+
+    const unknownResponse = await POST(
+      createPostRequest({
+        email: "unknown@example.com",
+      }),
+    );
+    const unknownBody = await unknownResponse.json();
+
+    expect(existingResponse.status).toBe(200);
+    expect(unknownResponse.status).toBe(200);
+    expect(existingBody).toEqual(unknownBody);
+    expect(existingBody).toEqual({
+      message: neutralResendMessage,
+      success: true,
+    });
+    expect(mockSendVerificationEmail).toHaveBeenCalledTimes(1);
   });
 
   it("returns 429 after too many verification attempts for the same token", async () => {

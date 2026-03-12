@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetRateLimitStore } from "@/lib/rate-limit";
 
 const {
@@ -76,7 +76,15 @@ describe("POST /api/auth/forgot-password integration", () => {
     mockSendMail.mockResolvedValue({ messageId: "message-1" });
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("stores only reset token hash and sends the raw token via email", async () => {
+    const referenceDate = new Date("2026-03-12T10:00:00.000Z");
+    vi.useFakeTimers();
+    vi.setSystemTime(referenceDate);
+
     const response = await POST(
       createRequest({
         email: "Customer@Example.com ",
@@ -114,7 +122,7 @@ describe("POST /api/auth/forgot-password integration", () => {
       where: { id: "user-1" },
       data: {
         resetPasswordTokenHash: "hashed-reset-token",
-        resetPasswordExpires: expect.any(Date),
+        resetPasswordExpires: new Date("2026-03-12T11:00:00.000Z"),
       },
     });
 
@@ -147,6 +155,39 @@ describe("POST /api/auth/forgot-password integration", () => {
     expect(mockDb.user.updateMany).not.toHaveBeenCalled();
     expect(mockDb.user.update).not.toHaveBeenCalled();
     expect(mockSendMail).not.toHaveBeenCalled();
+  });
+
+  it("returns the same neutral payload for existing and unknown emails", async () => {
+    mockDb.user.findUnique
+      .mockResolvedValueOnce({
+        id: "user-1",
+        name: "Customer",
+        email: "customer@example.com",
+      })
+      .mockResolvedValueOnce(null);
+
+    const existingResponse = await POST(
+      createRequest({
+        email: "customer@example.com",
+      }),
+    );
+    const existingBody = await existingResponse.json();
+
+    const unknownResponse = await POST(
+      createRequest({
+        email: "missing@example.com",
+      }),
+    );
+    const unknownBody = await unknownResponse.json();
+
+    expect(existingResponse.status).toBe(200);
+    expect(unknownResponse.status).toBe(200);
+    expect(existingBody).toEqual(unknownBody);
+    expect(existingBody).toEqual({
+      message:
+        "Se o email existir, você receberá um link para redefinir sua senha",
+    });
+    expect(mockSendMail).toHaveBeenCalledTimes(1);
   });
 
   it("returns 429 after too many requests for the same email within the window", async () => {
