@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { resetRateLimitStore } from "@/lib/rate-limit";
+
 const { mockRequireAdminAccess, mockAxiosGet, mockAxiosPost } = vi.hoisted(
   () => ({
     mockRequireAdminAccess: vi.fn(),
@@ -22,11 +24,17 @@ vi.mock("axios", () => ({
 
 import { POST, PUT } from "@/app/api/admin/remove-bg/route";
 
-function createRequest(method: "POST" | "PUT", payload: unknown): NextRequest {
+function createRequest(
+  method: "POST" | "PUT",
+  payload: unknown,
+  headers?: Record<string, string>,
+): NextRequest {
   return new NextRequest("http://localhost:3000/api/admin/remove-bg", {
     method,
     headers: {
       "content-type": "application/json",
+      "x-forwarded-for": "198.51.100.31",
+      ...(headers ?? {}),
     },
     body: JSON.stringify(payload),
   });
@@ -35,6 +43,7 @@ function createRequest(method: "POST" | "PUT", payload: unknown): NextRequest {
 describe("/api/admin/remove-bg integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetRateLimitStore();
     process.env.REMOVE_BG_API_KEY = "server-test-key";
     process.env.REMOVE_BG_ALLOWED_IMAGE_HOSTS = "example.com";
     delete process.env.REMOVE_BG_ALLOWED_IMAGE_PROTOCOLS;
@@ -143,6 +152,34 @@ describe("/api/admin/remove-bg integration", () => {
         }),
       }),
     );
+  });
+
+  it("retorna 429 com retry-after ao exceder o limite dedicado", async () => {
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const response = await POST(
+        createRequest("POST", {
+          imageUrl: "https://example.com/image.jpg",
+        }),
+      );
+
+      expect(response.status).toBe(200);
+    }
+
+    const response = await POST(
+      createRequest("POST", {
+        imageUrl: "https://example.com/image.jpg",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).not.toBeNull();
+    expect(body.error).toBe(
+      "Muitas tentativas de processamento de imagem. Tente novamente em instantes.",
+    );
+    expect(body.retryAfter).toBeGreaterThan(0);
+    expect(mockAxiosGet).toHaveBeenCalledTimes(6);
+    expect(mockAxiosPost).toHaveBeenCalledTimes(6);
   });
 
   it("retorna erro operacional previsível sem expor detalhes internos", async () => {

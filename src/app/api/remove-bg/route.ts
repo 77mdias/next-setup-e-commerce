@@ -2,6 +2,12 @@ import axios from "axios";
 import FormData from "form-data";
 import { NextRequest, NextResponse } from "next/server";
 
+import { createRequestLogger } from "@/lib/logger";
+import {
+  authorizeRemoveBgRequest,
+  extractRemoveBgHttpStatus,
+  logRemoveBgFailure,
+} from "@/lib/remove-bg-route-security";
 import {
   getServerRemoveBgApiKey,
   validateRemoveBgImageUrl,
@@ -22,18 +28,8 @@ type RemoveBgBatchItemError = {
   success: false;
 };
 
-function extractHttpStatus(error: unknown): number | null {
-  if (!error || typeof error !== "object" || !("response" in error)) {
-    return null;
-  }
-
-  const status = (error as { response?: { status?: unknown } }).response
-    ?.status;
-  return typeof status === "number" ? status : null;
-}
-
 function mapRemoveBgError(error: unknown): RemoveBgErrorResponse {
-  const status = extractHttpStatus(error);
+  const status = extractRemoveBgHttpStatus(error);
 
   if (status === 400 || status === 422) {
     return {
@@ -124,6 +120,22 @@ async function processImageWithRemoveBg(
 }
 
 export async function POST(request: NextRequest) {
+  const requestLogger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/remove-bg",
+  });
+  const authorization = await authorizeRemoveBgRequest({
+    request,
+    logger: requestLogger,
+    logPrefix: "remove_bg.legacy",
+  });
+
+  if (!authorization.authorized) {
+    return authorization.response;
+  }
+
+  const logger = authorization.logger;
+
   try {
     const payload = (await request.json()) as {
       imageUrl?: unknown;
@@ -138,6 +150,11 @@ export async function POST(request: NextRequest) {
 
     const apiKey = getServerRemoveBgApiKey();
     if (!apiKey) {
+      logger.error("remove_bg.legacy.configuration_missing", {
+        data: {
+          env: "REMOVE_BG_API_KEY",
+        },
+      });
       return NextResponse.json(
         { error: "REMOVE_BG_API_KEY não configurada no servidor" },
         { status: 500 },
@@ -166,8 +183,13 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     const mappedError = mapRemoveBgError(error);
-    console.error("[api/remove-bg][POST] processamento falhou", {
-      status: mappedError.status,
+    logRemoveBgFailure({
+      logger,
+      event: "remove_bg.legacy.post_failed",
+      error,
+      data: {
+        status: mappedError.status,
+      },
     });
 
     return NextResponse.json(
@@ -178,6 +200,22 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const requestLogger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/remove-bg",
+  });
+  const authorization = await authorizeRemoveBgRequest({
+    request,
+    logger: requestLogger,
+    logPrefix: "remove_bg.legacy",
+  });
+
+  if (!authorization.authorized) {
+    return authorization.response;
+  }
+
+  const logger = authorization.logger;
+
   try {
     const payload = (await request.json()) as {
       imageUrls?: unknown;
@@ -194,6 +232,11 @@ export async function PUT(request: NextRequest) {
 
     const apiKey = getServerRemoveBgApiKey();
     if (!apiKey) {
+      logger.error("remove_bg.legacy.configuration_missing", {
+        data: {
+          env: "REMOVE_BG_API_KEY",
+        },
+      });
       return NextResponse.json(
         { error: "REMOVE_BG_API_KEY não configurada no servidor" },
         { status: 500 },
@@ -255,6 +298,15 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    if (errors.length > 0) {
+      logger.warn("remove_bg.legacy.put.partial_failure", {
+        data: {
+          totalErrors: errors.length,
+          totalProcessed: processedImages.length,
+        },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       processedImages,
@@ -263,7 +315,11 @@ export async function PUT(request: NextRequest) {
       totalErrors: errors.length,
     });
   } catch (error: unknown) {
-    console.error("[api/remove-bg][PUT] processamento em lote falhou", error);
+    logRemoveBgFailure({
+      logger,
+      event: "remove_bg.legacy.put_failed",
+      error,
+    });
 
     return NextResponse.json(
       { error: "Erro interno do servidor ao processar imagens" },

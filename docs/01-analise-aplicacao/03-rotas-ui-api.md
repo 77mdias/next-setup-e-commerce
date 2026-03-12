@@ -73,15 +73,17 @@
 ### Utilitario
 
 - `POST/PUT /api/remove-bg`
-- `POST/PUT /api/admin/remove-bg` (restrito a sessao autenticada com role `ADMIN`)
-  - Contrato de erro previsivel para fluxo admin: `401` (nao autenticado), `403` (sem role ADMIN), `404` (imagem de origem nao encontrada).
+- `POST/PUT /api/admin/remove-bg`
+  - Ambos exigem sessao autenticada com role `ADMIN`.
+  - Ambos retornam `401` (nao autenticado), `403` (sem role `ADMIN`) e `429` com `Retry-After` quando excedem o rate limit dedicado.
+  - O fluxo admin ainda mantem contrato previsivel de `404` quando a imagem de origem nao e encontrada.
 
 ## Regras de acesso (estado atual)
 
 - Middleware protege principalmente rotas de UI (`/orders`, `/(slug)/perfil|wishlist|carrinho|checkout|pedido`).
 - Rotas API nao passam pelo matcher do middleware e dependem de validacao interna.
-- `POST/PUT /api/admin/remove-bg` exige sessao autenticada e role `ADMIN` na propria rota.
-- Nem todas as APIs sensiveis exigem sessao (ex.: `/api/test-stripe`, `/api/auth/user-info`, `/api/remove-bg`).
+- As rotas `POST/PUT /api/remove-bg` e `POST/PUT /api/admin/remove-bg` exigem sessao autenticada e role `ADMIN` na propria rota.
+- Ainda existem APIs sensiveis sem sessao obrigatoria que merecem revisao dedicada (ex.: `/api/test-stripe`, `/api/auth/user-info`).
 
 ## Inconsistencias funcionais
 

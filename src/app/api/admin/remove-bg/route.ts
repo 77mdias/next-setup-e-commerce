@@ -2,7 +2,12 @@ import axios from "axios";
 import FormData from "form-data";
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireAdminAccess } from "@/lib/auth";
+import { createRequestLogger } from "@/lib/logger";
+import {
+  authorizeRemoveBgRequest,
+  extractRemoveBgHttpStatus,
+  logRemoveBgFailure,
+} from "@/lib/remove-bg-route-security";
 import {
   getServerRemoveBgApiKey,
   validateRemoveBgImageUrl,
@@ -23,18 +28,8 @@ type RemoveBgBatchItemError = {
   success: false;
 };
 
-function extractHttpStatus(error: unknown): number | null {
-  if (!error || typeof error !== "object" || !("response" in error)) {
-    return null;
-  }
-
-  const status = (error as { response?: { status?: unknown } }).response
-    ?.status;
-  return typeof status === "number" ? status : null;
-}
-
 function mapRemoveBgError(error: unknown): RemoveBgErrorResponse {
-  const status = extractHttpStatus(error);
+  const status = extractRemoveBgHttpStatus(error);
 
   if (status === 400 || status === 422) {
     return {
@@ -97,26 +92,6 @@ function normalizeImageUrls(value: unknown): string[] | null {
   return normalized;
 }
 
-async function assertAdminAuthorization(): Promise<NextResponse | null> {
-  const access = await requireAdminAccess();
-
-  if (access.authorized) {
-    return null;
-  }
-
-  if (access.status === 401) {
-    return NextResponse.json(
-      { error: "Usuário não autenticado" },
-      { status: 401 },
-    );
-  }
-
-  return NextResponse.json(
-    { error: "Acesso administrativo obrigatório" },
-    { status: 403 },
-  );
-}
-
 async function processImageWithRemoveBg(
   imageUrl: string,
   apiKey: string,
@@ -153,11 +128,21 @@ async function processImageWithRemoveBg(
 }
 
 export async function POST(request: NextRequest) {
-  const unauthorizedResponse = await assertAdminAuthorization();
+  const requestLogger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/admin/remove-bg",
+  });
+  const authorization = await authorizeRemoveBgRequest({
+    request,
+    logger: requestLogger,
+    logPrefix: "remove_bg.admin",
+  });
 
-  if (unauthorizedResponse) {
-    return unauthorizedResponse;
+  if (!authorization.authorized) {
+    return authorization.response;
   }
+
+  const logger = authorization.logger;
 
   try {
     const payload = (await request.json()) as {
@@ -173,6 +158,11 @@ export async function POST(request: NextRequest) {
 
     const apiKey = getServerRemoveBgApiKey();
     if (!apiKey) {
+      logger.error("remove_bg.admin.configuration_missing", {
+        data: {
+          env: "REMOVE_BG_API_KEY",
+        },
+      });
       return NextResponse.json(
         { error: "REMOVE_BG_API_KEY não configurada no servidor" },
         { status: 500 },
@@ -201,8 +191,13 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     const mappedError = mapRemoveBgError(error);
-    console.error("[api/admin/remove-bg][POST] processamento falhou", {
-      status: mappedError.status,
+    logRemoveBgFailure({
+      logger,
+      event: "remove_bg.admin.post_failed",
+      error,
+      data: {
+        status: mappedError.status,
+      },
     });
 
     return NextResponse.json(
@@ -213,11 +208,21 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const unauthorizedResponse = await assertAdminAuthorization();
+  const requestLogger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/admin/remove-bg",
+  });
+  const authorization = await authorizeRemoveBgRequest({
+    request,
+    logger: requestLogger,
+    logPrefix: "remove_bg.admin",
+  });
 
-  if (unauthorizedResponse) {
-    return unauthorizedResponse;
+  if (!authorization.authorized) {
+    return authorization.response;
   }
+
+  const logger = authorization.logger;
 
   try {
     const payload = (await request.json()) as {
@@ -235,6 +240,11 @@ export async function PUT(request: NextRequest) {
 
     const apiKey = getServerRemoveBgApiKey();
     if (!apiKey) {
+      logger.error("remove_bg.admin.configuration_missing", {
+        data: {
+          env: "REMOVE_BG_API_KEY",
+        },
+      });
       return NextResponse.json(
         { error: "REMOVE_BG_API_KEY não configurada no servidor" },
         { status: 500 },
@@ -297,6 +307,15 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    if (errors.length > 0) {
+      logger.warn("remove_bg.admin.put.partial_failure", {
+        data: {
+          totalErrors: errors.length,
+          totalProcessed: processedImages.length,
+        },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       processedImages,
@@ -305,10 +324,11 @@ export async function PUT(request: NextRequest) {
       totalErrors: errors.length,
     });
   } catch (error: unknown) {
-    console.error(
-      "[api/admin/remove-bg][PUT] processamento em lote falhou",
+    logRemoveBgFailure({
+      logger,
+      event: "remove_bg.admin.put_failed",
       error,
-    );
+    });
 
     return NextResponse.json(
       { error: "Erro interno do servidor ao processar imagens" },

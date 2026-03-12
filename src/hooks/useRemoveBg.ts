@@ -45,7 +45,7 @@ export const useRemoveBg = (
 ): UseRemoveBgReturn => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const endpoint = options.endpoint ?? "/api/remove-bg";
+  const endpoint = options.endpoint ?? "/api/admin/remove-bg";
 
   const processImage = useCallback(
     async (imageUrl: string): Promise<ProcessImageResponse> => {

@@ -45,23 +45,26 @@ Endpoint dedicado para a tela administrativa `/${slug}/admin/remove-bg`.
 
 - Exige sessão autenticada com role `ADMIN`.
 - Retorna `401` para sessão ausente e `403` para usuário sem privilégio administrativo.
+- Aplica rate limit dedicado com resposta `429` e header `Retry-After`.
 - Mantém contrato de processamento de imagem única (`POST`) e lote (`PUT`) com erros operacionais padronizados.
 
-#### `/api/remove-bg` (POST)
+#### `/api/remove-bg` (POST/PUT)
 
-Processa uma única imagem:
+Endpoint legado mantido por compatibilidade, agora endurecido com o mesmo controle do fluxo administrativo:
+
+- exige sessão autenticada com role `ADMIN`;
+- compartilha o mesmo rate limit do endpoint administrativo para evitar bypass por alternância de rota;
+- mantém os contratos de payload abaixo para processamento único (`POST`) e lote (`PUT`).
+
+Payloads:
 
 ```typescript
+// POST
 {
   imageUrl: string;
 }
-```
 
-#### `/api/remove-bg` (PUT)
-
-Processa múltiplas imagens:
-
-```typescript
+// PUT
 {
   imageUrls: string[]
 }
@@ -98,7 +101,9 @@ Atualiza as imagens processadas de um produto (uso administrativo):
 
 ```typescript
 const { isProcessing, processImage, processMultipleImages, progress } =
-  useRemoveBg();
+  useRemoveBg({
+    endpoint: "/api/admin/remove-bg",
+  });
 ```
 
 ### 3. Componentes React
@@ -197,8 +202,10 @@ src/
 
 - A API Key permanece apenas no servidor (`REMOVE_BG_API_KEY`)
 - As requisições são processadas no servidor (API Routes)
-- O endpoint administrativo dedicado (`/api/admin/remove-bg`) valida sessão e role `ADMIN` explicitamente
+- Os endpoints `remove-bg` validam sessão e role `ADMIN` explicitamente antes de chamar o provedor externo
+- O rate limit de `remove-bg` responde `429` com `Retry-After` e é compartilhado entre a rota administrativa e a rota legada
 - A persistência de imagens também usa endpoint administrativo dedicado (`/api/admin/products/[productId]/images`) com validação de sessão/role
+- Falhas operacionais usam logger estruturado com redaction, sem `console.*` bruto
 - URLs de imagem são validadas por protocolo/host antes de qualquer download externo
 - Validação de dados em todas as rotas
 - Tratamento seguro de erros
@@ -207,7 +214,7 @@ src/
 
 1. **Tamanho de Arquivo**: Máximo recomendado de 10MB por imagem
 2. **Formatos Suportados**: JPG, PNG, WebP
-3. **Rate Limiting**: 1 requisição por segundo (implementado delay)
+3. **Rate Limiting**: delay interno de 1s entre itens de lote + limite dedicado por IP e usuário autenticado
 4. **Qualidade**: Dependente do plano da API
 
 ## 🛠️ Customizações Possíveis

@@ -16,7 +16,7 @@ export default function RemoveBgProcessor({
   productId,
   images,
   onImagesProcessed,
-  apiEndpoint = "/api/remove-bg",
+  apiEndpoint = "/api/admin/remove-bg",
 }: RemoveBgProcessorProps) {
   const { isProcessing, processMultipleImages, progress } = useRemoveBg({
     endpoint: apiEndpoint,

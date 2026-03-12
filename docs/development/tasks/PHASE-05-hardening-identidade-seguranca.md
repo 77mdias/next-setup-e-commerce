@@ -245,7 +245,7 @@ Reduzir superfície de abuso em produção com transporte seguro, proteção de 
   **Dependências:** S05-AUT-003  
   **Status:** 🟢 Concluída (2026-03-12)
 
-- [ ] **S05-HRD-003** - Hardening de `/api/remove-bg` com autenticação, limite de taxa e logs seguros
+- [x] **S05-HRD-003** - Hardening de `/api/remove-bg` com autenticação, limite de taxa e logs seguros
 
   **Descrição curta:**
   - O endpoint público de remove-bg pode ser abusado para consumo indevido de API externa.
@@ -259,13 +259,13 @@ Reduzir superfície de abuso em produção com transporte seguro, proteção de 
   **Arquivos/áreas afetadas:** `src/app/api/remove-bg/route.ts`, `src/app/api/admin/remove-bg/route.ts`, `src/lib/logger.ts`, `src/lib/log-redaction.ts`, `src/middleware.ts`
 
   **Critérios de aceitação:**
-  - [ ] Endpoint remove-bg não é acessível anonimamente para operação custosa.
-  - [ ] Excesso de chamadas retorna `429` e logs não vazam dados sensíveis.
+  - [x] Endpoint remove-bg não é acessível anonimamente para operação custosa.
+  - [x] Excesso de chamadas retorna `429` e logs não vazam dados sensíveis.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** S05-HRD-002  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-12)
 
 ### 📦 Testes, homologação e governança de release - Go/no-go seguro da Sprint 05
 
