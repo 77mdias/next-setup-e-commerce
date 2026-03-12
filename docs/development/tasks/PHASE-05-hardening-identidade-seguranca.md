@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 05: Hardening de Identidade e Seguranca
 
 **Status:** 🟢 ATIVA
-**Última atualização:** 2026-03-11
+**Última atualização:** 2026-03-12
 **Sprint Atual:** Sprint 05
-**Status Geral:** 🟡 25% (3/12 tarefas completas) - FASE ATIVA
+**Status Geral:** 🟡 33% (4/12 tarefas completas) - FASE ATIVA
 **ETA:** 2 semanas apos kickoff da Sprint 05
 **Pré-requisito:** Fase 04 - Qualidade, Testes e Observabilidade (✅ concluída em 2026-03-11)
 
@@ -14,17 +14,17 @@
 | Categoria                                   | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ------------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Tokens e ciclo de identidade seguro         | 3      | 3         | 0            | 0        | 0         |
-| Política de senha e anti-enumeração         | 3      | 0         | 0            | 3        | 0         |
+| Política de senha e anti-enumeração         | 3      | 1         | 0            | 2        | 0         |
 | Hardening de transporte, anti-abuso e logs  | 3      | 0         | 0            | 3        | 0         |
 | Testes, homologação e governança de release | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                                   | **12** | **3**     | **0**        | **9**    | **0**     |
+| **TOTAL**                                   | **12** | **4**     | **0**        | **8**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Geração de token de verificação migrou para aleatoriedade criptográfica com persistência por hash.
 - ✅ Reset de senha migrou para persistência por hash e consumo one-time com invalidação atômica.
 - ⚠️ Transporte SMTP ainda possui `rejectUnauthorized: false` em fluxos de autenticação por email.
-- ⚠️ Endpoint público `/api/auth/user-info` expõe sinais de existência/estado de conta.
+- ✅ Endpoints públicos de auth com `user-info` e `verify-email (POST)` agora respondem sem sinalizar existência de conta.
 - ⚠️ Endpoint `/api/remove-bg` segue sem autenticação obrigatória e sem limite de taxa dedicado.
 - 🎯 Sprint 05 é bloqueadora para iniciar o painel admin da Sprint 06 com base de segurança adequada.
 
@@ -171,7 +171,7 @@ Remover divergência de regras entre cadastro e reset e bloquear vazamento de si
   **Dependências:** S05-AUT-001  
   **Status:** 🟢 Concluída (2026-03-11)
 
-- [ ] **S05-AUT-003** - Remover enumeração de conta em endpoints públicos de auth
+- [x] **S05-AUT-003** - Remover enumeração de conta em endpoints públicos de auth
 
   **Descrição curta:**
   - O endpoint `/api/auth/user-info` e fluxos correlatos podem expor sinais de existência de conta.
@@ -185,13 +185,13 @@ Remover divergência de regras entre cadastro e reset e bloquear vazamento de si
   **Arquivos/áreas afetadas:** `src/app/api/auth/user-info/route.ts`, `src/app/api/auth/verify-email/route.ts`, `src/app/auth/error/components/ErrorContent.tsx`, `src/components/auth/**`
 
   **Critérios de aceitação:**
-  - [ ] Endpoints públicos não revelam existência de conta por código/mensagem.
-  - [ ] Fluxo de UX continua funcional sem regressão de login/recuperação.
+  - [x] Endpoints públicos não revelam existência de conta por código/mensagem.
+  - [x] Fluxo de UX continua funcional sem regressão de login/recuperação.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 5h  
   **Dependências:** S05-AUT-001  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-12)
 
 ### 📦 Hardening de transporte, anti-abuso e logs - Segurança operacional em runtime
 

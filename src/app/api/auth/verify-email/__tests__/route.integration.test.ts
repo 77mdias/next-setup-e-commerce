@@ -59,6 +59,9 @@ function createPostRequest(payload: Record<string, unknown>) {
 }
 
 describe("/api/auth/verify-email integration", () => {
+  const neutralResendMessage =
+    "Se o email existir e ainda não tiver sido verificado, você receberá um novo link de verificação.";
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockDb.user.updateMany.mockResolvedValue({ count: 1 });
@@ -154,6 +157,7 @@ describe("/api/auth/verify-email integration", () => {
 
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
+    expect(body.message).toBe(neutralResendMessage);
 
     expect(mockDb.user.updateMany).toHaveBeenCalledWith({
       where: {
@@ -184,5 +188,74 @@ describe("/api/auth/verify-email integration", () => {
       "plain-token",
       "/checkout",
     );
+  });
+
+  it("returns neutral success when account does not exist", async () => {
+    mockDb.user.findUnique.mockResolvedValue(null);
+
+    const response = await POST(
+      createPostRequest({
+        email: "unknown@example.com",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      message: neutralResendMessage,
+      success: true,
+    });
+    expect(mockDb.user.updateMany).not.toHaveBeenCalled();
+    expect(mockDb.user.update).not.toHaveBeenCalled();
+    expect(mockSendVerificationEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns neutral success when account is already verified", async () => {
+    mockDb.user.findUnique.mockResolvedValue({
+      id: "user-verified",
+      email: "verified@example.com",
+      isActive: true,
+    });
+
+    const response = await POST(
+      createPostRequest({
+        email: "verified@example.com",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      message: neutralResendMessage,
+      success: true,
+    });
+    expect(mockDb.user.update).not.toHaveBeenCalled();
+    expect(mockSendVerificationEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns neutral success when email delivery fails", async () => {
+    mockDb.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      email: "customer@example.com",
+      isActive: false,
+    });
+    mockGenerateVerificationTokenPair.mockReturnValue({
+      token: "plain-token",
+      tokenHash: "hashed-token",
+    });
+    mockSendVerificationEmail.mockResolvedValue({ success: false });
+
+    const response = await POST(
+      createPostRequest({
+        email: "customer@example.com",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      message: neutralResendMessage,
+      success: true,
+    });
   });
 });

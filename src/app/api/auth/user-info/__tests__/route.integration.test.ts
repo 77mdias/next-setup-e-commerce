@@ -1,36 +1,7 @@
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-const { mockDb } = vi.hoisted(() => ({
-  mockDb: {
-    user: {
-      findUnique: vi.fn(),
-    },
-  },
-}));
-
-vi.mock("@/lib/prisma", () => ({
-  db: mockDb,
-}));
+import { describe, expect, it } from "vitest";
 
 import { GET } from "@/app/api/auth/user-info/route";
-
-type StructuredLogEntry = {
-  message: string;
-  route: string | null;
-  requestId: string | null;
-  error: unknown;
-};
-
-function parseStructuredLogEntry(logCall: unknown[]): StructuredLogEntry {
-  const [serializedLog] = logCall;
-
-  if (typeof serializedLog !== "string") {
-    throw new Error("Structured log must be a JSON string");
-  }
-
-  return JSON.parse(serializedLog) as StructuredLogEntry;
-}
 
 function createRequest(email?: string) {
   const endpoint = new URL("http://localhost:3000/api/auth/user-info");
@@ -48,89 +19,32 @@ function createRequest(email?: string) {
 }
 
 describe("GET /api/auth/user-info integration", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it("returns 400 when email is missing", async () => {
+  it("returns neutral guidance when email is missing", async () => {
     const response = await GET(createRequest());
-    const body = await response.json();
-
-    expect(response.status).toBe(400);
-    expect(body.error).toBe("Email é obrigatório");
-    expect(mockDb.user.findUnique).not.toHaveBeenCalled();
-  });
-
-  it("returns 404 when user is not found", async () => {
-    mockDb.user.findUnique.mockResolvedValue(null);
-
-    const response = await GET(createRequest("customer@example.com"));
-    const body = await response.json();
-
-    expect(response.status).toBe(404);
-    expect(body.error).toBe("Usuário não encontrado");
-    expect(mockDb.user.findUnique).toHaveBeenCalledWith({
-      where: { email: "customer@example.com" },
-      include: {
-        accounts: {
-          select: {
-            provider: true,
-          },
-        },
-      },
-    });
-  });
-
-  it("returns user auth metadata when account exists", async () => {
-    mockDb.user.findUnique.mockResolvedValue({
-      email: "customer@example.com",
-      password: "$2a$hash",
-      accounts: [{ provider: "google" }, { provider: "github" }],
-    });
-
-    const response = await GET(createRequest("customer@example.com"));
     const body = await response.json();
 
     expect(response.status).toBe(200);
     expect(body).toEqual({
-      hasPassword: true,
-      oauthProviders: ["google", "github"],
-      email: "customer@example.com",
+      message:
+        "Por segurança, não confirmamos os métodos vinculados a um email específico.",
+      details: [
+        "Use o método de autenticação originalmente utilizado no cadastro.",
+        "Se não lembrar o método, tente recuperar a conta por email.",
+      ],
     });
   });
 
-  it("redacts PII and tokens in lookup error logs", async () => {
-    const errorSpy = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => undefined);
+  it("returns the same neutral payload when email is provided", async () => {
+    const withoutEmailResponse = await GET(createRequest());
+    const withEmailResponse = await GET(createRequest("customer@example.com"));
 
-    mockDb.user.findUnique.mockRejectedValue(
-      new Error(
-        "Falha ao consultar customer@example.com cpf 12345678900 token=sk_test_sensitive",
-      ),
-    );
+    const withoutEmailBody = await withoutEmailResponse.json();
+    const withEmailBody = await withEmailResponse.json();
 
-    const response = await GET(createRequest("customer@example.com"));
-    const body = await response.json();
-
-    expect(response.status).toBe(500);
-    expect(body.error).toBe("Erro interno do servidor");
-
-    const structuredError = parseStructuredLogEntry(errorSpy.mock.calls[0]);
-    expect(structuredError).toMatchObject({
-      message: "auth.user_info.lookup_failed",
-      route: "/api/auth/user-info",
-      requestId: "req-auth-user-info-test",
-    });
-
-    const serializedLog = JSON.stringify(structuredError);
-    expect(serializedLog).not.toContain("customer@example.com");
-    expect(serializedLog).not.toContain("12345678900");
-    expect(serializedLog).not.toContain("sk_test_sensitive");
-    expect(serializedLog).toContain("[REDACTED_EMAIL]");
-    expect(serializedLog).toContain("[REDACTED_CPF]");
-    expect(serializedLog).toContain("[REDACTED_TOKEN]");
-
-    errorSpy.mockRestore();
+    expect(withEmailResponse.status).toBe(200);
+    expect(withEmailBody).toEqual(withoutEmailBody);
+    expect(withEmailBody).not.toHaveProperty("hasPassword");
+    expect(withEmailBody).not.toHaveProperty("oauthProviders");
+    expect(withEmailBody).not.toHaveProperty("email");
   });
 });

@@ -9,20 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { normalizeCallbackPath } from "@/lib/callback-url";
 
-async function getUserAuthInfo(email: string) {
-  try {
-    const response = await fetch(
-      `/api/auth/user-info?email=${encodeURIComponent(email)}`,
-    );
-    if (response.ok) {
-      return await response.json();
-    }
-  } catch (error) {
-    console.error("Erro ao buscar informações do usuário:", error);
-  }
-  return null;
-}
-
 const errors = {
   Signin: "Tente fazer login com uma conta diferente.",
   OAuthSignin: "Tente fazer login com uma conta diferente.",
@@ -46,15 +32,11 @@ const errors = {
   default: "Não foi possível fazer login.",
 };
 
-function formatProviderName(provider: string) {
-  if (provider === "google") {
-    return "Google";
-  }
-  if (provider === "github") {
-    return "GitHub";
-  }
-  return provider;
-}
+const OAUTH_LINK_NEUTRAL_DETAILS = [
+  "Use o método de autenticação originalmente utilizado no cadastro.",
+  "Se a conta foi criada com email e senha, faça login com email e senha.",
+  "Se a conta foi criada com OAuth, use o mesmo provedor do cadastro inicial.",
+];
 
 export default function ErrorContent() {
   const searchParams = useSearchParams();
@@ -67,8 +49,6 @@ export default function ErrorContent() {
     error === "OAuthAccountNotLinked" || error === "AccessDenied";
 
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [userInfo, setUserInfo] = useState<any>(null);
 
   useEffect(() => {
     if (!isOAuthLinkError) {
@@ -76,20 +56,7 @@ export default function ErrorContent() {
     }
 
     setShowModal(true);
-    const email = searchParams.get("email");
-    if (!email) {
-      return;
-    }
-
-    setLoading(true);
-    getUserAuthInfo(email)
-      .then((info) => {
-        setUserInfo(info);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [isOAuthLinkError, searchParams]);
+  }, [isOAuthLinkError]);
 
   const handleTryAgain = () => {
     setShowModal(false);
@@ -102,37 +69,11 @@ export default function ErrorContent() {
   };
 
   const getModalMessage = () => {
-    if (!userInfo) {
-      return typeof errorData === "object" ? errorData.message : errors.default;
-    }
-
-    const provider = userInfo.oauthProviders?.[0];
-    if (!provider) {
-      return typeof errorData === "object" ? errorData.message : errors.default;
-    }
-
-    return `Esta conta foi criada com ${formatProviderName(provider)}. Faça login usando o mesmo método para continuar.`;
+    return typeof errorData === "object" ? errorData.message : errors.default;
   };
 
   const getModalDetails = () => {
-    const details: string[] = [];
-
-    if (userInfo?.hasPassword) {
-      details.push("Você pode entrar com email e senha.");
-    }
-
-    if (userInfo?.oauthProviders?.length) {
-      const providers = userInfo.oauthProviders
-        .map((provider: string) => formatProviderName(provider))
-        .join(" ou ");
-      details.push(`Métodos OAuth vinculados: ${providers}.`);
-    }
-
-    if (details.length === 0) {
-      details.push("Use o método de autenticação original da sua conta.");
-    }
-
-    return details;
+    return OAUTH_LINK_NEUTRAL_DETAILS;
   };
 
   if (isOAuthLinkError) {
@@ -147,16 +88,13 @@ export default function ErrorContent() {
           </div>
           <h2 className="mb-4 text-3xl font-bold text-white">{title}</h2>
           <p className="mb-8 text-gray-400">
-            {loading
-              ? "Carregando detalhes da autenticação..."
-              : "Clique abaixo para ver instruções e tentar novamente."}
+            Clique abaixo para ver instruções e tentar novamente.
           </p>
           <Button
             onClick={() => setShowModal(true)}
-            disabled={loading}
-            className="bg-[var(--button-primary)] text-white hover:bg-[var(--text-price-secondary)] disabled:opacity-50"
+            className="bg-[var(--button-primary)] text-white hover:bg-[var(--text-price-secondary)]"
           >
-            {loading ? "Carregando..." : "Ver detalhes"}
+            Ver detalhes
           </Button>
         </div>
 
@@ -191,7 +129,9 @@ export default function ErrorContent() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
             <AlertCircle className="h-8 w-8 text-red-600" />
           </div>
-          <h2 className="text-3xl font-bold text-white">Erro de Autenticação</h2>
+          <h2 className="text-3xl font-bold text-white">
+            Erro de Autenticação
+          </h2>
           <p className="mt-2 text-sm text-gray-400">{errorData as string}</p>
         </div>
 

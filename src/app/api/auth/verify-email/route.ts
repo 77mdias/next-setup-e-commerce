@@ -12,6 +12,12 @@ import {
 import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
 
+const RESEND_VERIFICATION_NEUTRAL_RESPONSE = {
+  message:
+    "Se o email existir e ainda não tiver sido verificado, você receberá um novo link de verificação.",
+  success: true,
+};
+
 export async function GET(request: NextRequest) {
   const logger = createRequestLogger({
     headers: request.headers,
@@ -122,10 +128,8 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { message: "Usuário não encontrado" },
-        { status: 404 },
-      );
+      // AIDEV-CRITICAL: resposta neutra para evitar enumeração de conta.
+      return NextResponse.json(RESEND_VERIFICATION_NEUTRAL_RESPONSE);
     }
 
     await cleanupExpiredVerificationTokens({
@@ -134,10 +138,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (user.isActive) {
-      return NextResponse.json(
-        { message: "Email já foi verificado" },
-        { status: 400 },
-      );
+      return NextResponse.json(RESEND_VERIFICATION_NEUTRAL_RESPONSE);
     }
 
     // Gerar novo token seguro
@@ -163,16 +164,15 @@ export async function POST(request: NextRequest) {
     );
 
     if (!emailResult.success) {
-      return NextResponse.json(
-        { message: "Erro ao enviar email de verificação" },
-        { status: 500 },
-      );
+      logger.error("auth.verify_email.resend_email_delivery_failed", {
+        data: {
+          emailProvided: true,
+        },
+      });
+      return NextResponse.json(RESEND_VERIFICATION_NEUTRAL_RESPONSE);
     }
 
-    return NextResponse.json({
-      message: "Email de verificação reenviado com sucesso",
-      success: true,
-    });
+    return NextResponse.json(RESEND_VERIFICATION_NEUTRAL_RESPONSE);
   } catch (error) {
     logger.error("auth.verify_email.resend_failed", { error });
     return NextResponse.json(
