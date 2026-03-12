@@ -1,0 +1,16 @@
+# Style and Conventions
+- Formatting: 2-space indentation, double quotes, semicolons required.
+- React component files use `PascalCase.tsx`.
+- Hooks use `use<Feature>.ts`.
+- API routes follow `src/app/api/<dominio>/<subdominio>/route.ts`.
+- Security utilities belong under `src/lib`, especially `*security*.ts`, `*token*.ts`, and `src/lib/log-redaction.ts`.
+- Tests use `*.test.ts` for unit tests and `*.integration.test.ts` for integration tests.
+- Prefer small route handlers with explicit validation; keep domain/business logic in `src/lib`.
+- For auth/security, prefer shared helpers over duplicating logic across routes.
+- Important anchors used in critical code/docs: `AIDEV-NOTE`, `AIDEV-TODO`, `AIDEV-QUESTION`, `AIDEV-CRITICAL`, `AIDEV-GOTCHA`.
+- Security rules from AGENTS:
+  - never persist raw tokens; store only hashes.
+  - normalize callback paths and validate external image URLs before use.
+  - never log PII or secrets directly; use the standard logger/redaction flow.
+  - avoid account enumeration in public sensitive endpoints.
+  - schema changes must ship with Prisma migrations.

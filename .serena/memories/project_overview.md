@@ -1,0 +1,16 @@
+# Project Overview
+- Name: My Store (`package.json` name: `my-store`).
+- Purpose: fullstack e-commerce portfolio/demo simulating a production store with catalog, categories, product pages, cart, wishlist, authentication, Stripe checkout, and webhooks.
+- Primary stack: Next.js 15 App Router, React 19, TypeScript, Prisma ORM, PostgreSQL/Neon, NextAuth.js, Stripe, Tailwind CSS, Vitest, Playwright.
+- Runtime/package manager: Node.js project using `npm` and `package-lock.json`.
+- Main structure:
+  - `src/app`: App Router UI and API routes.
+  - `src/components`: UI and feature components.
+  - `src/lib`: domain logic, security helpers, integrations, utilities.
+  - `src/hooks`: business hooks.
+  - `src/context`: shared state.
+  - `prisma`: schema, migrations, seed.
+  - `scripts`: operational scripts.
+  - `e2e`: critical Playwright scenarios.
+  - `docs`: roadmap, setup, security, tasks.
+- Project guidance emphasizes security hardening for auth, tokens, logs, callbacks/URLs, and pipeline parity before PRs.
