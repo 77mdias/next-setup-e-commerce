@@ -1,4 +1,5 @@
 # Style and Conventions
+
 - Formatting: 2-space indentation, double quotes, semicolons required.
 - React component files use `PascalCase.tsx`.
 - Hooks use `use<Feature>.ts`.

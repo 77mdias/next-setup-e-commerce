@@ -1,4 +1,5 @@
 # Project Overview
+
 - Name: My Store (`package.json` name: `my-store`).
 - Purpose: fullstack e-commerce portfolio/demo simulating a production store with catalog, categories, product pages, cart, wishlist, authentication, Stripe checkout, and webhooks.
 - Primary stack: Next.js 15 App Router, React 19, TypeScript, Prisma ORM, PostgreSQL/Neon, NextAuth.js, Stripe, Tailwind CSS, Vitest, Playwright.
