@@ -4,7 +4,15 @@ import bcrypt from "bcryptjs";
 import { cleanupExpiredResetPasswordTokens } from "@/lib/auth-token-lifecycle";
 import { createRequestLogger } from "@/lib/logger";
 import { createPasswordPolicyErrorPayload } from "@/lib/password-policy";
+import {
+  consumeRequestRateLimit,
+  createRateLimitResponse,
+} from "@/lib/rate-limit";
 import { hashSecurityToken } from "@/lib/secure-token";
+
+const RESET_PASSWORD_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const RESET_PASSWORD_RATE_LIMIT_MESSAGE =
+  "Muitas tentativas de redefinição de senha. Tente novamente em instantes.";
 
 export async function POST(request: NextRequest) {
   const logger = createRequestLogger({
@@ -41,6 +49,40 @@ export async function POST(request: NextRequest) {
     }
 
     const tokenHash = hashSecurityToken(normalizedToken);
+    const rateLimitResult = consumeRequestRateLimit({
+      headers: request.headers,
+      scope: "auth.reset_password",
+      now,
+      ip: {
+        limit: 5,
+        windowMs: RESET_PASSWORD_RATE_LIMIT_WINDOW_MS,
+      },
+      identities: [
+        {
+          key: "email",
+          value: normalizedEmail,
+          limit: 5,
+          windowMs: RESET_PASSWORD_RATE_LIMIT_WINDOW_MS,
+        },
+      ],
+    });
+
+    if (!rateLimitResult.allowed) {
+      logger.warn("auth.reset_password.rate_limited", {
+        data: {
+          bucketKey: rateLimitResult.bucketKey,
+          emailProvided: true,
+          limit: rateLimitResult.limit,
+          retryAfter: rateLimitResult.retryAfter,
+          windowMs: rateLimitResult.windowMs,
+        },
+      });
+
+      return createRateLimitResponse({
+        message: RESET_PASSWORD_RATE_LIMIT_MESSAGE,
+        retryAfter: rateLimitResult.retryAfter,
+      });
+    }
 
     // Consumir token de forma atômica para evitar reuso concorrente.
     const hashedPassword = await bcrypt.hash(newPassword, 12);

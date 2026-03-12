@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { resetRateLimitStore } from "@/lib/rate-limit";
 
 const {
   mockCreateTransport,
@@ -41,6 +42,7 @@ function createRequest(payload: Record<string, unknown>) {
     headers: {
       "content-type": "application/json",
       "x-request-id": "req-auth-forgot-password-test",
+      "x-forwarded-for": "198.51.100.10",
     },
     body: JSON.stringify(payload),
   });
@@ -49,6 +51,7 @@ function createRequest(payload: Record<string, unknown>) {
 describe("POST /api/auth/forgot-password integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetRateLimitStore();
 
     process.env.NEXTAUTH_URL = "http://localhost:3000";
     process.env.EMAIL_USER = "mailer@example.com";
@@ -144,5 +147,33 @@ describe("POST /api/auth/forgot-password integration", () => {
     expect(mockDb.user.updateMany).not.toHaveBeenCalled();
     expect(mockDb.user.update).not.toHaveBeenCalled();
     expect(mockSendMail).not.toHaveBeenCalled();
+  });
+
+  it("returns 429 after too many requests for the same email within the window", async () => {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const response = await POST(
+        createRequest({
+          email: "customer@example.com",
+        }),
+      );
+
+      expect(response.status).toBe(200);
+    }
+
+    const response = await POST(
+      createRequest({
+        email: "customer@example.com",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(body.error).toBe(
+      "Muitas tentativas de recuperação de senha. Tente novamente em instantes.",
+    );
+    expect(body.retryAfter).toBeGreaterThanOrEqual(1);
+    expect(response.headers.get("Retry-After")).toBe(String(body.retryAfter));
+    expect(mockDb.user.findUnique).toHaveBeenCalledTimes(3);
+    expect(mockSendMail).toHaveBeenCalledTimes(3);
   });
 });

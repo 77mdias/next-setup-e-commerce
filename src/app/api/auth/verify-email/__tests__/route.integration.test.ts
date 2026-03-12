@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { resetRateLimitStore } from "@/lib/rate-limit";
 
 const {
   mockDb,
@@ -43,6 +44,7 @@ function createGetRequest(token?: string) {
     method: "GET",
     headers: {
       "x-request-id": "req-auth-verify-email-get-test",
+      "x-forwarded-for": "198.51.100.12",
     },
   });
 }
@@ -53,6 +55,7 @@ function createPostRequest(payload: Record<string, unknown>) {
     headers: {
       "content-type": "application/json",
       "x-request-id": "req-auth-verify-email-post-test",
+      "x-forwarded-for": "198.51.100.12",
     },
     body: JSON.stringify(payload),
   });
@@ -64,6 +67,7 @@ describe("/api/auth/verify-email integration", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    resetRateLimitStore();
     mockDb.user.updateMany.mockResolvedValue({ count: 1 });
   });
 
@@ -257,5 +261,65 @@ describe("/api/auth/verify-email integration", () => {
       message: neutralResendMessage,
       success: true,
     });
+  });
+
+  it("returns 429 after too many verification attempts for the same token", async () => {
+    mockHashVerificationToken.mockReturnValue("hashed-token");
+    mockDb.user.findFirst.mockResolvedValue(null);
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const response = await GET(createGetRequest("plain-token"));
+      expect(response.status).toBe(400);
+    }
+
+    const response = await GET(createGetRequest("plain-token"));
+    const body = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(body.message).toBe(
+      "Muitas tentativas de verificação de email. Tente novamente em instantes.",
+    );
+    expect(body.retryAfter).toBeGreaterThanOrEqual(1);
+    expect(response.headers.get("Retry-After")).toBe(String(body.retryAfter));
+    expect(mockDb.user.findFirst).toHaveBeenCalledTimes(5);
+  });
+
+  it("returns 429 after too many resend attempts for the same email", async () => {
+    mockDb.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      email: "customer@example.com",
+      isActive: false,
+    });
+    mockGenerateVerificationTokenPair.mockReturnValue({
+      token: "plain-token",
+      tokenHash: "hashed-token",
+    });
+    mockSendVerificationEmail.mockResolvedValue({ success: true });
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const response = await POST(
+        createPostRequest({
+          email: "customer@example.com",
+        }),
+      );
+
+      expect(response.status).toBe(200);
+    }
+
+    const response = await POST(
+      createPostRequest({
+        email: "customer@example.com",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(body.message).toBe(
+      "Muitas tentativas de reenvio do email de verificação. Tente novamente em instantes.",
+    );
+    expect(body.retryAfter).toBeGreaterThanOrEqual(1);
+    expect(response.headers.get("Retry-After")).toBe(String(body.retryAfter));
+    expect(mockDb.user.findUnique).toHaveBeenCalledTimes(3);
+    expect(mockSendVerificationEmail).toHaveBeenCalledTimes(3);
   });
 });

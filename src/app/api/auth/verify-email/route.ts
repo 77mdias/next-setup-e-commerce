@@ -11,12 +11,21 @@ import {
 } from "@/lib/email";
 import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
+import {
+  consumeRequestRateLimit,
+  createRateLimitResponse,
+} from "@/lib/rate-limit";
 
 const RESEND_VERIFICATION_NEUTRAL_RESPONSE = {
   message:
     "Se o email existir e ainda não tiver sido verificado, você receberá um novo link de verificação.",
   success: true,
 };
+const VERIFY_EMAIL_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const VERIFY_EMAIL_CONSUME_RATE_LIMIT_MESSAGE =
+  "Muitas tentativas de verificação de email. Tente novamente em instantes.";
+const VERIFY_EMAIL_RESEND_RATE_LIMIT_MESSAGE =
+  "Muitas tentativas de reenvio do email de verificação. Tente novamente em instantes.";
 
 export async function GET(request: NextRequest) {
   const logger = createRequestLogger({
@@ -37,6 +46,41 @@ export async function GET(request: NextRequest) {
     }
 
     const tokenHash = hashVerificationToken(token);
+    const rateLimitResult = consumeRequestRateLimit({
+      headers: request.headers,
+      scope: "auth.verify_email.consume",
+      now,
+      ip: {
+        limit: 10,
+        windowMs: VERIFY_EMAIL_RATE_LIMIT_WINDOW_MS,
+      },
+      identities: [
+        {
+          key: "token",
+          value: tokenHash,
+          limit: 5,
+          windowMs: VERIFY_EMAIL_RATE_LIMIT_WINDOW_MS,
+        },
+      ],
+    });
+
+    if (!rateLimitResult.allowed) {
+      logger.warn("auth.verify_email.consume.rate_limited", {
+        data: {
+          bucketKey: rateLimitResult.bucketKey,
+          limit: rateLimitResult.limit,
+          retryAfter: rateLimitResult.retryAfter,
+          tokenProvided: true,
+          windowMs: rateLimitResult.windowMs,
+        },
+      });
+
+      return createRateLimitResponse({
+        key: "message",
+        message: VERIFY_EMAIL_CONSUME_RATE_LIMIT_MESSAGE,
+        retryAfter: rateLimitResult.retryAfter,
+      });
+    }
 
     // Buscar usuário com hash de token válido
     const user = await db.user.findFirst({
@@ -120,6 +164,42 @@ export async function POST(request: NextRequest) {
         { message: "Email é obrigatório" },
         { status: 400 },
       );
+    }
+
+    const rateLimitResult = consumeRequestRateLimit({
+      headers: request.headers,
+      scope: "auth.verify_email.resend",
+      now,
+      ip: {
+        limit: 5,
+        windowMs: VERIFY_EMAIL_RATE_LIMIT_WINDOW_MS,
+      },
+      identities: [
+        {
+          key: "email",
+          value: normalizedEmail,
+          limit: 3,
+          windowMs: VERIFY_EMAIL_RATE_LIMIT_WINDOW_MS,
+        },
+      ],
+    });
+
+    if (!rateLimitResult.allowed) {
+      logger.warn("auth.verify_email.resend.rate_limited", {
+        data: {
+          bucketKey: rateLimitResult.bucketKey,
+          emailProvided: true,
+          limit: rateLimitResult.limit,
+          retryAfter: rateLimitResult.retryAfter,
+          windowMs: rateLimitResult.windowMs,
+        },
+      });
+
+      return createRateLimitResponse({
+        key: "message",
+        message: VERIFY_EMAIL_RESEND_RATE_LIMIT_MESSAGE,
+        retryAfter: rateLimitResult.retryAfter,
+      });
     }
 
     // Buscar usuário

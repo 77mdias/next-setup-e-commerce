@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { resetRateLimitStore } from "@/lib/rate-limit";
 
 const { mockBcryptHash, mockDb, mockHashSecurityToken } = vi.hoisted(() => ({
   mockBcryptHash: vi.fn(),
@@ -33,6 +34,7 @@ function createRequest(payload: Record<string, unknown>) {
     headers: {
       "content-type": "application/json",
       "x-request-id": "req-auth-reset-password-test",
+      "x-forwarded-for": "198.51.100.11",
     },
     body: JSON.stringify(payload),
   });
@@ -41,6 +43,7 @@ function createRequest(payload: Record<string, unknown>) {
 describe("POST /api/auth/reset-password integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetRateLimitStore();
 
     mockHashSecurityToken.mockReturnValue("hashed-reset-token");
     mockBcryptHash.mockResolvedValue("hashed-password");
@@ -147,5 +150,37 @@ describe("POST /api/auth/reset-password integration", () => {
     expect(body.error).toBe("Token de reset é obrigatório");
     expect(mockHashSecurityToken).not.toHaveBeenCalled();
     expect(mockDb.user.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("returns 429 after too many reset attempts in the same window", async () => {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const response = await POST(
+        createRequest({
+          email: "customer@example.com",
+          newPassword: "StrongPass1!",
+          token: "plain-reset-token",
+        }),
+      );
+
+      expect(response.status).toBe(200);
+    }
+
+    const response = await POST(
+      createRequest({
+        email: "customer@example.com",
+        newPassword: "StrongPass1!",
+        token: "plain-reset-token",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(body.error).toBe(
+      "Muitas tentativas de redefinição de senha. Tente novamente em instantes.",
+    );
+    expect(body.retryAfter).toBeGreaterThanOrEqual(1);
+    expect(response.headers.get("Retry-After")).toBe(String(body.retryAfter));
+    expect(mockBcryptHash).toHaveBeenCalledTimes(5);
+    expect(mockDb.user.updateMany).toHaveBeenCalledTimes(5);
   });
 });

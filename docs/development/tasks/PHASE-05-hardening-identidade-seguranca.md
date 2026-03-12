@@ -223,7 +223,7 @@ Reduzir superfície de abuso em produção com transporte seguro, proteção de 
   **Dependências:** nenhuma  
   **Status:** 🟢 Concluída (2026-03-12)
 
-- [ ] **S05-HRD-002** - Implementar rate limiting nas rotas sensíveis de autenticação
+- [x] **S05-HRD-002** - Implementar rate limiting nas rotas sensíveis de autenticação
 
   **Descrição curta:**
   - Endpoints públicos de auth estão sujeitos a abuso por alta taxa de tentativas.
@@ -237,13 +237,13 @@ Reduzir superfície de abuso em produção com transporte seguro, proteção de 
   **Arquivos/áreas afetadas:** `src/lib/rate-limit.ts` (novo), `src/app/api/auth/forgot-password/route.ts`, `src/app/api/auth/reset-password/route.ts`, `src/app/api/auth/verify-email/route.ts`
 
   **Critérios de aceitação:**
-  - [ ] Rotas sensíveis de auth limitam abuso com resposta previsível.
-  - [ ] Tentativas dentro da janela normal continuam funcionando sem falso bloqueio.
+  - [x] Rotas sensíveis de auth limitam abuso com resposta previsível.
+  - [x] Tentativas dentro da janela normal continuam funcionando sem falso bloqueio.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** S05-AUT-003  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-12)
 
 - [ ] **S05-HRD-003** - Hardening de `/api/remove-bg` com autenticação, limite de taxa e logs seguros
 
