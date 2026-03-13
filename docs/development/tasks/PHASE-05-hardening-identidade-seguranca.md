@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 05: Hardening de Identidade e Seguranca
 
-**Status:** 🟢 ATIVA
-**Última atualização:** 2026-03-12
+**Status:** ✅ CONCLUIDA
+**Última atualização:** 2026-03-13
 **Sprint Atual:** Sprint 05
-**Status Geral:** 🟡 33% (4/12 tarefas completas) - FASE ATIVA
+**Status Geral:** ✅ 100% (12/12 tarefas concluídas) - FASE CONCLUÍDA
 **ETA:** 2 semanas apos kickoff da Sprint 05
 **Pré-requisito:** Fase 04 - Qualidade, Testes e Observabilidade (✅ concluída em 2026-03-11)
 
@@ -14,19 +14,19 @@
 | Categoria                                   | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ------------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
 | Tokens e ciclo de identidade seguro         | 3      | 3         | 0            | 0        | 0         |
-| Política de senha e anti-enumeração         | 3      | 1         | 0            | 2        | 0         |
-| Hardening de transporte, anti-abuso e logs  | 3      | 0         | 0            | 3        | 0         |
-| Testes, homologação e governança de release | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                                   | **12** | **4**     | **0**        | **8**    | **0**     |
+| Política de senha e anti-enumeração         | 3      | 3         | 0            | 0        | 0         |
+| Hardening de transporte, anti-abuso e logs  | 3      | 3         | 0            | 0        | 0         |
+| Testes, homologação e governança de release | 3      | 3         | 0            | 0        | 0         |
+| **TOTAL**                                   | **12** | **12**    | **0**        | **0**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
-- ✅ Geração de token de verificação migrou para aleatoriedade criptográfica com persistência por hash.
-- ✅ Reset de senha migrou para persistência por hash e consumo one-time com invalidação atômica.
-- ⚠️ Transporte SMTP ainda possui `rejectUnauthorized: false` em fluxos de autenticação por email.
-- ✅ Endpoints públicos de auth com `user-info` e `verify-email (POST)` agora respondem sem sinalizar existência de conta.
-- ⚠️ Endpoint `/api/remove-bg` segue sem autenticação obrigatória e sem limite de taxa dedicado.
-- 🎯 Sprint 05 é bloqueadora para iniciar o painel admin da Sprint 06 com base de segurança adequada.
+- ✅ Tokens de verificacao/reset usam hash persistido, TTL oficial e invalidacao one-time.
+- ✅ Politica de senha foi unificada entre cadastro e reset.
+- ✅ Endpoints publicos de auth estao sem enumeracao de conta e com logging seguro.
+- ✅ Transporte SMTP foi centralizado com TLS estrito por padrao.
+- ✅ Rate limiting foi aplicado a auth/remove-bg e validado por suite de seguranca.
+- ✅ Sprint 05 foi encerrada com checklist de homologacao, rollback e decisao formal de `GO`.
 
 ---
 
@@ -319,7 +319,7 @@ Converter as mudanças de segurança em critérios objetivos de release com cobe
   **Dependências:** S05-HRD-002, S05-HRD-003  
   **Status:** 🟢 Concluída (2026-03-12)
 
-- [ ] **S05-QA-003** - Executar checklist de homologação e plano de rollback da Sprint 05
+- [x] **S05-QA-003** - Executar checklist de homologação e plano de rollback da Sprint 05
 
   **Descrição curta:**
   - A liberação exige evidências operacionais e decisão formal de go/no-go.
@@ -330,16 +330,16 @@ Converter as mudanças de segurança em critérios objetivos de release com cobe
   - Consolidar evidências e decisão operacional em log da sprint.
   - Validar RTO de rollback e atualizar status final da fase.
 
-  **Arquivos/áreas afetadas:** `docs/ROADMAP/SPRINTS/sprint-05-hardening-identidade-seguranca.md`, `docs/ROADMAP/Logs/S05-SEC-003.md` (novo), `docs/development/tasks/PHASE-05-hardening-identidade-seguranca.md`
+  **Arquivos/áreas afetadas:** `docs/ROADMAP/SPRINTS/sprint-05-hardening-identidade-seguranca.md`, `docs/ROADMAP/Logs/S05-QA-003.md` (novo), `docs/development/tasks/PHASE-05-hardening-identidade-seguranca.md`
 
   **Critérios de aceitação:**
-  - [ ] Checklist de homologação executado com evidências rastreáveis.
-  - [ ] Plano de rollback validado com responsáveis e decisão de go/no-go.
+  - [x] Checklist de homologação executado com evidências rastreáveis.
+  - [x] Plano de rollback validado com responsáveis e decisão de go/no-go.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 3h  
   **Dependências:** S05-QA-001, S05-QA-002  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-13)
 
 ---
 
@@ -348,7 +348,7 @@ Converter as mudanças de segurança em critérios objetivos de release com cobe
 - **Suites necessárias:** Unitário (Vitest) para política de senha/token; integração (Vitest) para auth/remove-bg; E2E crítico (Playwright) para regressão de login/reset; smoke pós-deploy.
 - **Cobertura alvo:** 100% dos cenários P0 da Sprint 05 e >=80% de branches nos módulos críticos de auth.
 - **Comandos de verificação:** `npm run lint`, `npm run typecheck`, `npm run build`, `npm run test:unit`, `npm run test:integration`, `npm run test:integration:critical`, `npm run test:e2e:critical:ci`.
-- **Estado atual:** ⚠️ Planejado para execução na Sprint 05.
+- **Estado atual:** ✅ Fase concluída; hardenings de auth/remove-bg, cobertura crítica e homologação/rollback da Sprint 05 foram formalizados com evidências rastreáveis.
 
 ---
 
@@ -364,10 +364,10 @@ Converter as mudanças de segurança em critérios objetivos de release com cobe
 
 ## ✅ Checklist de Encerramento da Fase
 
-- [ ] Todas as tarefas da Fase 05 marcadas como concluídas.
-- [ ] Migrações de schema aplicadas e versionadas (se houver mudança de token hash/índices).
-- [ ] Testes unitários, integração e suites críticas executados e passando.
-- [ ] Endpoints públicos de auth sem enumeração e com rate limiting ativo.
-- [ ] Logs de segurança sem exposição de PII/token em texto puro.
-- [ ] Checklist de homologação e plano de rollback da Sprint 05 evidenciados.
-- [ ] Aprovação final registrada (engenharia, QA e produto).
+- [x] Todas as tarefas da Fase 05 marcadas como concluídas.
+- [x] Migrações de schema aplicadas e versionadas (se houver mudança de token hash/índices).
+- [x] Testes unitários, integração e suites críticas executados e passando.
+- [x] Endpoints públicos de auth sem enumeração e com rate limiting ativo.
+- [x] Logs de segurança sem exposição de PII/token em texto puro.
+- [x] Checklist de homologação e plano de rollback da Sprint 05 evidenciados.
+- [x] Aprovação final registrada (engenharia, QA e produto).

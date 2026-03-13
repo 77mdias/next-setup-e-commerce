@@ -48,35 +48,73 @@ Fechar riscos remanescentes de autenticacao, tokens, transporte e abuso de API p
   - apply: `npm run tokens:cleanup-expired`
   - automacao recomendada: GitHub Actions em `.github/workflows/auth-token-cleanup.yml` (schedule diario + execucao manual)
 
-## Etapa 4 - Testes e homologacao (S05-SEC-003)
+## Etapa 4 - Testes e homologacao (S05-QA-003)
 
 - Testes de integracao para fluxos de token (geracao, expiracao, invalidacao e reuso).
 - Testes de contrato para respostas anti-enumeracao.
 - Testes de carga leve para validar limite por IP e resposta `429`.
 - Janela recomendada de deploy: dias uteis 10:00-12:00 (America/Sao_Paulo), com monitoramento por 60 minutos.
+- Janela executada de homologacao: 2026-03-13 (America/Sao_Paulo), com consolidacao de evidencias em `docs/ROADMAP/Logs/S05-QA-003.md`.
 
-### Checklist manual de homologacao (S05-SEC-003)
+### Checklist manual de homologacao (S05-QA-003)
 
 | Cenario                                  | Resultado esperado                                              | Evidencia tecnica                                                       | Status |
 | ---------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------- | ------ |
-| Reset de senha com token valido          | Senha alterada uma unica vez e token invalidado                 | Suite `src/app/api/auth/reset-password/__tests__/*.integration.test.ts` | [ ]    |
-| Reuso de token de reset/verificacao      | Endpoint rejeita token usado/expirado sem detalhe sensivel      | Suites de `reset-password` e `verify-email`                             | [ ]    |
-| Enumeracao de conta via endpoint publico | Resposta generica independente de email existente               | Suite `src/app/api/auth/__tests__/*` + smoke manual                     | [ ]    |
-| Rate limiting de auth/remove-bg          | Excesso de tentativas retorna `429` e nao quebra fluxo legitimo | Suite de integracao + log operacional da release                        | [x]    |
+| Reset de senha com token valido          | Senha alterada uma unica vez e token invalidado                 | `docs/ROADMAP/Logs/S05-QA-001.md` + suite `src/app/api/auth/reset-password/__tests__/route.integration.test.ts` | [x]    |
+| Reuso de token de reset/verificacao      | Endpoint rejeita token usado/expirado sem detalhe sensivel      | `docs/ROADMAP/Logs/S05-QA-001.md` + suites `reset-password` e `verify-email` | [x]    |
+| Enumeracao de conta via endpoint publico | Resposta generica independente de email existente               | `docs/ROADMAP/Logs/S05-QA-001.md` + suites `forgot-password` e `verify-email` | [x]    |
+| Rate limiting de auth/remove-bg          | Excesso de tentativas retorna `429` e nao quebra fluxo legitimo | `docs/ROADMAP/Logs/S05-QA-002.md` + `npm run test:integration:security` | [x]    |
 
-### Plano de rollback (S05-SEC-003)
+#### Evidencias da janela de homologacao
+
+- `npm run test:integration:security` aprovado em 2026-03-13 (7 arquivos / 42 testes).
+- `npm run lint` aprovado em 2026-03-13.
+- `npm run build` aprovado em 2026-03-13.
+- Consolidacao operacional registrada em `docs/ROADMAP/Logs/S05-QA-003.md`.
+
+### Plano de rollback (S05-QA-003)
 
 - **RTO alvo:** ate 20 minutos apos decisao de rollback.
+- **Escopo de reversao:** release vigente da Sprint 05 nos fluxos `register`, `forgot-password`, `reset-password`, `verify-email`, `remove-bg` e transporte de email autenticado.
+- **Responsaveis:**
+  - engenharia backend/auth: execucao tecnica do rollback, reversao de release e validacao dos fluxos de auth/remove-bg;
+  - QA: revalidacao do smoke funcional pos-rollback;
+  - produto: comunicacao da janela, decisao final de `GO`/`NO-GO` e alinhamento com stakeholders.
 - **Gatilhos:**
   - aumento anormal de falha em login/reset;
   - bloqueio indevido de usuarios legitimos por rate limit;
   - falha em envio de email transacional.
 - **Passos de rollback:**
   1. Reverter release para versao estavel anterior.
-  2. Desativar temporariamente regras novas de rate limit via configuracao.
+  2. Desativar temporariamente regras novas de rate limit via configuracao quando a regressao estiver restrita ao anti-abuso.
   3. Validar smoke de login, reset e verificacao de email.
   4. Registrar incidente e causa raiz no log da sprint.
-- **Responsaveis:** engenharia backend/auth, QA e produto.
+- **Criterio de saida de rollback:**
+  - release anterior restaurada com sucesso;
+  - smoke de login, reset, verificacao de email e `remove-bg` aprovado;
+  - sem bloqueio indevido de usuarios legitimos por rate limit;
+  - incidente, causa e decisao final registrados no log operacional da sprint.
+
+#### Matriz formal de decisao go/no-go
+
+| Decisao | Condicoes objetivas | Acao operacional |
+| ------- | ------------------- | ---------------- |
+| `GO` | Checklist manual 100% concluido + `npm run test:integration:security`, `npm run lint` e `npm run build` verdes + sem bloqueador aberto da Sprint 05 | Prosseguir com a liberacao e encerrar a janela de homologacao |
+| `NO-GO` (rollback imediato) | Qualquer gatilho de rollback acionado | Executar sequencia de rollback e registrar incidente |
+| `NO-GO` (hold controlado) | Warning persistente sem gatilho critico, mas com risco operacional nao resolvido | Congelar novos deploys e reavaliar em ate `15m` com engenharia + QA + produto |
+
+#### Decisao final da janela de homologacao
+
+- **Decisao:** `GO`
+- **Justificativa objetiva:** checklist manual concluido, evidencias automatizadas consolidadas e gates `test:integration:security`, `lint` e `build` aprovados em 2026-03-13.
+
+#### Aprovacao de encerramento operacional da Sprint 05
+
+| Papel | Escopo aprovado | Evidencia | Status |
+| ----- | --------------- | --------- | ------ |
+| Engenharia | Gatilhos, sequencia de rollback, RTO e criterio de saida | Secao "Plano de rollback (S05-QA-003)" + `docs/ROADMAP/Logs/S05-QA-003.md` | ✅ |
+| QA | Checklist manual da sprint, suites de seguranca e smoke pos-rollback | Secao "Checklist manual de homologacao (S05-QA-003)" + `docs/ROADMAP/Logs/S05-QA-003.md` | ✅ |
+| Produto | Janela operacional, comunicacao e decisao final `GO` | `docs/ROADMAP/Logs/S05-QA-003.md` | ✅ |
 
 ## Criterios de aceite
 
