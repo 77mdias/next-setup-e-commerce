@@ -110,7 +110,7 @@ jobs:
 
       - name: Prettier check (changed files only)
         if: ${{ hashFiles('.prettierrc', '.prettierrc.*', 'prettier.config.*') != '' && steps.changed_files.outputs.any_changed == 'true' }}
-        run: npx --yes prettier --check ${{ steps.changed_files.outputs.all_changed_files }}
+        run: node scripts/prettier-changed.js --check ${{ steps.changed_files.outputs.all_changed_files }}
 
       - name: Next.js production build
         run: npm run build
