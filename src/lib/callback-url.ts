@@ -1,4 +1,5 @@
 export const DEFAULT_AUTH_CALLBACK_PATH = "/products";
+export const DEFAULT_ADMIN_CALLBACK_PATH = "/admin";
 
 export function normalizeCallbackPath(
   value?: string | null,
@@ -37,4 +38,21 @@ export function normalizeCallbackPath(
   }
 
   return candidate;
+}
+
+function isAdminPath(value: string): boolean {
+  return value === "/admin" || value.startsWith("/admin/");
+}
+
+export function normalizeAdminCallbackPath(
+  value?: string | null,
+  fallback = DEFAULT_ADMIN_CALLBACK_PATH,
+): string {
+  const normalizedPath = normalizeCallbackPath(value, fallback);
+
+  if (!isAdminPath(normalizedPath)) {
+    return fallback;
+  }
+
+  return normalizedPath;
 }

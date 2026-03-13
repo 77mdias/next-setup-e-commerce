@@ -6,6 +6,8 @@ import {
   buildAccessFeedbackPath,
   resolveRuntimeAccessReason,
 } from "@/lib/access-feedback";
+import { isAdminRole } from "@/lib/admin-role";
+import { normalizeAdminCallbackPath } from "@/lib/callback-url";
 import type { AccessFeedbackReason } from "@/lib/access-feedback";
 
 const protectedRoutePattern =
@@ -98,6 +100,9 @@ export default withAuth(
     const isStatusPage = pathname.startsWith("/status");
     const isProtectedPage = protectedRoutePattern.test(pathname);
     const isAdminPage = adminRoutePattern.test(pathname);
+    const normalizedAdminPath = isAdminPage
+      ? normalizeAdminCallbackPath(pathWithSearch)
+      : null;
 
     // Modo global da aplicação: maintenance | outage | development | unavailable
     const runtimeReason = resolveRuntimeAccessReason(
@@ -163,19 +168,19 @@ export default withAuth(
       const feedbackUrl = new URL(
         buildAccessFeedbackPath({
           reason: "auth-required",
-          callbackUrl: pathWithSearch,
-          fromPath: pathWithSearch,
+          callbackUrl: normalizedAdminPath,
+          fromPath: normalizedAdminPath,
         }),
         req.url,
       );
       return NextResponse.redirect(feedbackUrl);
     }
 
-    if (isAdminPage && token?.role !== "ADMIN") {
+    if (isAdminPage && !isAdminRole(token?.role)) {
       const feedbackUrl = new URL(
         buildAccessFeedbackPath({
           reason: "forbidden",
-          fromPath: pathWithSearch,
+          fromPath: normalizedAdminPath,
         }),
         req.url,
       );

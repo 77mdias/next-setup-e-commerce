@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 06: Painel Admin e Operacao
 
-**Status:** 🟡 EM PLANEJAMENTO
+**Status:** 🟠 EM ANDAMENTO
 **Última atualização:** 2026-03-13
 **Sprint Atual:** Sprint 06
-**Status Geral:** ⚪ 0% (0/12 tarefas concluídas) - FASE NÃO INICIADA
+**Status Geral:** 🟡 8% (1/12 tarefas concluídas)
 **ETA:** 2 semanas após kickoff da Sprint 06
 **Pré-requisito:** Fase 05 - Hardening de Identidade e Segurança (✅ concluída em 2026-03-13)
 
@@ -13,15 +13,15 @@
 
 | Categoria                                  | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ------------------------------------------ | ------ | --------- | ------------ | -------- | --------- |
-| Fundação do painel e RBAC                  | 3      | 0         | 0            | 3        | 0         |
+| Fundação do painel e RBAC                  | 3      | 1         | 0            | 2        | 0         |
 | Dashboard operacional e KPIs               | 3      | 0         | 0            | 3        | 0         |
 | Módulos operacionais e trilha de auditoria | 3      | 0         | 0            | 3        | 0         |
 | Testes, homologação e governança           | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                                  | **12** | **0**     | **0**        | **12**   | **0**     |
+| **TOTAL**                                  | **12** | **1**     | **0**        | **11**   | **0**     |
 
 ### 🎯 Principais Indicadores
 
-- 🔄 Escopo da Sprint 06 consolidado para `/admin` com RBAC por papel (`SUPER_ADMIN`, `STORE_ADMIN`).
+- ✅ Guard inicial de acesso em `/admin` entregue com validação em middleware + layout server-side.
 - 🔄 Matriz de autorização por recurso/ação planejada para UI e API.
 - 🔄 KPIs mínimos definidos para operação: pedidos por status, aprovação de pagamento, receita bruta e estoque baixo.
 - 🔄 Módulos operacionais priorizados: pedidos, catálogo/estoque/imagens e visão de clientes.
@@ -53,7 +53,7 @@ Estabelecer a base de autenticação/autorização do painel para impedir acesso
 
 #### ACC.1 - Acesso administrativo e autorização
 
-- [ ] **S06-ACC-001** - Criar guard de autenticação/autorização para `/admin`
+- [x] **S06-ACC-001** - Criar guard de autenticação/autorização para `/admin`
 
   **Descrição curta:**
   - Páginas administrativas precisam bloquear acesso anônimo e usuários sem papel compatível.
@@ -67,13 +67,13 @@ Estabelecer a base de autenticação/autorização do painel para impedir acesso
   **Arquivos/áreas afetadas:** `src/middleware.ts`, `src/app/admin/layout.tsx` (novo), `src/lib/auth.ts`, `src/lib/callback-url.ts`
 
   **Critérios de aceitação:**
-  - [ ] Usuário não autenticado não acessa páginas administrativas.
-  - [ ] Usuário autenticado sem papel admin recebe resposta consistente e segura.
+  - [x] Usuário não autenticado não acessa páginas administrativas.
+  - [x] Usuário autenticado sem papel admin recebe resposta consistente e segura.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** nenhuma  
-  **Status:** ⚪ Pendente
+  **Status:** 🟢 Concluída (2026-03-13)
 
 - [ ] **S06-ACC-002** - Implementar matriz RBAC por recurso/ação nas APIs administrativas
 

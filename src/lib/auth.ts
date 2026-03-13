@@ -10,8 +10,11 @@ import { getServerSession } from "next-auth";
 import { NEXT_AUTH_SESSION_COOKIE_NAME } from "@/lib/auth-cookie";
 import {
   DEFAULT_AUTH_CALLBACK_PATH,
+  normalizeAdminCallbackPath,
   normalizeCallbackPath,
 } from "@/lib/callback-url";
+import { buildAccessFeedbackPath } from "@/lib/access-feedback";
+import { isAdminRole } from "@/lib/admin-role";
 import { createLogger } from "@/lib/logger";
 
 const authLogger = createLogger({
@@ -269,7 +272,7 @@ export const requireAdminAccess = async (): Promise<AdminAccessResult> => {
     };
   }
 
-  if (user.role !== UserRole.ADMIN) {
+  if (!isAdminRole(user.role)) {
     return {
       authorized: false,
       status: 403,
@@ -281,3 +284,57 @@ export const requireAdminAccess = async (): Promise<AdminAccessResult> => {
     user,
   };
 };
+
+type AdminPageGuardAllowed = {
+  allowed: true;
+  user: NonNullable<AuthenticatedUser>;
+};
+
+type AdminPageGuardDenied = {
+  allowed: false;
+  status: 401 | 403;
+  feedbackPath: string;
+};
+
+export type AdminPageGuardResult = AdminPageGuardAllowed | AdminPageGuardDenied;
+
+type ResolveAdminPageAccessOptions = {
+  fromPath?: string;
+};
+
+// AIDEV-CRITICAL: centraliza contrato de bloqueio do /admin para manter
+// comportamento consistente entre middleware edge e layout server-side.
+export async function resolveAdminPageAccess(
+  options: ResolveAdminPageAccessOptions = {},
+): Promise<AdminPageGuardResult> {
+  const access = await requireAdminAccess();
+  const requestedAdminPath = normalizeAdminCallbackPath(options.fromPath);
+
+  if (!access.authorized) {
+    if (access.status === 401) {
+      return {
+        allowed: false,
+        status: 401,
+        feedbackPath: buildAccessFeedbackPath({
+          reason: "auth-required",
+          callbackUrl: requestedAdminPath,
+          fromPath: requestedAdminPath,
+        }),
+      };
+    }
+
+    return {
+      allowed: false,
+      status: 403,
+      feedbackPath: buildAccessFeedbackPath({
+        reason: "forbidden",
+        fromPath: requestedAdminPath,
+      }),
+    };
+  }
+
+  return {
+    allowed: true,
+    user: access.user,
+  };
+}
