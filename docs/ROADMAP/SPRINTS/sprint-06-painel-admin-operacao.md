@@ -53,12 +53,12 @@ Entregar o primeiro painel administrativo da aplicacao (dashboard + operacao) co
 
 ### Checklist manual de homologacao (S06-ADM-003)
 
-| Cenario | Resultado esperado | Evidencia tecnica | Status |
-| --- | --- | --- | --- |
-| Usuario sem papel admin acessa painel | Acesso negado com contrato consistente | Suite `src/app/api/admin/**/__tests__/*.integration.test.ts` | [ ] |
-| Dashboard com indicadores da loja | KPIs carregam sem vazamento cross-store | Logs + screenshot homologacao | [ ] |
-| Atualizacao de produto/estoque no painel | Alteracao persistida e auditada | Suite de catalogo + tabela de auditoria | [ ] |
-| Operacao em pedido via painel | Acao valida atualiza estado e historico | Suite de pedidos + smoke manual | [ ] |
+| Cenario                                  | Resultado esperado                      | Evidencia tecnica                                            | Status |
+| ---------------------------------------- | --------------------------------------- | ------------------------------------------------------------ | ------ |
+| Usuario sem papel admin acessa painel    | Acesso negado com contrato consistente  | Suite `src/app/api/admin/**/__tests__/*.integration.test.ts` | [ ]    |
+| Dashboard com indicadores da loja        | KPIs carregam sem vazamento cross-store | Logs + screenshot homologacao                                | [ ]    |
+| Atualizacao de produto/estoque no painel | Alteracao persistida e auditada         | Suite de catalogo + tabela de auditoria                      | [ ]    |
+| Operacao em pedido via painel            | Acao valida atualiza estado e historico | Suite de pedidos + smoke manual                              | [ ]    |
 
 ### Plano de rollback (S06-ADM-003)
 

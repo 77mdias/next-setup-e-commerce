@@ -11,13 +11,13 @@
 
 ## 📊 Resumo de Progresso
 
-| Categoria                                 | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
-| ----------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Fundação do painel e RBAC                 | 3      | 0         | 0            | 3        | 0         |
-| Dashboard operacional e KPIs              | 3      | 0         | 0            | 3        | 0         |
-| Módulos operacionais e trilha de auditoria| 3      | 0         | 0            | 3        | 0         |
-| Testes, homologação e governança          | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                                 | **12** | **0**     | **0**        | **12**   | **0**     |
+| Categoria                                  | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
+| ------------------------------------------ | ------ | --------- | ------------ | -------- | --------- |
+| Fundação do painel e RBAC                  | 3      | 0         | 0            | 3        | 0         |
+| Dashboard operacional e KPIs               | 3      | 0         | 0            | 3        | 0         |
+| Módulos operacionais e trilha de auditoria | 3      | 0         | 0            | 3        | 0         |
+| Testes, homologação e governança           | 3      | 0         | 0            | 3        | 0         |
+| **TOTAL**                                  | **12** | **0**     | **0**        | **12**   | **0**     |
 
 ### 🎯 Principais Indicadores
 
