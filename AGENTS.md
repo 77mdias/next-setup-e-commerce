@@ -67,6 +67,13 @@
 ✅ ALWAYS: Aplicar on-read/on-write cleanup e consumo atomico (updateMany quando aplicavel).
 ```
 
+### 8. Este repositorio e DEMO/portfolio, nao produto em escala
+
+```bash
+❌ NEVER: Priorizar complexidade operacional de escala (Redis, filas, multi-regiao, HA, infra distribuida) sem requisito real da task.
+✅ ALWAYS: Preferir a solucao mais simples, segura e suficiente para execucao local/demo, preservando clareza arquitetural e gates de CI.
+```
+
 ---
 
 ## 📁 Project / Stack Structure
@@ -163,6 +170,7 @@ npm run test:integration:critical
 
 - Keep it simple: rotas enxutas, validacao explicita, regras de dominio em `src/lib`.
 - Para auth e seguranca, prefira funcoes compartilhadas ao inves de duplicar regra em multiplas rotas.
+- Em recomendacoes tecnicas, priorize simplicidade operacional para demo/portfolio; so proponha hardening de escala quando houver requisito explicito de producao/carga.
 
 ---
 
@@ -256,7 +264,7 @@ npm run test:integration:critical
 
 1. Identificar a task ativa em `docs/development/tasks/PHASE-*.md`.
 2. Mapear impacto real (API, frontend, schema, integracoes, seguranca).
-3. Implementar seguindo padroes de seguranca (token hash, anti-enumeracao, redacao de logs, validacao de URL/callback).
+3. Implementar seguindo padroes de seguranca (token hash, anti-enumeracao, redacao de logs, validacao de URL/callback), sem introduzir infra/complexidade desnecessaria para um contexto de demo.
 4. Cobrir cenarios com testes (unit/integration/e2e critico quando afetado).
 5. Rodar pipeline parity local para evitar falha no PR.
 6. Atualizar docs de fase/sprint/log tecnico quando houver mudanca de comportamento.
