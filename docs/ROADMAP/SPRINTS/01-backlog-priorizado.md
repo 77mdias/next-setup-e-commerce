@@ -8,7 +8,7 @@
 5. Fechar risco de oversell com reserva de estoque no checkout.
 
 ## P1 (alta)
-1. Painel admin MVP (`/admin` e `/${slug}/admin`) com dashboard e RBAC.
+1. Painel admin MVP (`/admin`) com dashboard e RBAC.
 2. Modulo admin de pedidos (filtro, detalhe, acao operacional).
 3. Modulo admin de catalogo/estoque com trilha de auditoria.
 4. Unificacao de politica de senha entre cadastro e reset.

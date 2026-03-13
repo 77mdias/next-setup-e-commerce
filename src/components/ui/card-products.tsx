@@ -1,7 +1,6 @@
 import { Product } from "@prisma/client";
 import { formatCurrency } from "@/helpers/format-currency";
 import Image from "next/image";
-import styles from "@/app/[slug]/scss/page.module.scss";
 import { Button } from "./button";
 import { Heart, ShoppingCart } from "lucide-react";
 import {
@@ -75,9 +74,7 @@ const CardProducts = ({
         {/* Preços */}
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span
-              className={`${styles.price} text-lg font-bold text-[var(--text-price)] md:text-xl`}
-            >
+            <span className="text-lg font-bold text-[var(--text-price)] md:text-xl">
               {formatCurrency(product.price)}
             </span>
             {product.originalPrice && product.originalPrice > product.price && (

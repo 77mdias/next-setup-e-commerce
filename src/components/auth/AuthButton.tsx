@@ -10,27 +10,15 @@ import {
   normalizeCallbackPath,
 } from "@/lib/callback-url";
 
-function resolveLegacyBasePath(slug?: string) {
-  if (!slug) {
-    return "";
-  }
-
-  return slug.startsWith("/") ? slug : `/${slug}`;
+function resolveAuthCallbackPath() {
+  return normalizeCallbackPath("", DEFAULT_AUTH_CALLBACK_PATH);
 }
 
-function resolveAuthCallbackPath(slug?: string) {
-  return normalizeCallbackPath(
-    resolveLegacyBasePath(slug),
-    DEFAULT_AUTH_CALLBACK_PATH,
-  );
-}
-
-export default function AuthButton({ slug }: { slug?: string }) {
+export default function AuthButton() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const legacyBasePath = resolveLegacyBasePath(slug);
-  const profilePath = legacyBasePath ? `${legacyBasePath}/perfil` : "/perfil";
-  const authCallbackPath = resolveAuthCallbackPath(slug);
+  const profilePath = "/perfil";
+  const authCallbackPath = resolveAuthCallbackPath();
 
   if (isLoading) {
     return <div className="h-6 w-6 animate-pulse rounded bg-gray-600"></div>;

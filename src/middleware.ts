@@ -9,8 +9,8 @@ import {
 import type { AccessFeedbackReason } from "@/lib/access-feedback";
 
 const protectedRoutePattern =
-  /^\/(?:orders(?:\/|$)|(?:[^/]+\/)?(?:perfil|wishlist|carrinho|checkout|pedido)(?:\/|$))/;
-const adminRoutePattern = /^\/(?:admin(?:\/|$)|[^/]+\/admin(?:\/|$))/;
+  /^\/(?:orders(?:\/|$)|(?:perfil|wishlist|carrinho|checkout)(?:\/|$))/;
+const adminRoutePattern = /^\/admin(?:\/|$)/;
 const legacyCartPathPattern = /^\/cart\/?$/;
 
 function normalizeRoutePrefix(value: string): string | null {

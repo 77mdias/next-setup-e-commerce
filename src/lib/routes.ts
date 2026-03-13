@@ -15,7 +15,6 @@ export const ROUTE_PATHS = {
 } as const;
 
 const INTERNAL_BASE_URL = "https://next-setup-e-commerce.local";
-const legacySlugRoutePattern = /^\/[^/]+\/(.+)$/;
 const productDetailRoutePattern = /^\/product\/[^/]+$/;
 
 function normalizePathname(pathname: string): string {
@@ -59,15 +58,6 @@ function buildPath(
   return `${pathname}${querySuffix}${hash || ""}`;
 }
 
-function extractLegacySlugPath(pathname: string): string | null {
-  const match = pathname.match(legacySlugRoutePattern);
-  if (!match) {
-    return null;
-  }
-
-  return normalizePathname(`/${match[1]}`);
-}
-
 export function buildProductPath(productId: string): string {
   return `${ROUTE_PATHS.productRoot}/${encodeURIComponent(productId)}`;
 }
@@ -83,12 +73,10 @@ export function resolveCanonicalCartPath(redirectPath?: string): string {
   }
 
   const pathname = normalizePathname(parsedPath.pathname);
-  const legacySlugPath = extractLegacySlugPath(pathname);
   const isCanonicalCartPath = pathname === ROUTE_PATHS.cart;
   const isLegacyCartAlias = pathname === ROUTE_PATHS.cartLegacy;
-  const isLegacySlugCartPath = legacySlugPath === ROUTE_PATHS.cart;
 
-  if (!isCanonicalCartPath && !isLegacyCartAlias && !isLegacySlugCartPath) {
+  if (!isCanonicalCartPath && !isLegacyCartAlias) {
     return ROUTE_PATHS.cart;
   }
 
@@ -114,46 +102,11 @@ export function resolveCanonicalProductHref(
   const pathname = normalizePathname(parsedPath.pathname);
 
   if (pathname === ROUTE_PATHS.products) {
-    searchParams.delete("storeSlug");
     return buildPath(ROUTE_PATHS.products, searchParams, parsedPath.hash);
   }
 
   if (productDetailRoutePattern.test(pathname)) {
     return buildPath(pathname, searchParams, parsedPath.hash);
-  }
-
-  const legacySlugPath = extractLegacySlugPath(pathname);
-  if (!legacySlugPath) {
-    return fallbackPath;
-  }
-
-  if (legacySlugPath === "/product" || legacySlugPath === "/categorias") {
-    searchParams.delete("storeSlug");
-    return buildPath(ROUTE_PATHS.products, searchParams, parsedPath.hash);
-  }
-
-  if (legacySlugPath.startsWith("/product/")) {
-    const legacyProductId = legacySlugPath.replace("/product/", "");
-    if (!legacyProductId) {
-      return fallbackPath;
-    }
-
-    return buildPath(
-      buildProductPath(legacyProductId),
-      searchParams,
-      parsedPath.hash,
-    );
-  }
-
-  if (legacySlugPath.startsWith("/categorias/")) {
-    const categorySlug = legacySlugPath.replace("/categorias/", "");
-    if (!categorySlug) {
-      return fallbackPath;
-    }
-
-    searchParams.delete("storeSlug");
-    searchParams.set("category", categorySlug);
-    return buildPath(ROUTE_PATHS.products, searchParams, parsedPath.hash);
   }
 
   return fallbackPath;

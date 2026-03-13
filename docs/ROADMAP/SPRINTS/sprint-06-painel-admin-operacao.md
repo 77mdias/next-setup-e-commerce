@@ -18,8 +18,7 @@ Entregar o primeiro painel administrativo da aplicacao (dashboard + operacao) co
 ## Etapa 2 - Design
 
 - Definir IA e navegacao de painel:
-  - `/admin` (global);
-  - `/${slug}/admin` (escopo da loja).
+  - `/admin`.
 - Definir matriz de autorizacao (RBAC) por recurso e acao.
 - Definir contratos das APIs admin com filtros, paginacao e ordenacao.
 - Definir modelo de auditoria para acoes sensiveis (quem, quando, antes/depois).
@@ -77,7 +76,7 @@ Entregar o primeiro painel administrativo da aplicacao (dashboard + operacao) co
 
 ## Criterios de aceite
 
-- Painel administrativo operacional em `/admin` e `/${slug}/admin`.
+- Painel administrativo operacional em `/admin`.
 - RBAC aplicado em UI e API com cobertura automatizada.
 - Dashboard com KPIs minimos de operacao.
 - Modulos de pedidos e catalogo funcionais para operacao diaria.
