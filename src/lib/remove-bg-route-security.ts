@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireAdminAccess } from "@/lib/auth";
 import type { StructuredLogger } from "@/lib/logger";
 import {
   consumeRequestRateLimit,
   createRateLimitResponse,
 } from "@/lib/rate-limit";
+import { authorizeAdminApiRequest } from "@/lib/rbac";
 
 const REMOVE_BG_RATE_LIMIT_SCOPE = "remove_bg.process";
 const REMOVE_BG_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
@@ -40,37 +40,27 @@ export async function authorizeRemoveBgRequest(params: {
 }): Promise<RemoveBgAuthorizationResult> {
   // AIDEV-CRITICAL: legacy e admin compartilham o mesmo escopo para evitar
   // bypass do rate limit alternando entre rotas que consomem o mesmo provedor.
-  const access = await requireAdminAccess();
+  const access = await authorizeAdminApiRequest({
+    action: "update",
+    logger: params.logger,
+    request: params.request,
+    resource: "catalog",
+  });
 
   if (!access.authorized) {
     params.logger.warn(`${params.logPrefix}.access_denied`, {
       data: {
-        status: access.status,
+        status: access.response.status,
       },
     });
 
-    if (access.status === 401) {
-      return {
-        authorized: false,
-        response: NextResponse.json(
-          { error: "Usuário não autenticado" },
-          { status: 401 },
-        ),
-      };
-    }
-
     return {
       authorized: false,
-      response: NextResponse.json(
-        { error: "Acesso administrativo obrigatório" },
-        { status: 403 },
-      ),
+      response: access.response,
     };
   }
 
-  const authorizedLogger = params.logger.child({
-    userId: access.user.id,
-  });
+  const authorizedLogger = access.logger;
 
   const rateLimitResult = consumeRequestRateLimit({
     headers: params.request.headers,

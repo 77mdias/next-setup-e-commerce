@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 06: Painel Admin e Operacao
 
 **Status:** 🟠 EM ANDAMENTO
-**Última atualização:** 2026-03-13
+**Última atualização:** 2026-03-14
 **Sprint Atual:** Sprint 06
-**Status Geral:** 🟡 8% (1/12 tarefas concluídas)
+**Status Geral:** 🟡 17% (2/12 tarefas concluídas)
 **ETA:** 2 semanas após kickoff da Sprint 06
 **Pré-requisito:** Fase 05 - Hardening de Identidade e Segurança (✅ concluída em 2026-03-13)
 
@@ -13,16 +13,16 @@
 
 | Categoria                                  | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ------------------------------------------ | ------ | --------- | ------------ | -------- | --------- |
-| Fundação do painel e RBAC                  | 3      | 1         | 0            | 2        | 0         |
+| Fundação do painel e RBAC                  | 3      | 2         | 0            | 1        | 0         |
 | Dashboard operacional e KPIs               | 3      | 0         | 0            | 3        | 0         |
 | Módulos operacionais e trilha de auditoria | 3      | 0         | 0            | 3        | 0         |
 | Testes, homologação e governança           | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                                  | **12** | **1**     | **0**        | **11**   | **0**     |
+| **TOTAL**                                  | **12** | **2**     | **0**        | **10**   | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Guard inicial de acesso em `/admin` entregue com validação em middleware + layout server-side.
-- 🔄 Matriz de autorização por recurso/ação planejada para UI e API.
+- ✅ Matriz de autorização por recurso/ação entregue para `/api/admin/**` com contrato uniforme de erro.
 - 🔄 KPIs mínimos definidos para operação: pedidos por status, aprovação de pagamento, receita bruta e estoque baixo.
 - 🔄 Módulos operacionais priorizados: pedidos, catálogo/estoque/imagens e visão de clientes.
 - 🔄 Trilha de auditoria para ações sensíveis definida como requisito de aceite da fase.
@@ -75,7 +75,7 @@ Estabelecer a base de autenticação/autorização do painel para impedir acesso
   **Dependências:** nenhuma  
   **Status:** 🟢 Concluída (2026-03-13)
 
-- [ ] **S06-ACC-002** - Implementar matriz RBAC por recurso/ação nas APIs administrativas
+- [x] **S06-ACC-002** - Implementar matriz RBAC por recurso/ação nas APIs administrativas
 
   **Descrição curta:**
   - Endpoints admin devem validar papel e escopo antes de qualquer operação.
@@ -89,13 +89,13 @@ Estabelecer a base de autenticação/autorização do painel para impedir acesso
   **Arquivos/áreas afetadas:** `src/lib/rbac.ts` (novo), `src/app/api/admin/**/route.ts`, `src/lib/logger.ts`
 
   **Critérios de aceitação:**
-  - [ ] Operações administrativas só executam quando papel e ação forem permitidos.
-  - [ ] Contrato de erro de autorização é uniforme nos endpoints admin.
+  - [x] Operações administrativas só executam quando papel e ação forem permitidos.
+  - [x] Contrato de erro de autorização é uniforme nos endpoints admin.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 8h  
   **Dependências:** S06-ACC-001  
-  **Status:** ⚪ Pendente
+  **Status:** 🟢 Concluída (2026-03-14)
 
 - [ ] **S06-ACC-003** - Garantir isolamento multi-store no escopo de `STORE_ADMIN`
 

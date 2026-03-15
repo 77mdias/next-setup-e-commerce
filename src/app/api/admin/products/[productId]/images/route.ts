@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireAdminAccess } from "@/lib/auth";
+import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
+import { authorizeAdminApiRequest } from "@/lib/rbac";
 
 type UpdateProductImagesPayload = {
   processedImages?: unknown;
@@ -28,35 +29,26 @@ function normalizeProcessedImages(value: unknown): string[] | null {
   return normalized;
 }
 
-async function assertAdminAuthorization(): Promise<NextResponse | null> {
-  const access = await requireAdminAccess();
-
-  if (access.authorized) {
-    return null;
-  }
-
-  if (access.status === 401) {
-    return NextResponse.json(
-      { error: "Usuário não autenticado" },
-      { status: 401 },
-    );
-  }
-
-  return NextResponse.json(
-    { error: "Acesso administrativo obrigatório" },
-    { status: 403 },
-  );
-}
-
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ productId: string }> },
 ) {
-  const unauthorizedResponse = await assertAdminAuthorization();
-  if (unauthorizedResponse) {
-    return unauthorizedResponse;
+  const requestLogger = createRequestLogger({
+    headers: request.headers,
+    route: "/api/admin/products/[productId]/images",
+  });
+  const authorization = await authorizeAdminApiRequest({
+    action: "update",
+    logger: requestLogger,
+    request,
+    resource: "catalog",
+  });
+
+  if (!authorization.authorized) {
+    return authorization.response;
   }
 
+  const logger = authorization.logger;
   let payload: UpdateProductImagesPayload;
 
   try {
@@ -125,10 +117,12 @@ export async function PUT(
       product: updatedProduct,
     });
   } catch (error) {
-    console.error(
-      "[api/admin/products/[productId]/images][PUT] falha ao persistir imagens",
+    logger.error("admin.products.images.update_failed", {
+      context: {
+        productId,
+      },
       error,
-    );
+    });
     return NextResponse.json(
       { error: "Erro interno ao persistir imagens do produto" },
       { status: 500 },

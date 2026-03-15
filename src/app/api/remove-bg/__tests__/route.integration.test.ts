@@ -80,6 +80,7 @@ describe("/api/remove-bg integration", () => {
 
     expect(response.status).toBe(401);
     expect(body.error).toBe("Usuário não autenticado");
+    expect(body.code).toBe("ADMIN_AUTH_REQUIRED");
     expect(mockAxiosGet).not.toHaveBeenCalled();
     expect(mockAxiosPost).not.toHaveBeenCalled();
   });
@@ -98,7 +99,8 @@ describe("/api/remove-bg integration", () => {
     const body = await response.json();
 
     expect(response.status).toBe(403);
-    expect(body.error).toBe("Acesso administrativo obrigatório");
+    expect(body.error).toBe("Ação administrativa não autorizada");
+    expect(body.code).toBe("ADMIN_ACCESS_DENIED");
     expect(mockAxiosGet).not.toHaveBeenCalled();
     expect(mockAxiosPost).not.toHaveBeenCalled();
   });

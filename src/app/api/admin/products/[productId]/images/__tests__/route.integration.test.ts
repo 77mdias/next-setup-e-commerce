@@ -74,6 +74,7 @@ describe("PUT /api/admin/products/[productId]/images integration", () => {
 
     expect(response.status).toBe(401);
     expect(body.error).toBe("Usuário não autenticado");
+    expect(body.code).toBe("ADMIN_AUTH_REQUIRED");
     expect(mockDb.product.findUnique).not.toHaveBeenCalled();
     expect(mockDb.product.update).not.toHaveBeenCalled();
   });
@@ -90,7 +91,8 @@ describe("PUT /api/admin/products/[productId]/images integration", () => {
     const body = await response.json();
 
     expect(response.status).toBe(403);
-    expect(body.error).toBe("Acesso administrativo obrigatório");
+    expect(body.error).toBe("Ação administrativa não autorizada");
+    expect(body.code).toBe("ADMIN_ACCESS_DENIED");
     expect(mockDb.product.findUnique).not.toHaveBeenCalled();
     expect(mockDb.product.update).not.toHaveBeenCalled();
   });
