@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 06: Painel Admin e Operacao
 
 **Status:** 🟠 EM ANDAMENTO
-**Última atualização:** 2026-03-14
+**Última atualização:** 2026-03-15
 **Sprint Atual:** Sprint 06
-**Status Geral:** 🟡 17% (2/12 tarefas concluídas)
+**Status Geral:** 🟡 25% (3/12 tarefas concluídas)
 **ETA:** 2 semanas após kickoff da Sprint 06
 **Pré-requisito:** Fase 05 - Hardening de Identidade e Segurança (✅ concluída em 2026-03-13)
 
@@ -14,16 +14,16 @@
 | Categoria                                  | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ------------------------------------------ | ------ | --------- | ------------ | -------- | --------- |
 | Fundação do painel e RBAC                  | 3      | 2         | 0            | 1        | 0         |
-| Dashboard operacional e KPIs               | 3      | 0         | 0            | 3        | 0         |
+| Dashboard operacional e KPIs               | 3      | 1         | 0            | 2        | 0         |
 | Módulos operacionais e trilha de auditoria | 3      | 0         | 0            | 3        | 0         |
 | Testes, homologação e governança           | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                                  | **12** | **2**     | **0**        | **10**   | **0**     |
+| **TOTAL**                                  | **12** | **3**     | **0**        | **9**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Guard inicial de acesso em `/admin` entregue com validação em middleware + layout server-side.
 - ✅ Matriz de autorização por recurso/ação entregue para `/api/admin/**` com contrato uniforme de erro.
-- 🔄 KPIs mínimos definidos para operação: pedidos por status, aprovação de pagamento, receita bruta e estoque baixo.
+- 🔄 Contrato de KPIs e endpoint consolidado de dashboard entregues; resta a etapa de shell/UI para consumo operacional.
 - 🔄 Módulos operacionais priorizados: pedidos, catálogo/estoque/imagens e visão de clientes.
 - 🔄 Trilha de auditoria para ações sensíveis definida como requisito de aceite da fase.
 - 🔄 Checklist de homologação e plano de rollback já definidos no roadmap da Sprint 06.
@@ -127,7 +127,7 @@ Entregar um dashboard funcional para acompanhamento rápido da operação, com m
 
 #### DSH.1 - Dashboard MVP
 
-- [ ] **S06-DSH-001** - Definir contrato de KPIs e endpoints de agregação administrativa
+- [x] **S06-DSH-001** - Definir contrato de KPIs e endpoints de agregação administrativa
 
   **Descrição curta:**
   - O dashboard precisa de contratos claros para evitar cálculo inconsistente entre frontend e backend.
@@ -141,13 +141,13 @@ Entregar um dashboard funcional para acompanhamento rápido da operação, com m
   **Arquivos/áreas afetadas:** `src/app/api/admin/dashboard/route.ts` (novo), `src/lib/admin/dashboard-metrics.ts` (novo), `src/lib/prisma.ts`
 
   **Critérios de aceitação:**
-  - [ ] API de dashboard retorna KPIs mínimos com shape estável.
-  - [ ] Filtros de período e escopo de loja funcionam com resultado consistente.
+  - [x] API de dashboard retorna KPIs mínimos com shape estável.
+  - [x] Filtros de período e escopo de loja funcionam com resultado consistente.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** S06-ACC-002, S06-ACC-003  
-  **Status:** ⚪ Pendente
+  **Status:** ✅ Concluída em 2026-03-15
 
 - [ ] **S06-DSH-002** - Construir shell de navegação administrativa e página inicial do dashboard
 
