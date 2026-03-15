@@ -3,18 +3,22 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, CheckCircle, Mail } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Mail,
+  MailCheck,
+  RefreshCcw,
+} from "lucide-react";
 import { toast } from "sonner";
 
+import { EmailAuthShell } from "@/app/auth/components/EmailAuthShell";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { normalizeCallbackPath } from "@/lib/callback-url";
+  DEFAULT_AUTH_CALLBACK_PATH,
+  normalizeCallbackPath,
+} from "@/lib/callback-url";
 
 export default function ThankYouContent() {
   const searchParams = useSearchParams();
@@ -26,6 +30,11 @@ export default function ThankYouContent() {
   const emailParam = searchParams.get("email");
   const verified = searchParams.get("verified") === "true";
   const callbackUrl = normalizeCallbackPath(searchParams.get("callbackUrl"));
+  const callbackQuery =
+    callbackUrl !== DEFAULT_AUTH_CALLBACK_PATH
+      ? `?callbackUrl=${encodeURIComponent(callbackUrl)}`
+      : "";
+  const loginHref = `/auth/signin${callbackQuery}`;
 
   useEffect(() => {
     if (emailParam) {
@@ -64,109 +73,152 @@ export default function ThankYouContent() {
     }
   };
 
-  const goToLogin = () => {
-    const loginUrl = `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
-    router.push(loginUrl);
-  };
+  const actionCards = verified
+    ? [
+        {
+          title: "Sessão liberada",
+          description:
+            "Seu acesso já pode ser iniciado normalmente com email e senha.",
+        },
+        {
+          title: "Ambiente pronto",
+          description:
+            "Pedidos, favoritos e preferências passam a ficar disponíveis na conta.",
+        },
+      ]
+    : [
+        {
+          title: "Abra o email recebido",
+          description:
+            "Procure pela mensagem mais recente e use o botão de confirmação.",
+        },
+        {
+          title: "Se não chegou, reenviamos daqui",
+          description:
+            "O reenvio abaixo cria um novo link sem precisar voltar ao cadastro.",
+        },
+      ];
+
+  const canResendEmail = email.trim().length > 0;
 
   return (
-    <div className="flex justify-center bg-[var(--all-black)] px-4 py-8">
-      <Card className="w-full max-w-md border-gray-600 bg-[var(--card-product)]">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
-            <CheckCircle className="h-8 w-8 text-green-400" />
-          </div>
-          <CardTitle className="text-center text-2xl text-white">
-            {verified
-              ? "Email Verificado com Sucesso!"
-              : "Conta Criada com Sucesso!"}
-          </CardTitle>
-          <CardDescription className="mt-2 text-center text-gray-400">
-            {verified
-              ? "Sua conta foi ativada! Agora você pode fazer login e começar a usar nossa plataforma."
-              : "Obrigado por se cadastrar em nossa plataforma. Para começar a usar sua conta, verifique seu email."}
-          </CardDescription>
-        </CardHeader>
+    <EmailAuthShell
+      badge={verified ? "Confirmed" : "Almost there"}
+      title={
+        verified ? "Tudo pronto para entrar." : "Seu cadastro já está de pé."
+      }
+      description={
+        verified
+          ? "A confirmação foi concluída. Agora basta iniciar a sessão e seguir de onde parou."
+          : "Enviamos um link para o seu email. Quando ele chegar, confirme o endereço para liberar o login."
+      }
+      icon={
+        verified ? (
+          <CheckCircle2 className="h-6 w-6 text-emerald-500 dark:text-emerald-400" />
+        ) : (
+          <MailCheck className="h-6 w-6 text-[#667085] dark:text-[#D0D5DD]" />
+        )
+      }
+      footer={
+        <div className="flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
+          <p className="[font-family:var(--font-arimo)] text-sm text-[#667085] dark:text-[#98A2B3]">
+            Quer voltar para a home?
+          </p>
 
-        <CardContent className="space-y-6">
-          <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 p-4">
-            <div className="flex items-center gap-3">
-              <Mail className="h-5 w-5 text-blue-400" />
-              <div>
-                <p className="text-sm font-medium text-blue-400">
-                  Email de verificação enviado
-                </p>
-                <p className="mt-1 text-xs text-gray-400">
-                  Verifique sua caixa de entrada e spam
-                </p>
-              </div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] transition-colors hover:text-[#475467] dark:text-[#F1F3F5] dark:hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao início
+          </Link>
+        </div>
+      }
+    >
+      {hasResent ? (
+        <div className="rounded-3xl border border-emerald-200/70 bg-emerald-50/80 px-5 py-4 dark:border-emerald-400/20 dark:bg-emerald-500/[0.08]">
+          <p className="[font-family:var(--font-arimo)] text-sm leading-6 text-emerald-800 dark:text-emerald-200">
+            Um novo link foi enviado. Vale conferir também spam e promoções.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-3xl border border-[#e4e7ec] bg-white/60 px-5 py-4 dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="flex items-start gap-3">
+            <Mail className="mt-0.5 h-5 w-5 text-[#667085] dark:text-[#98A2B3]" />
+            <div>
+              <p className="[font-family:var(--font-arimo)] text-sm font-medium text-[#111827] dark:text-[#F1F3F5]">
+                {verified
+                  ? "Sua conta está ativa"
+                  : "Email de confirmação enviado"}
+              </p>
+              <p className="mt-1 [font-family:var(--font-arimo)] text-sm leading-6 text-[#667085] dark:text-[#98A2B3]">
+                {verified
+                  ? "Quando quiser, faça login para acessar seus dados e preferências."
+                  : "Se a mensagem não aparecer logo, você pode reenviar por aqui."}
+              </p>
             </div>
           </div>
+        </div>
+      )}
 
-          {email && (
-            <div className="text-center">
-              <p className="text-sm text-gray-400">Email:</p>
-              <p className="font-medium text-white">{email}</p>
-            </div>
-          )}
+      {canResendEmail ? (
+        <div className="rounded-3xl border border-[#e4e7ec] bg-white/60 px-5 py-4 dark:border-white/10 dark:bg-white/[0.03]">
+          <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.18em] text-[#98A2B3] uppercase">
+            Email da conta
+          </p>
+          <p className="mt-2 [font-family:var(--font-arimo)] text-base break-all text-[#111827] dark:text-[#F1F3F5]">
+            {email}
+          </p>
+        </div>
+      ) : null}
 
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium text-white">Próximos passos:</h4>
-            <div className="space-y-2 text-sm text-gray-400">
-              <div className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
-                  1
-                </span>
-                <span>Abra o email que enviamos para você</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
-                  2
-                </span>
-                <span>Clique no botão Verificar Email</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
-                  3
-                </span>
-                <span>Faça login e comece a usar sua conta</span>
-              </div>
-            </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {actionCards.map((card) => (
+          <div
+            key={card.title}
+            className="rounded-3xl border border-[#e4e7ec] bg-white/55 p-4 dark:border-white/10 dark:bg-white/[0.02]"
+          >
+            <p className="[font-family:var(--font-arimo)] text-sm font-medium text-[#111827] dark:text-[#F1F3F5]">
+              {card.title}
+            </p>
+            <p className="mt-2 [font-family:var(--font-arimo)] text-sm leading-6 text-[#667085] dark:text-[#98A2B3]">
+              {card.description}
+            </p>
           </div>
+        ))}
+      </div>
 
-          <div className="space-y-3">
-            <Button
-              onClick={resendVerificationEmail}
-              disabled={isResending || hasResent}
-              className="w-full bg-[var(--button-primary)] text-white hover:bg-[var(--text-price-secondary)]"
-            >
-              {isResending
-                ? "Reenviando..."
-                : hasResent
-                  ? "Email Reenviado ✓"
-                  : "Reenviar Email"}
-            </Button>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        {verified ? (
+          <Button
+            onClick={() => router.push(loginHref)}
+            className="h-12 flex-1 rounded-2xl bg-[#111827] [font-family:var(--font-arimo)] text-sm font-medium text-white hover:bg-[#1f2937] dark:bg-[#F1F3F5] dark:text-[#0B0D10] dark:hover:bg-white"
+          >
+            Fazer login
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            onClick={resendVerificationEmail}
+            disabled={isResending || !canResendEmail}
+            className="h-12 flex-1 rounded-2xl bg-[#111827] [font-family:var(--font-arimo)] text-sm font-medium text-white hover:bg-[#1f2937] dark:bg-[#F1F3F5] dark:text-[#0B0D10] dark:hover:bg-white"
+          >
+            {isResending ? "Reenviando..." : "Reenviar email"}
+            <RefreshCcw className="h-4 w-4" />
+          </Button>
+        )}
 
-            <Button
-              onClick={goToLogin}
-              variant="outline"
-              className="w-full border-gray-600 bg-[var(--card-product)] text-white hover:bg-gray-700"
-            >
-              Ir para Login
-            </Button>
-          </div>
-
-          <div className="text-center">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Voltar para o inicio
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        <Button
+          asChild
+          variant="outline"
+          className="h-12 flex-1 rounded-2xl border-[#d0d5dd] bg-white/65 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:text-[#F1F3F5] dark:hover:bg-white/[0.06]"
+        >
+          <Link href={verified ? "/" : loginHref}>
+            {verified ? "Ir para a home" : "Voltar ao login"}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
+      </div>
+    </EmailAuthShell>
   );
 }
