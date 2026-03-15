@@ -10,6 +10,7 @@ import type {
   FooterLink,
   NavigationLink,
 } from "@/components/home/types";
+import { shouldRenderPublicChrome } from "@/components/layout/chrome-paths";
 import { ROUTE_PATHS } from "@/lib/routes";
 
 const footerColumns: FooterColumn[] = [
@@ -77,6 +78,10 @@ type AppChromeProps = {
 export default function AppChrome({ children }: AppChromeProps) {
   const pathname = usePathname();
   const currentPath = pathname || "/";
+
+  if (!shouldRenderPublicChrome(currentPath)) {
+    return children;
+  }
 
   return (
     <>

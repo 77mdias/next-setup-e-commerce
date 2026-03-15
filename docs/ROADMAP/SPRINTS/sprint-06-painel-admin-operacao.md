@@ -44,6 +44,15 @@ Entregar o primeiro painel administrativo da aplicacao (dashboard + operacao) co
   - visao de historico basico de pedidos.
 - Registrar trilha de auditoria para alteracoes administrativas.
 
+### Progresso atual
+
+- ✅ `S06-ACC-001` entregou o guard de `/admin` em middleware + layout server-side.
+- ✅ `S06-ACC-002` entregou RBAC uniforme para `/api/admin/**`.
+- ✅ `S06-ACC-003` consolidou isolamento multi-store nos endpoints administrativos.
+- ✅ `S06-DSH-001` entregou o contrato de KPIs e o endpoint `GET /api/admin/dashboard`.
+- ✅ `S06-DSH-002` entregou o shell administrativo em `/admin`, com contexto global/loja, breadcrumbs, links estáveis para `orders`, `catalog`, `customers` e `audit`, além do isolamento do chrome público para o painel.
+- 🔄 Próxima entrega: `S06-DSH-003` para consumir as métricas no dashboard com estados de loading, empty e error.
+
 ## Etapa 4 - Testes e homologacao (S06-ADM-003)
 
 - Testes de integracao para RBAC em todos os endpoints admin.

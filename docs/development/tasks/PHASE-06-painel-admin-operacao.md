@@ -149,7 +149,7 @@ Entregar um dashboard funcional para acompanhamento rápido da operação, com m
   **Dependências:** S06-ACC-002, S06-ACC-003  
   **Status:** ✅ Concluída em 2026-03-15
 
-- [ ] **S06-DSH-002** - Construir shell de navegação administrativa e página inicial do dashboard
+- [x] **S06-DSH-002** - Construir shell de navegação administrativa e página inicial do dashboard
 
   **Descrição curta:**
   - A Sprint 06 exige entrada única de operação com navegação clara por módulos.
@@ -163,13 +163,13 @@ Entregar um dashboard funcional para acompanhamento rápido da operação, com m
   **Arquivos/áreas afetadas:** `src/app/admin/page.tsx` (novo), `src/components/admin/AdminShell.tsx` (novo), `src/components/admin/AdminSidebar.tsx` (novo)
 
   **Critérios de aceitação:**
-  - [ ] Navegação admin funciona sem links quebrados nas rotas previstas.
-  - [ ] Usuário visualiza contexto correto (global ou loja) no shell do painel.
+  - [x] Navegação admin funciona sem links quebrados nas rotas previstas.
+  - [x] Usuário visualiza contexto correto (global ou loja) no shell do painel.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 6h  
   **Dependências:** S06-ACC-001  
-  **Status:** ⚪ Pendente
+  **Status:** ✅ Concluída em 2026-03-15
 
 - [ ] **S06-DSH-003** - Renderizar KPIs do dashboard com estados de loading/empty/error
 

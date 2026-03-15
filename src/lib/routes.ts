@@ -1,5 +1,10 @@
 export const ROUTE_PATHS = {
   home: "/",
+  admin: "/admin",
+  adminOrders: "/admin/orders",
+  adminCatalog: "/admin/catalog",
+  adminCustomers: "/admin/customers",
+  adminAudit: "/admin/audit",
   products: "/products",
   productRoot: "/product",
   explore: "/explore",
