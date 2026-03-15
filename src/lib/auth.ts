@@ -15,6 +15,10 @@ import {
 } from "@/lib/callback-url";
 import { buildAccessFeedbackPath } from "@/lib/access-feedback";
 import { isAdminRole } from "@/lib/admin-role";
+import {
+  resolveAdminStoreScopeForUser,
+  type AdminStoreScope,
+} from "@/lib/admin-store-scope";
 import { createLogger } from "@/lib/logger";
 
 const authLogger = createLogger({
@@ -250,9 +254,13 @@ export const requireAuth = async () => {
 
 type AuthenticatedUser = Awaited<ReturnType<typeof getCurrentUser>>;
 
+export type AuthenticatedAdminUser = NonNullable<AuthenticatedUser> & {
+  adminStoreScope: AdminStoreScope;
+};
+
 type AdminAccessGranted = {
   authorized: true;
-  user: NonNullable<AuthenticatedUser>;
+  user: AuthenticatedAdminUser;
 };
 
 type AdminAccessDenied = {
@@ -279,9 +287,17 @@ export const requireAdminAccess = async (): Promise<AdminAccessResult> => {
     };
   }
 
+  const adminStoreScope = await resolveAdminStoreScopeForUser({
+    role: user.role,
+    userId: user.id,
+  });
+
   return {
     authorized: true,
-    user,
+    user: {
+      ...user,
+      adminStoreScope,
+    },
   };
 };
 

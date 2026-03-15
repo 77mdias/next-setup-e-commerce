@@ -97,7 +97,7 @@ Estabelecer a base de autenticação/autorização do painel para impedir acesso
   **Dependências:** S06-ACC-001  
   **Status:** 🟢 Concluída (2026-03-14)
 
-- [ ] **S06-ACC-003** - Garantir isolamento multi-store no escopo de `STORE_ADMIN`
+- [x] **S06-ACC-003** - Garantir isolamento multi-store no escopo de `STORE_ADMIN`
 
   **Descrição curta:**
   - Operador de loja não pode visualizar/alterar dados de outra loja.
@@ -111,13 +111,13 @@ Estabelecer a base de autenticação/autorização do painel para impedir acesso
   **Arquivos/áreas afetadas:** `src/app/api/admin/orders/**`, `src/app/api/admin/products/**`, `src/app/api/admin/customers/**`, `src/lib/auth.ts`, `src/lib/log-redaction.ts`
 
   **Critérios de aceitação:**
-  - [ ] `STORE_ADMIN` não acessa dados de lojas fora do próprio escopo.
-  - [ ] `SUPER_ADMIN` mantém visão global sem regressão funcional.
+  - [x] `STORE_ADMIN` não acessa dados de lojas fora do próprio escopo.
+  - [x] `SUPER_ADMIN` mantém visão global sem regressão funcional.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** S06-ACC-001, S06-ACC-002  
-  **Status:** ⚪ Pendente
+  **Status:** 🟢 Concluída (2026-03-15)
 
 ### 📦 Dashboard operacional e KPIs - Visão executiva mínima para rotina diária
 

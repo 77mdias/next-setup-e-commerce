@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  canAccessAdminStoreScope,
+  getAdminStoreScopeStoreIds,
+  normalizeScopedAdminRole,
+  type AdminStoreScope,
+} from "@/lib/admin-store-scope";
 import { requireAdminAccess, type AdminAccessResult } from "@/lib/auth";
 import { type StructuredLogger } from "@/lib/logger";
 
@@ -30,6 +36,7 @@ type AdminApiAuthorizationGranted = {
   action: AdminRbacAction;
   logger: StructuredLogger;
   role: AdminRbacRole;
+  storeScope: AdminStoreScope;
   user: AuthorizedAdminUser;
 };
 
@@ -75,21 +82,7 @@ const ADMIN_RBAC_POLICY: Record<
 };
 
 function normalizeAdminRbacRole(role: unknown): AdminRbacRole | null {
-  if (typeof role !== "string") {
-    return null;
-  }
-
-  const normalizedRole = role.trim().toUpperCase();
-
-  if (
-    normalizedRole === "ADMIN" ||
-    normalizedRole === "SUPER_ADMIN" ||
-    normalizedRole === "STORE_ADMIN"
-  ) {
-    return normalizedRole;
-  }
-
-  return null;
+  return normalizeScopedAdminRole(role);
 }
 
 export function resolveAdminActionFromMethod(
@@ -164,6 +157,63 @@ function logAuthorizationDenied(params: {
       status: params.status,
     },
   });
+}
+
+function logStoreScopeDenied(params: {
+  authorization: AdminApiAuthorizationGranted;
+  resource: AdminRbacResource;
+  resourceId?: number | string | null;
+  storeId: string | null;
+}) {
+  params.authorization.logger.warn("admin.store_scope.denied", {
+    context: {
+      resourceId: params.resourceId ?? null,
+      scopedStoreIds: getAdminStoreScopeStoreIds(
+        params.authorization.storeScope,
+      ),
+      securityDomain: "admin_store_scope",
+      storeId: params.storeId,
+    },
+    data: {
+      reason: params.storeId ? "cross_store_access" : "store_scope_missing",
+      resource: params.resource,
+    },
+  });
+}
+
+export function getAuthorizedAdminStoreIds(
+  authorization: Pick<AdminApiAuthorizationGranted, "storeScope">,
+): string[] | null {
+  return getAdminStoreScopeStoreIds(authorization.storeScope);
+}
+
+export function authorizeAdminStoreScopeAccess(params: {
+  authorization: AdminApiAuthorizationGranted;
+  resource: AdminRbacResource;
+  resourceId?: number | string | null;
+  storeId: string | null;
+}):
+  | {
+      authorized: true;
+    }
+  | {
+      authorized: false;
+      response: NextResponse;
+    } {
+  if (
+    canAccessAdminStoreScope(params.authorization.storeScope, params.storeId)
+  ) {
+    return {
+      authorized: true,
+    };
+  }
+
+  logStoreScopeDenied(params);
+
+  return {
+    authorized: false,
+    response: createAdminAuthorizationErrorResponse(403),
+  };
 }
 
 // AIDEV-CRITICAL: autorização administrativa de API deve negar por padrão e
@@ -247,6 +297,7 @@ export async function authorizeAdminApiRequest(params: {
     action,
     logger: scopedLogger,
     role: normalizedRole,
+    storeScope: access.user.adminStoreScope,
     user: access.user,
   };
 }

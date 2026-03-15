@@ -62,7 +62,7 @@ export default function RemoveBgPage() {
         params.set("query", normalizedSearch);
       }
 
-      const response = await fetch(`/api/products?${params.toString()}`, {
+      const response = await fetch(`/api/admin/products?${params.toString()}`, {
         cache: "no-store",
       });
       const data = (await response.json()) as ProductsApiResponse;

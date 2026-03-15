@@ -41,6 +41,9 @@ describe("PUT /api/admin/products/[productId]/images integration", () => {
     mockRequireAdminAccess.mockResolvedValue({
       authorized: true,
       user: {
+        adminStoreScope: {
+          kind: "global",
+        },
         id: "admin-1",
         role: "ADMIN",
       },
@@ -48,6 +51,7 @@ describe("PUT /api/admin/products/[productId]/images integration", () => {
 
     mockDb.product.findUnique.mockResolvedValue({
       id: "product-1",
+      storeId: "store-1",
     });
 
     mockDb.product.update.mockResolvedValue({
@@ -159,6 +163,7 @@ describe("PUT /api/admin/products/[productId]/images integration", () => {
       },
       select: {
         id: true,
+        storeId: true,
       },
     });
     expect(mockDb.product.update).toHaveBeenCalledWith({
@@ -178,5 +183,40 @@ describe("PUT /api/admin/products/[productId]/images integration", () => {
         updatedAt: true,
       },
     });
+  });
+
+  it("retorna 403 quando STORE_ADMIN tenta alterar produto fora do escopo da loja", async () => {
+    mockRequireAdminAccess.mockResolvedValue({
+      authorized: true,
+      user: {
+        adminStoreScope: {
+          kind: "stores",
+          storeIds: ["store-1"],
+        },
+        id: "store-admin-1",
+        role: "STORE_ADMIN",
+      },
+    });
+    mockDb.product.findUnique.mockResolvedValue({
+      id: "product-1",
+      storeId: "store-2",
+    });
+
+    const response = await PUT(
+      createRequest({
+        processedImages: ["data:image/png;base64,processed"],
+      }),
+      {
+        params: Promise.resolve({ productId: "product-1" }),
+      },
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({
+      code: "ADMIN_ACCESS_DENIED",
+      error: "Ação administrativa não autorizada",
+    });
+    expect(mockDb.product.update).not.toHaveBeenCalled();
   });
 });

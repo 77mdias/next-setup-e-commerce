@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
-import { authorizeAdminApiRequest } from "@/lib/rbac";
+import {
+  authorizeAdminApiRequest,
+  authorizeAdminStoreScopeAccess,
+} from "@/lib/rbac";
 
 type UpdateProductImagesPayload = {
   processedImages?: unknown;
@@ -87,6 +90,7 @@ export async function PUT(
       },
       select: {
         id: true,
+        storeId: true,
       },
     });
 
@@ -95,6 +99,17 @@ export async function PUT(
         { error: "Produto não encontrado" },
         { status: 404 },
       );
+    }
+
+    const storeScopeAccess = authorizeAdminStoreScopeAccess({
+      authorization,
+      resource: "catalog",
+      resourceId: product.id,
+      storeId: product.storeId,
+    });
+
+    if (!storeScopeAccess.authorized) {
+      return storeScopeAccess.response;
     }
 
     const updatedProduct = await db.product.update({

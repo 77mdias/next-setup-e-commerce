@@ -11,10 +11,12 @@ vi.mock("@/lib/auth", () => ({
 
 import {
   authorizeAdminApiRequest,
+  authorizeAdminStoreScopeAccess,
   ADMIN_API_FORBIDDEN_CODE,
   ADMIN_API_FORBIDDEN_ERROR,
   ADMIN_API_UNAUTHORIZED_CODE,
   ADMIN_API_UNAUTHORIZED_ERROR,
+  getAuthorizedAdminStoreIds,
   isAdminApiAccessAllowed,
   resolveAdminActionFromMethod,
 } from "@/lib/rbac";
@@ -127,6 +129,10 @@ describe("rbac", () => {
     mockRequireAdminAccess.mockResolvedValue({
       authorized: true,
       user: {
+        adminStoreScope: {
+          kind: "stores",
+          storeIds: ["store-1"],
+        },
         id: "store-admin-1",
         role: "STORE_ADMIN",
       },
@@ -167,6 +173,9 @@ describe("rbac", () => {
     mockRequireAdminAccess.mockResolvedValue({
       authorized: true,
       user: {
+        adminStoreScope: {
+          kind: "global",
+        },
         id: "admin-1",
         role: "ADMIN",
       },
@@ -186,7 +195,13 @@ describe("rbac", () => {
     }
 
     expect(result.role).toBe("ADMIN");
+    expect(result.storeScope).toEqual({
+      kind: "global",
+    });
     expect(result.user).toEqual({
+      adminStoreScope: {
+        kind: "global",
+      },
       id: "admin-1",
       role: "ADMIN",
     });
@@ -198,6 +213,64 @@ describe("rbac", () => {
         adminRole: "ADMIN",
         securityDomain: "admin_rbac",
         userId: "admin-1",
+      }),
+    );
+  });
+
+  it("blocks cross-store resource access for scoped admins", async () => {
+    mockRequireAdminAccess.mockResolvedValue({
+      authorized: true,
+      user: {
+        adminStoreScope: {
+          kind: "stores",
+          storeIds: ["store-1"],
+        },
+        id: "store-admin-1",
+        role: "STORE_ADMIN",
+      },
+    });
+    const { childLogger, logger } = createMockLogger();
+
+    const authorization = await authorizeAdminApiRequest({
+      action: "update",
+      logger,
+      request: createRequest("PUT"),
+      resource: "catalog",
+    });
+
+    expect(authorization.authorized).toBe(true);
+    if (!authorization.authorized) {
+      throw new Error("Expected granted result");
+    }
+
+    const scopedStoreIds = getAuthorizedAdminStoreIds(authorization);
+    const storeAccess = authorizeAdminStoreScopeAccess({
+      authorization,
+      resource: "catalog",
+      resourceId: "product-1",
+      storeId: "store-2",
+    });
+
+    expect(scopedStoreIds).toEqual(["store-1"]);
+    expect(storeAccess.authorized).toBe(false);
+    if (storeAccess.authorized) {
+      throw new Error("Expected store scope denial");
+    }
+
+    expect(storeAccess.response.status).toBe(403);
+    expect(childLogger.warn).toHaveBeenCalledWith(
+      "admin.store_scope.denied",
+      expect.objectContaining({
+        context: expect.objectContaining({
+          resourceId: "product-1",
+          scopedStoreIds: ["store-1"],
+          securityDomain: "admin_store_scope",
+          storeId: "store-2",
+        }),
+        data: expect.objectContaining({
+          reason: "cross_store_access",
+          resource: "catalog",
+        }),
       }),
     );
   });
