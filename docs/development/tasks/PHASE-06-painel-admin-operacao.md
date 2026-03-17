@@ -223,7 +223,7 @@ Disponibilizar os módulos administrativos de maior impacto operacional com regi
   **Dependências:** S06-ACC-002, S06-ACC-003  
   **Status:** 🟢 Concluída
 
-- [ ] **S06-OPS-002** - Entregar módulo de catálogo admin (CRUD, imagens e ajuste de estoque)
+- [x] **S06-OPS-002** - Entregar módulo de catálogo admin (CRUD, imagens e ajuste de estoque)
 
   **Descrição curta:**
   - O painel precisa permitir manutenção operacional de catálogo e inventário básico.
@@ -237,13 +237,13 @@ Disponibilizar os módulos administrativos de maior impacto operacional com regi
   **Arquivos/áreas afetadas:** `src/app/api/admin/products/**/route.ts` (novo/ajuste), `src/app/api/admin/categories/**/route.ts` (novo/ajuste), `src/app/admin/catalog/page.tsx` (novo), `src/components/admin/catalog/*` (novo)
 
   **Critérios de aceitação:**
-  - [ ] CRUD de catálogo e ajuste de estoque funcionam dentro do escopo autorizado.
-  - [ ] Alterações inválidas são rejeitadas com mensagem consistente.
+  - [x] CRUD de catálogo e ajuste de estoque funcionam dentro do escopo autorizado.
+  - [x] Alterações inválidas são rejeitadas com mensagem consistente.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 8h  
   **Dependências:** S06-ACC-002, S06-ACC-003  
-  **Status:** ⚪ Pendente
+  **Status:** 🟢 Concluída
 
 - [ ] **S06-OPS-003** - Entregar visão de clientes admin e trilha de auditoria para ações sensíveis
 

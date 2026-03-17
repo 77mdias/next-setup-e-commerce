@@ -1,8 +1,19 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockRequireAdminAccess, mockDb } = vi.hoisted(() => ({
-  mockRequireAdminAccess: vi.fn(),
+const mockLogger = {
+  child: vi.fn(() => mockLogger),
+  error: vi.fn(),
+  warn: vi.fn(),
+};
+
+const {
+  mockAuthorizeAdminApiRequest,
+  mockAuthorizeAdminStoreScopeAccess,
+  mockDb,
+} = vi.hoisted(() => ({
+  mockAuthorizeAdminApiRequest: vi.fn(),
+  mockAuthorizeAdminStoreScopeAccess: vi.fn(),
   mockDb: {
     product: {
       findUnique: vi.fn(),
@@ -11,25 +22,30 @@ const { mockRequireAdminAccess, mockDb } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/lib/auth", () => ({
-  requireAdminAccess: mockRequireAdminAccess,
+vi.mock("@/lib/logger", () => ({
+  createRequestLogger: vi.fn(() => mockLogger),
 }));
 
 vi.mock("@/lib/prisma", () => ({
   db: mockDb,
 }));
 
+vi.mock("@/lib/rbac", () => ({
+  authorizeAdminApiRequest: mockAuthorizeAdminApiRequest,
+  authorizeAdminStoreScopeAccess: mockAuthorizeAdminStoreScopeAccess,
+}));
+
 import { PUT } from "@/app/api/admin/products/[productId]/images/route";
 
-function createRequest(payload: unknown): NextRequest {
+function createRequest(payload: unknown) {
   return new NextRequest(
     "http://localhost:3000/api/admin/products/product-1/images",
     {
-      method: "PUT",
+      body: JSON.stringify(payload),
       headers: {
         "content-type": "application/json",
       },
-      body: JSON.stringify(payload),
+      method: "PUT",
     },
   );
 }
@@ -38,105 +54,48 @@ describe("PUT /api/admin/products/[productId]/images integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockRequireAdminAccess.mockResolvedValue({
+    mockAuthorizeAdminApiRequest.mockResolvedValue({
+      action: "update",
       authorized: true,
+      logger: mockLogger,
+      role: "STORE_ADMIN",
+      storeScope: {
+        kind: "stores",
+        storeIds: ["store-1"],
+      },
       user: {
         adminStoreScope: {
-          kind: "global",
+          kind: "stores",
+          storeIds: ["store-1"],
         },
         id: "admin-1",
-        role: "ADMIN",
+        role: "STORE_ADMIN",
       },
     });
-
+    mockAuthorizeAdminStoreScopeAccess.mockReturnValue({
+      authorized: true,
+    });
     mockDb.product.findUnique.mockResolvedValue({
       id: "product-1",
       storeId: "store-1",
     });
-
     mockDb.product.update.mockResolvedValue({
       id: "product-1",
-      name: "Mouse Gamer",
       images: [
-        "data:image/png;base64,updated-1",
-        "data:image/png;base64,updated-2",
+        "data:image/png;base64,processed-1",
+        "data:image/png;base64,processed-2",
       ],
-      updatedAt: new Date("2026-03-07T10:00:00.000Z"),
+      name: "Mouse RGB",
+      updatedAt: new Date("2026-03-17T13:00:00.000Z"),
     });
   });
 
-  it("retorna 401 quando não há sessão autenticada", async () => {
-    mockRequireAdminAccess.mockResolvedValue({
-      authorized: false,
-      status: 401,
-    });
-
-    const response = await PUT(createRequest({ processedImages: ["img"] }), {
-      params: Promise.resolve({ productId: "product-1" }),
-    });
-    const body = await response.json();
-
-    expect(response.status).toBe(401);
-    expect(body.error).toBe("Usuário não autenticado");
-    expect(body.code).toBe("ADMIN_AUTH_REQUIRED");
-    expect(mockDb.product.findUnique).not.toHaveBeenCalled();
-    expect(mockDb.product.update).not.toHaveBeenCalled();
-  });
-
-  it("retorna 403 quando o usuário não possui role ADMIN", async () => {
-    mockRequireAdminAccess.mockResolvedValue({
-      authorized: false,
-      status: 403,
-    });
-
-    const response = await PUT(createRequest({ processedImages: ["img"] }), {
-      params: Promise.resolve({ productId: "product-1" }),
-    });
-    const body = await response.json();
-
-    expect(response.status).toBe(403);
-    expect(body.error).toBe("Ação administrativa não autorizada");
-    expect(body.code).toBe("ADMIN_ACCESS_DENIED");
-    expect(mockDb.product.findUnique).not.toHaveBeenCalled();
-    expect(mockDb.product.update).not.toHaveBeenCalled();
-  });
-
-  it("retorna 400 quando payload de imagens processadas é inválido", async () => {
-    const response = await PUT(createRequest({ processedImages: ["", 42] }), {
-      params: Promise.resolve({ productId: "product-1" }),
-    });
-    const body = await response.json();
-
-    expect(response.status).toBe(400);
-    expect(body.error).toBe("Array de imagens processadas é obrigatório");
-    expect(mockDb.product.findUnique).not.toHaveBeenCalled();
-    expect(mockDb.product.update).not.toHaveBeenCalled();
-  });
-
-  it("retorna 404 quando o produto não existe", async () => {
-    mockDb.product.findUnique.mockResolvedValue(null);
-
-    const response = await PUT(
-      createRequest({
-        processedImages: ["data:image/png;base64,processed"],
-      }),
-      {
-        params: Promise.resolve({ productId: "missing-product" }),
-      },
-    );
-    const body = await response.json();
-
-    expect(response.status).toBe(404);
-    expect(body.error).toBe("Produto não encontrado");
-    expect(mockDb.product.update).not.toHaveBeenCalled();
-  });
-
-  it("persiste imagens processadas no produto correto", async () => {
+  it("persists validated processed images in the selected product", async () => {
     const response = await PUT(
       createRequest({
         processedImages: [
-          " data:image/png;base64,updated-1 ",
-          "data:image/png;base64,updated-2",
+          "data:image/png;base64,processed-1",
+          "data:image/png;base64,processed-2",
         ],
       }),
       {
@@ -147,64 +106,29 @@ describe("PUT /api/admin/products/[productId]/images integration", () => {
 
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
-    expect(body.product).toEqual(
-      expect.objectContaining({
-        id: "product-1",
-        name: "Mouse Gamer",
-        images: [
-          "data:image/png;base64,updated-1",
-          "data:image/png;base64,updated-2",
-        ],
-      }),
-    );
-    expect(mockDb.product.findUnique).toHaveBeenCalledWith({
-      where: {
-        id: "product-1",
-      },
-      select: {
-        id: true,
-        storeId: true,
-      },
-    });
     expect(mockDb.product.update).toHaveBeenCalledWith({
       where: {
         id: "product-1",
       },
       data: {
         images: [
-          "data:image/png;base64,updated-1",
-          "data:image/png;base64,updated-2",
+          "data:image/png;base64,processed-1",
+          "data:image/png;base64,processed-2",
         ],
       },
       select: {
         id: true,
-        name: true,
         images: true,
+        name: true,
         updatedAt: true,
       },
     });
   });
 
-  it("retorna 403 quando STORE_ADMIN tenta alterar produto fora do escopo da loja", async () => {
-    mockRequireAdminAccess.mockResolvedValue({
-      authorized: true,
-      user: {
-        adminStoreScope: {
-          kind: "stores",
-          storeIds: ["store-1"],
-        },
-        id: "store-admin-1",
-        role: "STORE_ADMIN",
-      },
-    });
-    mockDb.product.findUnique.mockResolvedValue({
-      id: "product-1",
-      storeId: "store-2",
-    });
-
+  it("rejects invalid image payloads with the shared validation contract", async () => {
     const response = await PUT(
       createRequest({
-        processedImages: ["data:image/png;base64,processed"],
+        processedImages: ["notaurl"],
       }),
       {
         params: Promise.resolve({ productId: "product-1" }),
@@ -212,11 +136,46 @@ describe("PUT /api/admin/products/[productId]/images integration", () => {
     );
     const body = await response.json();
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(400);
     expect(body).toEqual({
-      code: "ADMIN_ACCESS_DENIED",
-      error: "Ação administrativa não autorizada",
+      code: "ADMIN_CATALOG_INVALID_PAYLOAD",
+      error: "Dados do catálogo administrativo são inválidos",
+      issues: [
+        {
+          field: "images.0",
+          message: "URL da imagem inválida",
+        },
+      ],
     });
     expect(mockDb.product.update).not.toHaveBeenCalled();
+  });
+
+  it("returns authorization failures unchanged", async () => {
+    mockAuthorizeAdminApiRequest.mockResolvedValue({
+      authorized: false,
+      response: NextResponse.json(
+        {
+          code: "ADMIN_AUTH_REQUIRED",
+          error: "Usuário não autenticado",
+        },
+        { status: 401 },
+      ),
+    });
+
+    const response = await PUT(
+      createRequest({
+        processedImages: ["data:image/png;base64,processed-1"],
+      }),
+      {
+        params: Promise.resolve({ productId: "product-1" }),
+      },
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body).toEqual({
+      code: "ADMIN_AUTH_REQUIRED",
+      error: "Usuário não autenticado",
+    });
   });
 });

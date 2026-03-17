@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  createCatalogValidationErrorResponse,
+  normalizeAdminCatalogImagesInput,
+} from "@/lib/admin/catalog";
 import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
 import {
@@ -14,22 +18,6 @@ type UpdateProductImagesPayload = {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
-}
-
-function normalizeProcessedImages(value: unknown): string[] | null {
-  if (!Array.isArray(value) || value.length === 0) {
-    return null;
-  }
-
-  const normalized = value
-    .filter((item): item is string => isNonEmptyString(item))
-    .map((item) => item.trim());
-
-  if (normalized.length !== value.length) {
-    return null;
-  }
-
-  return normalized;
 }
 
 export async function PUT(
@@ -57,29 +45,59 @@ export async function PUT(
   try {
     payload = (await request.json()) as UpdateProductImagesPayload;
   } catch {
-    return NextResponse.json(
-      { error: "Payload JSON inválido" },
-      { status: 400 },
-    );
+    return createCatalogValidationErrorResponse([
+      {
+        field: "payload",
+        message: "Payload JSON inválido",
+      },
+    ]);
   }
 
   const { productId } = await params;
 
   if (!isNonEmptyString(productId)) {
-    return NextResponse.json(
-      { error: "Identificador de produto inválido" },
-      { status: 400 },
-    );
+    return createCatalogValidationErrorResponse([
+      {
+        field: "productId",
+        message: "Identificador de produto inválido",
+      },
+    ]);
   }
 
-  const processedImages = normalizeProcessedImages(
-    payload.processedImages ?? payload.images,
+  const rawImages = payload.processedImages ?? payload.images;
+
+  if (!Array.isArray(rawImages)) {
+    return createCatalogValidationErrorResponse([
+      {
+        field: "images",
+        message: "Array de imagens processadas é obrigatório",
+      },
+    ]);
+  }
+
+  if (!rawImages.every((item) => typeof item === "string")) {
+    return createCatalogValidationErrorResponse([
+      {
+        field: "images",
+        message: "Todas as imagens enviadas precisam ser strings válidas",
+      },
+    ]);
+  }
+
+  const processedImages = normalizeAdminCatalogImagesInput(
+    rawImages,
   );
 
-  if (!processedImages) {
-    return NextResponse.json(
-      { error: "Array de imagens processadas é obrigatório" },
-      { status: 400 },
+  if (!processedImages.ok || processedImages.value.length === 0) {
+    return createCatalogValidationErrorResponse(
+      processedImages.ok
+        ? [
+            {
+              field: "images",
+              message: "Ao menos uma imagem válida é obrigatória",
+            },
+          ]
+        : processedImages.issues,
     );
   }
 
@@ -117,7 +135,7 @@ export async function PUT(
         id: productId,
       },
       data: {
-        images: processedImages,
+        images: processedImages.value,
       },
       select: {
         id: true,
