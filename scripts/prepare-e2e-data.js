@@ -7,6 +7,11 @@ const prisma = new PrismaClient();
 const E2E_USER_EMAIL =
   process.env.E2E_USER_EMAIL || "e2e.customer@nextstore.local";
 const E2E_USER_PASSWORD = process.env.E2E_USER_PASSWORD || "E2eCheckout#123";
+const E2E_ADMIN_EMAIL =
+  process.env.E2E_ADMIN_EMAIL || "e2e.admin@nextstore.local";
+const E2E_ADMIN_PASSWORD =
+  process.env.E2E_ADMIN_PASSWORD || "E2eAdmin#123";
+const E2E_ADMIN_ROLE = process.env.E2E_ADMIN_ROLE || UserRole.ADMIN;
 const E2E_STORE_SLUG = process.env.E2E_STORE_SLUG || "nextstore-e2e";
 const E2E_BRAND_SLUG = process.env.E2E_BRAND_SLUG || "e2e-brand";
 const E2E_CATEGORY_SLUG = process.env.E2E_CATEGORY_SLUG || "e2e-category";
@@ -39,6 +44,33 @@ async function upsertUser() {
       name: "E2E Checkout User",
       password: passwordHash,
       role: UserRole.CUSTOMER,
+      isActive: true,
+      emailVerified: new Date(),
+    },
+  });
+}
+
+async function upsertAdminUser() {
+  const passwordHash = await bcrypt.hash(E2E_ADMIN_PASSWORD, 12);
+
+  return prisma.user.upsert({
+    where: {
+      email: E2E_ADMIN_EMAIL,
+    },
+    update: {
+      name: "E2E Store Admin",
+      password: passwordHash,
+      role: E2E_ADMIN_ROLE,
+      isActive: true,
+      emailVerified: new Date(),
+      emailVerificationTokenHash: null,
+      emailVerificationExpires: null,
+    },
+    create: {
+      email: E2E_ADMIN_EMAIL,
+      name: "E2E Store Admin",
+      password: passwordHash,
+      role: E2E_ADMIN_ROLE,
       isActive: true,
       emailVerified: new Date(),
     },
@@ -228,10 +260,10 @@ async function cleanupUserCheckoutState(userId) {
 }
 
 async function main() {
-  const user = await upsertUser();
+  const [user, adminUser] = await Promise.all([upsertUser(), upsertAdminUser()]);
   await cleanupUserCheckoutState(user.id);
 
-  const store = await upsertStore(user.id);
+  const store = await upsertStore(adminUser.id);
   const [brand, category] = await Promise.all([
     upsertBrand(),
     upsertCategory(),
@@ -254,6 +286,11 @@ async function main() {
         user: {
           email: E2E_USER_EMAIL,
           password: E2E_USER_PASSWORD,
+        },
+        admin: {
+          email: E2E_ADMIN_EMAIL,
+          password: E2E_ADMIN_PASSWORD,
+          role: E2E_ADMIN_ROLE,
         },
         store: {
           id: store.id,
