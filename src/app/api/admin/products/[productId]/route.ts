@@ -405,8 +405,8 @@ export async function PUT(
         saleStartsAt: parsedPayload.value.saleStartsAt,
         shortDesc: parsedPayload.value.shortDesc ?? null,
         sku: parsedPayload.value.sku,
-        specifications:
-          parsedPayload.value.specifications as Prisma.InputJsonValue,
+        specifications: parsedPayload.value
+          .specifications as Prisma.InputJsonValue,
         warranty: parsedPayload.value.warranty ?? null,
         weight: parsedPayload.value.weight ?? null,
       },

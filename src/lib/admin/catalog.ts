@@ -38,15 +38,35 @@ const productPayloadSchema = z
   .object({
     brandId: z.string().trim().min(1, "Marca é obrigatória"),
     categoryId: z.string().trim().min(1, "Categoria é obrigatória"),
-    costPrice: z.number().finite().min(0, "Custo não pode ser negativo").nullable().optional(),
-    description: z.string().trim().min(12, "Descrição precisa ter ao menos 12 caracteres"),
+    costPrice: z
+      .number()
+      .finite()
+      .min(0, "Custo não pode ser negativo")
+      .nullable()
+      .optional(),
+    description: z
+      .string()
+      .trim()
+      .min(12, "Descrição precisa ter ao menos 12 caracteres"),
     dimensions: baseObjectSchema.nullable().optional(),
-    images: z.array(z.string()).max(MAX_IMAGE_COUNT, "Máximo de 12 imagens por produto").optional(),
+    images: z
+      .array(z.string())
+      .max(MAX_IMAGE_COUNT, "Máximo de 12 imagens por produto")
+      .optional(),
     isActive: z.boolean().optional().default(true),
     isFeatured: z.boolean().optional().default(false),
     isOnSale: z.boolean().optional().default(false),
-    name: z.string().trim().min(3, "Nome precisa ter ao menos 3 caracteres").max(120, "Nome muito longo"),
-    originalPrice: z.number().finite().positive("Preço original precisa ser positivo").nullable().optional(),
+    name: z
+      .string()
+      .trim()
+      .min(3, "Nome precisa ter ao menos 3 caracteres")
+      .max(120, "Nome muito longo"),
+    originalPrice: z
+      .number()
+      .finite()
+      .positive("Preço original precisa ser positivo")
+      .nullable()
+      .optional(),
     price: z.number().finite().positive("Preço precisa ser positivo"),
     saleEndsAt: baseOptionalText,
     saleStartsAt: baseOptionalText,
@@ -60,7 +80,12 @@ const productPayloadSchema = z
     specifications: baseObjectSchema,
     storeId: z.string().trim().min(1, "Loja é obrigatória").optional(),
     warranty: baseOptionalText,
-    weight: z.number().finite().min(0, "Peso não pode ser negativo").nullable().optional(),
+    weight: z
+      .number()
+      .finite()
+      .min(0, "Peso não pode ser negativo")
+      .nullable()
+      .optional(),
   })
   .superRefine((value, context) => {
     if (value.originalPrice !== null && value.originalPrice !== undefined) {
@@ -114,18 +139,46 @@ const categoryPayloadSchema = z.object({
   iconUrl: baseOptionalText,
   imageUrl: baseOptionalText,
   isActive: z.boolean().optional().default(true),
-  name: z.string().trim().min(2, "Nome da categoria é obrigatório").max(80, "Nome da categoria muito longo"),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Nome da categoria é obrigatório")
+    .max(80, "Nome da categoria muito longo"),
   parentId: baseOptionalText,
   slug: baseOptionalText,
-  sortOrder: z.number().int().min(0, "Ordem deve ser positiva").max(9_999, "Ordem acima do limite").optional().default(0),
+  sortOrder: z
+    .number()
+    .int()
+    .min(0, "Ordem deve ser positiva")
+    .max(9_999, "Ordem acima do limite")
+    .optional()
+    .default(0),
 });
 
 const stockAdjustmentSchema = z
   .object({
-    delta: z.number().int("Ajuste de estoque precisa ser inteiro").min(-10_000, "Ajuste abaixo do limite").max(10_000, "Ajuste acima do limite"),
-    maxStock: z.number().int().min(0, "Estoque máximo não pode ser negativo").max(100_000, "Estoque máximo acima do limite").optional(),
-    minStock: z.number().int().min(0, "Estoque mínimo não pode ser negativo").max(100_000, "Estoque mínimo acima do limite").optional(),
-    reason: z.string().trim().min(6, "Motivo precisa ter ao menos 6 caracteres").max(160, "Motivo muito longo"),
+    delta: z
+      .number()
+      .int("Ajuste de estoque precisa ser inteiro")
+      .min(-10_000, "Ajuste abaixo do limite")
+      .max(10_000, "Ajuste acima do limite"),
+    maxStock: z
+      .number()
+      .int()
+      .min(0, "Estoque máximo não pode ser negativo")
+      .max(100_000, "Estoque máximo acima do limite")
+      .optional(),
+    minStock: z
+      .number()
+      .int()
+      .min(0, "Estoque mínimo não pode ser negativo")
+      .max(100_000, "Estoque mínimo acima do limite")
+      .optional(),
+    reason: z
+      .string()
+      .trim()
+      .min(6, "Motivo precisa ter ao menos 6 caracteres")
+      .max(160, "Motivo muito longo"),
     reference: baseOptionalText,
     targetType: z.enum(["product", "variant"]).optional().default("product"),
     variantId: baseOptionalText,
@@ -272,8 +325,9 @@ export type ParsedAdminCatalogCategoryPayload = Omit<
   slug: string;
 };
 
-export type ParsedAdminCatalogStockAdjustmentPayload =
-  z.infer<typeof stockAdjustmentSchema>;
+export type ParsedAdminCatalogStockAdjustmentPayload = z.infer<
+  typeof stockAdjustmentSchema
+>;
 
 export function parseCatalogPositiveInt(
   value: string | null,
@@ -351,7 +405,9 @@ function normalizeCatalogImageUrl(
 
 export function normalizeAdminCatalogImagesInput(
   value: string[] | undefined,
-): { ok: true; value: string[] } | { issues: AdminCatalogValidationIssue[]; ok: false } {
+):
+  | { ok: true; value: string[] }
+  | { issues: AdminCatalogValidationIssue[]; ok: false } {
   if (!value || value.length === 0) {
     return {
       ok: true,
@@ -524,7 +580,9 @@ export function parseAdminCatalogCategoryPayload(
       ...parsedPayload.data,
       iconUrl: normalizedImages.get("iconUrl") ?? null,
       imageUrl: normalizedImages.get("imageUrl") ?? null,
-      slug: slugifyAdminCategory(parsedPayload.data.slug ?? parsedPayload.data.name),
+      slug: slugifyAdminCategory(
+        parsedPayload.data.slug ?? parsedPayload.data.name,
+      ),
     },
   };
 }

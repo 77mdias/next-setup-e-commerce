@@ -104,7 +104,9 @@ const fieldClassName =
   "min-h-10 w-full rounded-2xl border border-white/10 bg-slate-950/55 px-3 py-2 text-sm text-slate-100 shadow-sm outline-none transition focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/20";
 
 function createEmptyProductForm(
-  defaults?: Partial<Pick<ProductFormState, "brandId" | "categoryId" | "storeId">>,
+  defaults?: Partial<
+    Pick<ProductFormState, "brandId" | "categoryId" | "storeId">
+  >,
 ): ProductFormState {
   return {
     brandId: defaults?.brandId ?? "",
@@ -172,7 +174,9 @@ function toDateTimeLocalValue(value: string | null) {
   return normalizedDate.toISOString().slice(0, 16);
 }
 
-function mapProductDetailToForm(detail: AdminCatalogProductDetail): ProductFormState {
+function mapProductDetailToForm(
+  detail: AdminCatalogProductDetail,
+): ProductFormState {
   return {
     brandId: detail.brand.id,
     categoryId: detail.category.id,
@@ -200,7 +204,9 @@ function mapProductDetailToForm(detail: AdminCatalogProductDetail): ProductFormS
   };
 }
 
-function mapCategoryToForm(category: AdminCatalogCategorySummary): CategoryFormState {
+function mapCategoryToForm(
+  category: AdminCatalogCategorySummary,
+): CategoryFormState {
   return {
     description: category.description ?? "",
     isActive: category.isActive,
@@ -211,7 +217,9 @@ function mapCategoryToForm(category: AdminCatalogCategorySummary): CategoryFormS
   };
 }
 
-function buildProductPayload(form: ProductFormState): AdminCatalogProductPayload {
+function buildProductPayload(
+  form: ProductFormState,
+): AdminCatalogProductPayload {
   const images = form.imagesText
     .split("\n")
     .map((value) => value.trim())
@@ -266,13 +274,19 @@ function buildCategoryPayload(form: CategoryFormState) {
   };
 }
 
-function buildStockPayload(form: StockAdjustmentFormState): AdminCatalogStockAdjustmentPayload {
+function buildStockPayload(
+  form: StockAdjustmentFormState,
+): AdminCatalogStockAdjustmentPayload {
   return {
     delta: Number(form.delta.trim()),
     maxStock:
-      form.maxStock.trim().length > 0 ? Number(form.maxStock.trim()) : undefined,
+      form.maxStock.trim().length > 0
+        ? Number(form.maxStock.trim())
+        : undefined,
     minStock:
-      form.minStock.trim().length > 0 ? Number(form.minStock.trim()) : undefined,
+      form.minStock.trim().length > 0
+        ? Number(form.minStock.trim())
+        : undefined,
     reason: form.reason,
     reference: form.reference.trim().length > 0 ? form.reference : null,
     targetType: form.targetType,
@@ -280,13 +294,7 @@ function buildStockPayload(form: StockAdjustmentFormState): AdminCatalogStockAdj
   };
 }
 
-function ProductImagePreview({
-  alt,
-  src,
-}: {
-  alt: string;
-  src: string;
-}) {
+function ProductImagePreview({ alt, src }: { alt: string; src: string }) {
   const normalizedSrc = normalizeProductImageSrc(src);
 
   return (
@@ -306,12 +314,16 @@ function ProductImagePreview({
 export default function AdminCatalogClient() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [searchInput, setSearchInput] = useState("");
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null,
+  );
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
   const [productForm, setProductForm] = useState<ProductFormState>(
     createEmptyProductForm(),
   );
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    null,
+  );
   const [categoryForm, setCategoryForm] = useState<CategoryFormState>(
     createEmptyCategoryForm(),
   );
@@ -338,7 +350,9 @@ export default function AdminCatalogClient() {
     isLoading: isDetailLoading,
     isRefreshing: isDetailRefreshing,
     retry: retryDetail,
-  } = useAdminCatalogProductDetail(isCreatingProduct ? null : selectedProductId);
+  } = useAdminCatalogProductDetail(
+    isCreatingProduct ? null : selectedProductId,
+  );
   const {
     data: categoriesData,
     errorMessage: categoriesErrorMessage,
@@ -356,8 +370,9 @@ export default function AdminCatalogClient() {
   const selectedProduct = detailData?.product ?? null;
   const selectedCategory = useMemo(
     () =>
-      categoriesData?.categories.find((category) => category.id === selectedCategoryId) ??
-      null,
+      categoriesData?.categories.find(
+        (category) => category.id === selectedCategoryId,
+      ) ?? null,
     [categoriesData, selectedCategoryId],
   );
   const stockTargets = useMemo(() => {
@@ -631,9 +646,7 @@ export default function AdminCatalogClient() {
       return;
     }
 
-    if (
-      !window.confirm(`Remover a categoria "${selectedCategory.name}"?`)
-    ) {
+    if (!window.confirm(`Remover a categoria "${selectedCategory.name}"?`)) {
       return;
     }
 
@@ -660,7 +673,7 @@ export default function AdminCatalogClient() {
       <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.22),_transparent_38%),radial-gradient(circle_at_top_right,_rgba(96,165,250,0.18),_transparent_28%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(2,6,23,0.92))] p-8 shadow-[0_24px_80px_rgba(2,6,23,0.45)]">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl space-y-4">
-            <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-100">
+            <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-semibold tracking-[0.28em] text-cyan-100 uppercase">
               <ShieldCheck className="h-3.5 w-3.5" />
               S06-OPS-002
             </span>
@@ -678,7 +691,7 @@ export default function AdminCatalogClient() {
 
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+              <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
                 Produtos visíveis
               </p>
               <p className="mt-2 text-2xl font-semibold text-white">
@@ -686,7 +699,7 @@ export default function AdminCatalogClient() {
               </p>
             </div>
             <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+              <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
                 Categorias
               </p>
               <p className="mt-2 text-2xl font-semibold text-white">
@@ -694,7 +707,7 @@ export default function AdminCatalogClient() {
               </p>
             </div>
             <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+              <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
                 Lojas no escopo
               </p>
               <p className="mt-2 text-2xl font-semibold text-white">
@@ -711,7 +724,7 @@ export default function AdminCatalogClient() {
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                  <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
                     Fila operacional
                   </p>
                   <h2 className="mt-2 text-xl font-semibold text-white">
@@ -830,7 +843,7 @@ export default function AdminCatalogClient() {
                             <h3 className="truncate text-base font-semibold text-white">
                               {product.name}
                             </h3>
-                            <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-300">
+                            <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] tracking-[0.2em] text-slate-300 uppercase">
                               {product.sku}
                             </span>
                           </div>
@@ -909,7 +922,7 @@ export default function AdminCatalogClient() {
           <div className="rounded-[1.8rem] border border-white/10 bg-slate-950/70 p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
                   Categorias
                 </p>
                 <h2 className="mt-2 text-xl font-semibold text-white">
@@ -933,56 +946,58 @@ export default function AdminCatalogClient() {
 
             {!meta?.canManageCategories ? (
               <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
-                Admin de loja pode consultar categorias, mas a mutação global foi
-                restrita a perfis administrativos centrais para evitar impacto
-                cruzado entre lojas.
+                Admin de loja pode consultar categorias, mas a mutação global
+                foi restrita a perfis administrativos centrais para evitar
+                impacto cruzado entre lojas.
               </div>
             ) : null}
 
             <div className="mt-5 grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
               <div className="space-y-2">
-                {isCategoriesLoading && !categoriesData ? (
-                  Array.from({ length: 4 }).map((_, index) => (
-                    <div
-                      key={`category-skeleton-${index}`}
-                      className="h-16 animate-pulse rounded-2xl border border-white/8 bg-white/5"
-                    />
-                  ))
-                ) : (
-                  categoriesData?.categories.map((category) => (
-                    <button
-                      key={category.id}
-                      className={cn(
-                        "w-full rounded-2xl border px-4 py-3 text-left transition",
-                        selectedCategoryId === category.id
-                          ? "border-cyan-400/40 bg-cyan-400/10"
-                          : "border-white/10 bg-white/5 hover:bg-white/8",
-                      )}
-                      type="button"
-                      onClick={() => {
-                        setSelectedCategoryId(category.id);
-                        setCategoryForm(mapCategoryToForm(category));
-                      }}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-medium text-white">{category.name}</p>
-                          <p className="text-xs text-slate-400">{category.slug}</p>
+                {isCategoriesLoading && !categoriesData
+                  ? Array.from({ length: 4 }).map((_, index) => (
+                      <div
+                        key={`category-skeleton-${index}`}
+                        className="h-16 animate-pulse rounded-2xl border border-white/8 bg-white/5"
+                      />
+                    ))
+                  : categoriesData?.categories.map((category) => (
+                      <button
+                        key={category.id}
+                        className={cn(
+                          "w-full rounded-2xl border px-4 py-3 text-left transition",
+                          selectedCategoryId === category.id
+                            ? "border-cyan-400/40 bg-cyan-400/10"
+                            : "border-white/10 bg-white/5 hover:bg-white/8",
+                        )}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategoryId(category.id);
+                          setCategoryForm(mapCategoryToForm(category));
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="font-medium text-white">
+                              {category.name}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              {category.slug}
+                            </p>
+                          </div>
+                          <div className="text-right text-xs text-slate-300">
+                            <p>{category.productCount} produto(s)</p>
+                            <p>{category.childrenCount} filho(s)</p>
+                          </div>
                         </div>
-                        <div className="text-right text-xs text-slate-300">
-                          <p>{category.productCount} produto(s)</p>
-                          <p>{category.childrenCount} filho(s)</p>
-                        </div>
-                      </div>
-                    </button>
-                  ))
-                )}
+                      </button>
+                    ))}
               </div>
 
               <div className="space-y-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="sm:col-span-2">
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Nome
                     </label>
                     <Input
@@ -998,7 +1013,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Slug
                     </label>
                     <Input
@@ -1014,7 +1029,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Ordem
                     </label>
                     <Input
@@ -1030,7 +1045,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Categoria pai
                     </label>
                     <select
@@ -1046,7 +1061,9 @@ export default function AdminCatalogClient() {
                     >
                       <option value="">Sem categoria pai</option>
                       {categoriesData?.categories
-                        .filter((category) => category.id !== selectedCategoryId)
+                        .filter(
+                          (category) => category.id !== selectedCategoryId,
+                        )
                         .map((category) => (
                           <option key={category.id} value={category.id}>
                             {category.name}
@@ -1073,7 +1090,7 @@ export default function AdminCatalogClient() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                  <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                     Descrição
                   </label>
                   <textarea
@@ -1137,7 +1154,7 @@ export default function AdminCatalogClient() {
           <div className="rounded-[1.8rem] border border-white/10 bg-slate-950/70 p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
                   Editor de catálogo
                 </p>
                 <h2 className="mt-2 text-xl font-semibold text-white">
@@ -1149,8 +1166,8 @@ export default function AdminCatalogClient() {
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
                   Produto, mídia e preços seguem o mesmo contrato validado do
-                  backend. Mudanças inválidas retornam mensagem uniforme antes de
-                  persistir qualquer alteração.
+                  backend. Mudanças inválidas retornam mensagem uniforme antes
+                  de persistir qualquer alteração.
                 </p>
               </div>
 
@@ -1200,7 +1217,7 @@ export default function AdminCatalogClient() {
               <div className="mt-6 space-y-6">
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Nome
                     </label>
                     <Input
@@ -1215,7 +1232,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       SKU
                     </label>
                     <Input
@@ -1233,7 +1250,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-3">
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Loja
                     </label>
                     <select
@@ -1256,7 +1273,7 @@ export default function AdminCatalogClient() {
                     </select>
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Marca
                     </label>
                     <select
@@ -1278,7 +1295,7 @@ export default function AdminCatalogClient() {
                     </select>
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Categoria
                     </label>
                     <select
@@ -1303,7 +1320,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-4">
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Preço
                     </label>
                     <Input
@@ -1318,7 +1335,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Preço original
                     </label>
                     <Input
@@ -1333,7 +1350,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Custo
                     </label>
                     <Input
@@ -1348,7 +1365,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Peso
                     </label>
                     <Input
@@ -1366,7 +1383,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Descrição curta
                     </label>
                     <Input
@@ -1381,7 +1398,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Garantia
                     </label>
                     <Input
@@ -1398,7 +1415,7 @@ export default function AdminCatalogClient() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                  <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                     Descrição
                   </label>
                   <textarea
@@ -1415,11 +1432,14 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Especificações JSON
                     </label>
                     <textarea
-                      className={cn(fieldClassName, "min-h-48 resize-y font-mono")}
+                      className={cn(
+                        fieldClassName,
+                        "min-h-48 resize-y font-mono",
+                      )}
                       value={productForm.specificationsText}
                       onChange={(event) =>
                         setProductForm((currentValue) => ({
@@ -1430,11 +1450,14 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Dimensões JSON
                     </label>
                     <textarea
-                      className={cn(fieldClassName, "min-h-48 resize-y font-mono")}
+                      className={cn(
+                        fieldClassName,
+                        "min-h-48 resize-y font-mono",
+                      )}
                       value={productForm.dimensionsText}
                       onChange={(event) =>
                         setProductForm((currentValue) => ({
@@ -1493,7 +1516,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Promoção a partir de
                     </label>
                     <Input
@@ -1509,7 +1532,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Promoção até
                     </label>
                     <Input
@@ -1529,7 +1552,7 @@ export default function AdminCatalogClient() {
                 <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                      <p className="text-xs tracking-[0.16em] text-slate-400 uppercase">
                         Imagens
                       </p>
                       <h3 className="mt-2 text-lg font-semibold text-white">
@@ -1579,11 +1602,14 @@ export default function AdminCatalogClient() {
                   ) : null}
 
                   <div className="mt-4">
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Uma imagem por linha
                     </label>
                     <textarea
-                      className={cn(fieldClassName, "min-h-32 resize-y font-mono")}
+                      className={cn(
+                        fieldClassName,
+                        "min-h-32 resize-y font-mono",
+                      )}
                       value={productForm.imagesText}
                       onChange={(event) =>
                         setProductForm((currentValue) => ({
@@ -1645,7 +1671,7 @@ export default function AdminCatalogClient() {
             <div className="rounded-[1.8rem] border border-white/10 bg-slate-950/70 p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                  <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
                     Estoque
                   </p>
                   <h2 className="mt-2 text-xl font-semibold text-white">
@@ -1663,7 +1689,7 @@ export default function AdminCatalogClient() {
                 <div className="mt-5 space-y-4">
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                      <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                      <p className="text-xs tracking-[0.16em] text-slate-400 uppercase">
                         Quantidade
                       </p>
                       <p className="mt-2 text-2xl font-semibold text-white">
@@ -1671,7 +1697,7 @@ export default function AdminCatalogClient() {
                       </p>
                     </div>
                     <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                      <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                      <p className="text-xs tracking-[0.16em] text-slate-400 uppercase">
                         Reservado
                       </p>
                       <p className="mt-2 text-2xl font-semibold text-white">
@@ -1679,7 +1705,7 @@ export default function AdminCatalogClient() {
                       </p>
                     </div>
                     <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                      <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                      <p className="text-xs tracking-[0.16em] text-slate-400 uppercase">
                         Estoque mínimo
                       </p>
                       <p className="mt-2 text-2xl font-semibold text-white">
@@ -1690,7 +1716,7 @@ export default function AdminCatalogClient() {
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                      <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                         Alvo do ajuste
                       </label>
                       <select
@@ -1703,20 +1729,25 @@ export default function AdminCatalogClient() {
                         onChange={(event) =>
                           setStockForm((currentValue) => ({
                             ...currentValue,
-                            targetType: event.target.value ? "variant" : "product",
+                            targetType: event.target.value
+                              ? "variant"
+                              : "product",
                             variantId: event.target.value,
                           }))
                         }
                       >
                         {stockTargets.map((target) => (
-                          <option key={`${target.type}-${target.id}`} value={target.id}>
+                          <option
+                            key={`${target.type}-${target.id}`}
+                            value={target.id}
+                          >
                             {target.label}
                           </option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                      <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                         Delta
                       </label>
                       <Input
@@ -1735,7 +1766,7 @@ export default function AdminCatalogClient() {
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                      <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                         Estoque mínimo alvo
                       </label>
                       <Input
@@ -1750,7 +1781,7 @@ export default function AdminCatalogClient() {
                       />
                     </div>
                     <div>
-                      <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                      <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                         Estoque máximo alvo
                       </label>
                       <Input
@@ -1767,7 +1798,7 @@ export default function AdminCatalogClient() {
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Motivo
                     </label>
                     <Input
@@ -1783,7 +1814,7 @@ export default function AdminCatalogClient() {
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
                       Referência
                     </label>
                     <Input
@@ -1822,7 +1853,7 @@ export default function AdminCatalogClient() {
             <div className="rounded-[1.8rem] border border-white/10 bg-slate-950/70 p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                  <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
                     Histórico
                   </p>
                   <h2 className="mt-2 text-xl font-semibold text-white">
@@ -1845,7 +1876,8 @@ export default function AdminCatalogClient() {
                             {movement.reason}
                           </p>
                           <p className="text-xs text-slate-400">
-                            {movement.userLabel} · {formatDateTime(movement.createdAt)}
+                            {movement.userLabel} ·{" "}
+                            {formatDateTime(movement.createdAt)}
                           </p>
                         </div>
                         <span className="rounded-full border border-white/10 bg-slate-950/70 px-2 py-1 text-xs text-slate-200">

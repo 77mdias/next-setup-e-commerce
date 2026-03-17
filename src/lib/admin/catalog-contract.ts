@@ -182,4 +182,3 @@ export type AdminCatalogStockAdjustmentPayload = {
   targetType?: unknown;
   variantId?: unknown;
 };
-

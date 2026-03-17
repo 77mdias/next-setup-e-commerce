@@ -46,7 +46,9 @@ export async function GET(request: NextRequest) {
     const page = parseCatalogPositiveInt(searchParams.get("page"), 1, 10_000);
     const limit = parseCatalogPositiveInt(searchParams.get("limit"), 12, 60);
     const searchQuery = parseCatalogStringParam(searchParams.get("query"));
-    const requestedStoreId = parseCatalogStringParam(searchParams.get("storeId"));
+    const requestedStoreId = parseCatalogStringParam(
+      searchParams.get("storeId"),
+    );
     const scopedStoreIds = getAuthorizedAdminStoreIds(authorization);
 
     if (requestedStoreId) {
@@ -335,8 +337,8 @@ export async function POST(request: NextRequest) {
           saleStartsAt: parsedPayload.value.saleStartsAt,
           shortDesc: parsedPayload.value.shortDesc ?? null,
           sku: parsedPayload.value.sku,
-          specifications:
-            parsedPayload.value.specifications as Prisma.InputJsonValue,
+          specifications: parsedPayload.value
+            .specifications as Prisma.InputJsonValue,
           storeId: targetStoreId,
           warranty: parsedPayload.value.warranty ?? null,
           weight: parsedPayload.value.weight ?? null,

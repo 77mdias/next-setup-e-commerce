@@ -115,7 +115,9 @@ describe("/api/admin/products integration", () => {
     });
     mockGetAuthorizedAdminStoreIds.mockReturnValue(["store-1"]);
 
-    mockDb.brand.findMany.mockResolvedValue([{ id: "brand-1", name: "Corsair" }]);
+    mockDb.brand.findMany.mockResolvedValue([
+      { id: "brand-1", name: "Corsair" },
+    ]);
     mockDb.category.findMany.mockResolvedValue([
       { id: "category-1", name: "Periféricos", slug: "perifericos" },
     ]);

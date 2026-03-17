@@ -84,9 +84,7 @@ export async function PUT(
     ]);
   }
 
-  const processedImages = normalizeAdminCatalogImagesInput(
-    rawImages,
-  );
+  const processedImages = normalizeAdminCatalogImagesInput(rawImages);
 
   if (!processedImages.ok || processedImages.value.length === 0) {
     return createCatalogValidationErrorResponse(

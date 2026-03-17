@@ -2,8 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 const E2E_ADMIN_EMAIL =
   process.env.E2E_ADMIN_EMAIL ?? "e2e.admin@nextstore.local";
-const E2E_ADMIN_PASSWORD =
-  process.env.E2E_ADMIN_PASSWORD ?? "E2eAdmin#123";
+const E2E_ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? "E2eAdmin#123";
 const E2E_ADMIN_PRODUCT_NAME =
   process.env.E2E_ADMIN_PRODUCT_NAME ?? "E2E Checkout Headset";
 

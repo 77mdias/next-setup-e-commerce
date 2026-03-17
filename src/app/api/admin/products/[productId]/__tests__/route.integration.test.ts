@@ -143,12 +143,16 @@ describe("/api/admin/products/[productId] integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockAuthorizeAdminApiRequest.mockResolvedValue(buildAuthorizedResult("read"));
+    mockAuthorizeAdminApiRequest.mockResolvedValue(
+      buildAuthorizedResult("read"),
+    );
     mockAuthorizeAdminStoreScopeAccess.mockReturnValue({
       authorized: true,
     });
     mockGetAuthorizedAdminStoreIds.mockReturnValue(null);
-    mockDb.brand.findMany.mockResolvedValue([{ id: "brand-1", name: "Corsair" }]);
+    mockDb.brand.findMany.mockResolvedValue([
+      { id: "brand-1", name: "Corsair" },
+    ]);
     mockDb.category.findMany.mockResolvedValue([
       { id: "category-1", name: "Periféricos", slug: "perifericos" },
     ]);
@@ -202,7 +206,9 @@ describe("/api/admin/products/[productId] integration", () => {
   });
 
   it("rejects attempts to change the product store on update", async () => {
-    mockAuthorizeAdminApiRequest.mockResolvedValue(buildAuthorizedResult("update"));
+    mockAuthorizeAdminApiRequest.mockResolvedValue(
+      buildAuthorizedResult("update"),
+    );
     mockDb.brand.findUnique.mockResolvedValue({ id: "brand-1" });
     mockDb.category.findUnique.mockResolvedValue({ id: "category-1" });
     mockDb.product.findFirst.mockResolvedValue(null);
@@ -245,7 +251,9 @@ describe("/api/admin/products/[productId] integration", () => {
   });
 
   it("blocks deletion when the product already has order history", async () => {
-    mockAuthorizeAdminApiRequest.mockResolvedValue(buildAuthorizedResult("delete"));
+    mockAuthorizeAdminApiRequest.mockResolvedValue(
+      buildAuthorizedResult("delete"),
+    );
     mockDb.product.findUnique.mockResolvedValue({
       id: "product-1",
       name: "Mouse RGB",
@@ -261,7 +269,8 @@ describe("/api/admin/products/[productId] integration", () => {
     expect(response.status).toBe(409);
     expect(body).toEqual({
       code: "ADMIN_CATALOG_PRODUCT_DELETE_BLOCKED",
-      error: "Produto com histórico de pedidos não pode ser removido do catálogo",
+      error:
+        "Produto com histórico de pedidos não pode ser removido do catálogo",
     });
     expect(mockDb.product.delete).not.toHaveBeenCalled();
   });

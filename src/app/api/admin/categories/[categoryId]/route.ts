@@ -81,37 +81,39 @@ export async function PUT(
   }
 
   try {
-    const [currentCategory, parentCategory, duplicatedSlug] = await Promise.all([
-      db.category.findUnique({
-        where: {
-          id: categoryId,
-        },
-        select: {
-          id: true,
-        },
-      }),
-      parsedPayload.value.parentId
-        ? db.category.findUnique({
-            where: {
-              id: parsedPayload.value.parentId,
-            },
-            select: {
-              id: true,
-            },
-          })
-        : Promise.resolve(null),
-      db.category.findFirst({
-        where: {
-          id: {
-            not: categoryId,
+    const [currentCategory, parentCategory, duplicatedSlug] = await Promise.all(
+      [
+        db.category.findUnique({
+          where: {
+            id: categoryId,
           },
-          slug: parsedPayload.value.slug,
-        },
-        select: {
-          id: true,
-        },
-      }),
-    ]);
+          select: {
+            id: true,
+          },
+        }),
+        parsedPayload.value.parentId
+          ? db.category.findUnique({
+              where: {
+                id: parsedPayload.value.parentId,
+              },
+              select: {
+                id: true,
+              },
+            })
+          : Promise.resolve(null),
+        db.category.findFirst({
+          where: {
+            id: {
+              not: categoryId,
+            },
+            slug: parsedPayload.value.slug,
+          },
+          select: {
+            id: true,
+          },
+        }),
+      ],
+    );
 
     if (!currentCategory) {
       return NextResponse.json(

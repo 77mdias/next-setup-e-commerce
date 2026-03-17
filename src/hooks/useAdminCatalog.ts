@@ -72,7 +72,10 @@ async function readJson<T>(response: Response): Promise<T | null> {
   }
 }
 
-function extractValidationErrorMessage(payload: unknown, fallbackMessage: string) {
+function extractValidationErrorMessage(
+  payload: unknown,
+  fallbackMessage: string,
+) {
   if (!payload) {
     return fallbackMessage;
   }
@@ -117,12 +120,22 @@ async function readAdminCatalogProducts(
     },
   );
   const payload = await readJson<
-    AdminCatalogProductsResponse | AdminCatalogValidationErrorResponse | { error?: string }
+    | AdminCatalogProductsResponse
+    | AdminCatalogValidationErrorResponse
+    | { error?: string }
   >(response);
 
-  if (!response.ok || !payload || !("success" in payload) || payload.success !== true) {
+  if (
+    !response.ok ||
+    !payload ||
+    !("success" in payload) ||
+    payload.success !== true
+  ) {
     throw new Error(
-      extractValidationErrorMessage(payload, ADMIN_CATALOG_PRODUCTS_FALLBACK_ERROR),
+      extractValidationErrorMessage(
+        payload,
+        ADMIN_CATALOG_PRODUCTS_FALLBACK_ERROR,
+      ),
     );
   }
 
@@ -138,12 +151,22 @@ async function readAdminCatalogProductDetail(
     signal,
   });
   const payload = await readJson<
-    AdminCatalogProductDetailResponse | AdminCatalogValidationErrorResponse | { error?: string }
+    | AdminCatalogProductDetailResponse
+    | AdminCatalogValidationErrorResponse
+    | { error?: string }
   >(response);
 
-  if (!response.ok || !payload || !("success" in payload) || payload.success !== true) {
+  if (
+    !response.ok ||
+    !payload ||
+    !("success" in payload) ||
+    payload.success !== true
+  ) {
     throw new Error(
-      extractValidationErrorMessage(payload, ADMIN_CATALOG_DETAIL_FALLBACK_ERROR),
+      extractValidationErrorMessage(
+        payload,
+        ADMIN_CATALOG_DETAIL_FALLBACK_ERROR,
+      ),
     );
   }
 
@@ -158,12 +181,22 @@ async function readAdminCatalogCategories(
     signal,
   });
   const payload = await readJson<
-    AdminCatalogCategoryListResponse | AdminCatalogValidationErrorResponse | { error?: string }
+    | AdminCatalogCategoryListResponse
+    | AdminCatalogValidationErrorResponse
+    | { error?: string }
   >(response);
 
-  if (!response.ok || !payload || !("success" in payload) || payload.success !== true) {
+  if (
+    !response.ok ||
+    !payload ||
+    !("success" in payload) ||
+    payload.success !== true
+  ) {
     throw new Error(
-      extractValidationErrorMessage(payload, ADMIN_CATALOG_CATEGORIES_FALLBACK_ERROR),
+      extractValidationErrorMessage(
+        payload,
+        ADMIN_CATALOG_CATEGORIES_FALLBACK_ERROR,
+      ),
     );
   }
 
@@ -239,7 +272,9 @@ export function useAdminCatalogProducts(
 export function useAdminCatalogProductDetail(
   productId: string | null,
 ): UseFetchState<AdminCatalogProductDetailResponse> {
-  const [data, setData] = useState<AdminCatalogProductDetailResponse | null>(null);
+  const [data, setData] = useState<AdminCatalogProductDetailResponse | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -312,7 +347,9 @@ export function useAdminCatalogProductDetail(
 }
 
 export function useAdminCatalogCategories(): UseFetchState<AdminCatalogCategoryListResponse> {
-  const [data, setData] = useState<AdminCatalogCategoryListResponse | null>(null);
+  const [data, setData] = useState<AdminCatalogCategoryListResponse | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -397,11 +434,16 @@ async function sendJsonRequest<T>(input: RequestInfo, init: RequestInit) {
   return payload as T;
 }
 
-export async function createAdminCatalogProduct(payload: AdminCatalogProductPayload) {
-  return sendJsonRequest<AdminCatalogProductMutationResponse>("/api/admin/products", {
-    body: JSON.stringify(payload),
-    method: "POST",
-  });
+export async function createAdminCatalogProduct(
+  payload: AdminCatalogProductPayload,
+) {
+  return sendJsonRequest<AdminCatalogProductMutationResponse>(
+    "/api/admin/products",
+    {
+      body: JSON.stringify(payload),
+      method: "POST",
+    },
+  );
 }
 
 export async function updateAdminCatalogProduct(

@@ -136,9 +136,9 @@ export async function POST(
     const baseInventory = product.inventory[0] ?? null;
     const targetVariant =
       parsedPayload.value.targetType === "variant"
-        ? product.variants.find(
+        ? (product.variants.find(
             (variant) => variant.id === parsedPayload.value.variantId,
-          ) ?? null
+          ) ?? null)
         : null;
 
     if (parsedPayload.value.targetType === "variant" && !targetVariant) {
@@ -188,8 +188,7 @@ export async function POST(
         return NextResponse.json(
           {
             code: "ADMIN_CATALOG_STOCK_CONFLICT",
-            error:
-              "Ajuste de estoque deixaria a variação com saldo negativo",
+            error: "Ajuste de estoque deixaria a variação com saldo negativo",
           },
           { status: 409 },
         );
@@ -216,8 +215,7 @@ export async function POST(
           id: inventory.id,
         },
         data: {
-          lastRestocked:
-            parsedPayload.value.delta > 0 ? new Date() : undefined,
+          lastRestocked: parsedPayload.value.delta > 0 ? new Date() : undefined,
           maxStock: nextMaxStock,
           minStock: nextMinStock,
           quantity: nextQuantity,
