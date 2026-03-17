@@ -1,3 +1,4 @@
+import { AdminAuditAction, AdminAuditResource } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 import type {
@@ -17,6 +18,7 @@ import {
   serializeAdminOrderDetail,
   validateAdminOrderStatusUpdate,
 } from "@/lib/admin/orders";
+import { writeAdminAuditLog } from "@/lib/audit-log";
 import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
 import {
@@ -31,6 +33,28 @@ class AdminOrderStateConflictError extends Error {
     super(ADMIN_ORDER_STATE_CONFLICT_ERROR);
     this.name = "AdminOrderStateConflictError";
   }
+}
+
+function buildOrderAuditSnapshot(order: {
+  cancelReason: string | null;
+  cancelledAt: Date | null;
+  deliveredAt: Date | null;
+  paymentStatus: string;
+  shippedAt: Date | null;
+  status: string;
+  store: {
+    id: string;
+  };
+}) {
+  return {
+    cancelReason: order.cancelReason,
+    cancelledAt: order.cancelledAt?.toISOString() ?? null,
+    deliveredAt: order.deliveredAt?.toISOString() ?? null,
+    paymentStatus: order.paymentStatus,
+    shippedAt: order.shippedAt?.toISOString() ?? null,
+    status: order.status,
+    storeId: order.store.id,
+  };
 }
 
 export async function GET(
@@ -248,6 +272,36 @@ export async function PATCH(
           orderId: currentOrder.id,
           status: nextStatus,
         },
+      });
+
+      await writeAdminAuditLog({
+        action: AdminAuditAction.UPDATE,
+        actor: authorization.user,
+        after: buildOrderAuditSnapshot({
+          cancelReason:
+            nextStatus === "CANCELLED"
+              ? (currentOrder.cancelReason ??
+                "Cancelado operacionalmente no painel admin")
+              : currentOrder.cancelReason,
+          cancelledAt:
+            nextStatus === "CANCELLED" ? now : currentOrder.cancelledAt,
+          deliveredAt:
+            nextStatus === "DELIVERED" ? now : currentOrder.deliveredAt,
+          paymentStatus: currentOrder.paymentStatus,
+          shippedAt: nextStatus === "SHIPPED" ? now : currentOrder.shippedAt,
+          status: nextStatus,
+          store: currentOrder.store,
+        }),
+        before: buildOrderAuditSnapshot(currentOrder),
+        client: transaction,
+        metadata: {
+          route: "/api/admin/orders/[orderId]",
+        },
+        resource: AdminAuditResource.ORDER,
+        storeId: currentOrder.store.id,
+        summary: `Pedido ORD-${String(currentOrder.id).padStart(5, "0")} atualizado de ${currentOrder.status} para ${nextStatus}.`,
+        targetId: currentOrder.id,
+        targetLabel: `Pedido ORD-${String(currentOrder.id).padStart(5, "0")}`,
       });
 
       return transaction.order.findUnique({

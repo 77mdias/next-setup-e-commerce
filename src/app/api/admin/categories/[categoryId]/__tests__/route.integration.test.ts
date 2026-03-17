@@ -7,17 +7,20 @@ const mockLogger = {
   warn: vi.fn(),
 };
 
-const { mockAuthorizeAdminApiRequest, mockDb } = vi.hoisted(() => ({
-  mockAuthorizeAdminApiRequest: vi.fn(),
-  mockDb: {
-    category: {
-      delete: vi.fn(),
-      findFirst: vi.fn(),
-      findUnique: vi.fn(),
-      update: vi.fn(),
+const { mockAuthorizeAdminApiRequest, mockDb, mockWriteAdminAuditLog } =
+  vi.hoisted(() => ({
+    mockAuthorizeAdminApiRequest: vi.fn(),
+    mockDb: {
+      $transaction: vi.fn(),
+      category: {
+        delete: vi.fn(),
+        findFirst: vi.fn(),
+        findUnique: vi.fn(),
+        update: vi.fn(),
+      },
     },
-  },
-}));
+    mockWriteAdminAuditLog: vi.fn(),
+  }));
 
 vi.mock("@/lib/logger", () => ({
   createRequestLogger: vi.fn(() => mockLogger),
@@ -41,6 +44,10 @@ vi.mock("@/lib/rbac", () => ({
       { status },
     ),
   ),
+}));
+
+vi.mock("@/lib/audit-log", () => ({
+  writeAdminAuditLog: mockWriteAdminAuditLog,
 }));
 
 import { DELETE } from "@/app/api/admin/categories/[categoryId]/route";
@@ -74,6 +81,9 @@ describe("/api/admin/categories/[categoryId] integration", () => {
         role: "ADMIN",
       },
     });
+    mockDb.$transaction.mockImplementation(async (callback: unknown) =>
+      (callback as (transaction: typeof mockDb) => Promise<unknown>)(mockDb),
+    );
   });
 
   it("blocks category deletion when there are children or products attached", async () => {
@@ -97,5 +107,43 @@ describe("/api/admin/categories/[categoryId] integration", () => {
         "Categoria com subcategorias ou produtos vinculados não pode ser removida",
     });
     expect(mockDb.category.delete).not.toHaveBeenCalled();
+  });
+
+  it("deletes the category and writes an audit event when there are no dependencies", async () => {
+    mockDb.category.findUnique.mockResolvedValue({
+      _count: {
+        children: 0,
+        products: 0,
+      },
+      id: "category-1",
+      isActive: true,
+      name: "Periféricos",
+      parentId: null,
+      slug: "perifericos",
+      sortOrder: 1,
+    });
+
+    const response = await DELETE(createRequest(), {
+      params: Promise.resolve({ categoryId: "category-1" }),
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      categoryId: "category-1",
+      success: true,
+    });
+    expect(mockDb.category.delete).toHaveBeenCalledWith({
+      where: {
+        id: "category-1",
+      },
+    });
+    expect(mockWriteAdminAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "DELETE",
+        resource: "CATEGORY",
+        targetId: "category-1",
+      }),
+    );
   });
 });

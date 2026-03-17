@@ -1,9 +1,11 @@
+import { AdminAuditAction, AdminAuditResource } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
   createCatalogValidationErrorResponse,
   normalizeAdminCatalogImagesInput,
 } from "@/lib/admin/catalog";
+import { writeAdminAuditLog } from "@/lib/audit-log";
 import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
 import {
@@ -106,6 +108,8 @@ export async function PUT(
       },
       select: {
         id: true,
+        images: true,
+        name: true,
         storeId: true,
       },
     });
@@ -128,19 +132,45 @@ export async function PUT(
       return storeScopeAccess.response;
     }
 
-    const updatedProduct = await db.product.update({
-      where: {
-        id: productId,
-      },
-      data: {
-        images: processedImages.value,
-      },
-      select: {
-        id: true,
-        name: true,
-        images: true,
-        updatedAt: true,
-      },
+    const updatedProduct = await db.$transaction(async (transaction) => {
+      const nextProduct = await transaction.product.update({
+        where: {
+          id: productId,
+        },
+        data: {
+          images: processedImages.value,
+        },
+        select: {
+          id: true,
+          name: true,
+          images: true,
+          updatedAt: true,
+        },
+      });
+
+      await writeAdminAuditLog({
+        action: AdminAuditAction.UPDATE,
+        actor: authorization.user,
+        after: {
+          imageCount: processedImages.value.length,
+          storeId: product.storeId,
+        },
+        before: {
+          imageCount: product.images.length,
+          storeId: product.storeId,
+        },
+        client: transaction,
+        metadata: {
+          route: "/api/admin/products/[productId]/images",
+        },
+        resource: AdminAuditResource.PRODUCT_IMAGE,
+        storeId: product.storeId,
+        summary: `Imagens do produto ${product.name} atualizadas no catalogo administrativo.`,
+        targetId: product.id,
+        targetLabel: product.name,
+      });
+
+      return nextProduct;
     });
 
     return NextResponse.json({

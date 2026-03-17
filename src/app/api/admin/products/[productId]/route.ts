@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import { AdminAuditAction, AdminAuditResource, Prisma } from "@prisma/client";
 
 import type {
   AdminCatalogProductDetailResponse,
@@ -13,6 +13,7 @@ import {
   parseAdminCatalogProductPayload,
   serializeAdminCatalogProductDetail,
 } from "@/lib/admin/catalog";
+import { writeAdminAuditLog } from "@/lib/audit-log";
 import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
 import {
@@ -20,6 +21,32 @@ import {
   authorizeAdminStoreScopeAccess,
   getAuthorizedAdminStoreIds,
 } from "@/lib/rbac";
+
+function buildProductAuditSnapshot(params: {
+  brandId: string;
+  categoryId: string;
+  imageCount: number;
+  isActive: boolean;
+  isFeatured: boolean;
+  isOnSale: boolean;
+  name: string;
+  price: number;
+  sku: string;
+  storeId: string;
+}) {
+  return {
+    brandId: params.brandId,
+    categoryId: params.categoryId,
+    imageCount: params.imageCount,
+    isActive: params.isActive,
+    isFeatured: params.isFeatured,
+    isOnSale: params.isOnSale,
+    name: params.name,
+    price: params.price,
+    sku: params.sku,
+    storeId: params.storeId,
+  };
+}
 
 async function loadProductDetail(productId: string) {
   const product = await db.product.findUnique({
@@ -291,7 +318,16 @@ export async function PUT(
         id: productId,
       },
       select: {
+        brandId: true,
+        categoryId: true,
         id: true,
+        images: true,
+        isActive: true,
+        isFeatured: true,
+        isOnSale: true,
+        name: true,
+        price: true,
+        sku: true,
         storeId: true,
       },
     });
@@ -381,35 +417,75 @@ export async function PUT(
       return createCatalogValidationErrorResponse(issues);
     }
 
-    await db.product.update({
-      where: {
-        id: productId,
-      },
-      data: {
-        brandId: parsedPayload.value.brandId,
-        categoryId: parsedPayload.value.categoryId,
-        costPrice: parsedPayload.value.costPrice ?? null,
-        description: parsedPayload.value.description,
-        dimensions:
-          parsedPayload.value.dimensions === null
-            ? Prisma.JsonNull
-            : (parsedPayload.value.dimensions as Prisma.InputJsonValue),
-        images: parsedPayload.value.images,
-        isActive: parsedPayload.value.isActive,
-        isFeatured: parsedPayload.value.isFeatured,
-        isOnSale: parsedPayload.value.isOnSale,
-        name: parsedPayload.value.name,
-        originalPrice: parsedPayload.value.originalPrice ?? null,
-        price: parsedPayload.value.price,
-        saleEndsAt: parsedPayload.value.saleEndsAt,
-        saleStartsAt: parsedPayload.value.saleStartsAt,
-        shortDesc: parsedPayload.value.shortDesc ?? null,
-        sku: parsedPayload.value.sku,
-        specifications: parsedPayload.value
-          .specifications as Prisma.InputJsonValue,
-        warranty: parsedPayload.value.warranty ?? null,
-        weight: parsedPayload.value.weight ?? null,
-      },
+    await db.$transaction(async (transaction) => {
+      await transaction.product.update({
+        where: {
+          id: productId,
+        },
+        data: {
+          brandId: parsedPayload.value.brandId,
+          categoryId: parsedPayload.value.categoryId,
+          costPrice: parsedPayload.value.costPrice ?? null,
+          description: parsedPayload.value.description,
+          dimensions:
+            parsedPayload.value.dimensions === null
+              ? Prisma.JsonNull
+              : (parsedPayload.value.dimensions as Prisma.InputJsonValue),
+          images: parsedPayload.value.images,
+          isActive: parsedPayload.value.isActive,
+          isFeatured: parsedPayload.value.isFeatured,
+          isOnSale: parsedPayload.value.isOnSale,
+          name: parsedPayload.value.name,
+          originalPrice: parsedPayload.value.originalPrice ?? null,
+          price: parsedPayload.value.price,
+          saleEndsAt: parsedPayload.value.saleEndsAt,
+          saleStartsAt: parsedPayload.value.saleStartsAt,
+          shortDesc: parsedPayload.value.shortDesc ?? null,
+          sku: parsedPayload.value.sku,
+          specifications: parsedPayload.value
+            .specifications as Prisma.InputJsonValue,
+          warranty: parsedPayload.value.warranty ?? null,
+          weight: parsedPayload.value.weight ?? null,
+        },
+      });
+
+      await writeAdminAuditLog({
+        action: AdminAuditAction.UPDATE,
+        actor: authorization.user,
+        after: buildProductAuditSnapshot({
+          brandId: parsedPayload.value.brandId,
+          categoryId: parsedPayload.value.categoryId,
+          imageCount: parsedPayload.value.images.length,
+          isActive: parsedPayload.value.isActive,
+          isFeatured: parsedPayload.value.isFeatured,
+          isOnSale: parsedPayload.value.isOnSale,
+          name: parsedPayload.value.name,
+          price: parsedPayload.value.price,
+          sku: parsedPayload.value.sku,
+          storeId: existingProduct.storeId,
+        }),
+        before: buildProductAuditSnapshot({
+          brandId: existingProduct.brandId,
+          categoryId: existingProduct.categoryId,
+          imageCount: existingProduct.images.length,
+          isActive: existingProduct.isActive,
+          isFeatured: existingProduct.isFeatured,
+          isOnSale: existingProduct.isOnSale,
+          name: existingProduct.name,
+          price: existingProduct.price,
+          sku: existingProduct.sku,
+          storeId: existingProduct.storeId,
+        }),
+        client: transaction,
+        metadata: {
+          route: "/api/admin/products/[productId]",
+        },
+        resource: AdminAuditResource.PRODUCT,
+        storeId: existingProduct.storeId,
+        summary: `Produto ${existingProduct.name} (${existingProduct.sku}) atualizado no catalogo administrativo.`,
+        targetId: existingProduct.id,
+        targetLabel: parsedPayload.value.name,
+      });
     });
 
     const updatedProduct = await loadProductDetail(productId);
@@ -478,7 +554,12 @@ export async function DELETE(
       },
       select: {
         id: true,
+        isActive: true,
+        isFeatured: true,
+        isOnSale: true,
         name: true,
+        price: true,
+        sku: true,
         storeId: true,
       },
     });
@@ -518,10 +599,37 @@ export async function DELETE(
       );
     }
 
-    await db.product.delete({
-      where: {
-        id: productId,
-      },
+    await db.$transaction(async (transaction) => {
+      await transaction.product.delete({
+        where: {
+          id: productId,
+        },
+      });
+
+      await writeAdminAuditLog({
+        action: AdminAuditAction.DELETE,
+        actor: authorization.user,
+        after: null,
+        before: {
+          id: product.id,
+          isActive: product.isActive,
+          isFeatured: product.isFeatured,
+          isOnSale: product.isOnSale,
+          name: product.name,
+          price: product.price,
+          sku: product.sku,
+          storeId: product.storeId,
+        },
+        client: transaction,
+        metadata: {
+          route: "/api/admin/products/[productId]",
+        },
+        resource: AdminAuditResource.PRODUCT,
+        storeId: product.storeId,
+        summary: `Produto ${product.name} (${product.sku}) removido do catalogo administrativo.`,
+        targetId: product.id,
+        targetLabel: product.name,
+      });
     });
 
     return NextResponse.json({

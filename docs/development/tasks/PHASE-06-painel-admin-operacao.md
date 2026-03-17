@@ -245,7 +245,7 @@ Disponibilizar os módulos administrativos de maior impacto operacional com regi
   **Dependências:** S06-ACC-002, S06-ACC-003  
   **Status:** 🟢 Concluída
 
-- [ ] **S06-OPS-003** - Entregar visão de clientes admin e trilha de auditoria para ações sensíveis
+- [x] **S06-OPS-003** - Entregar visão de clientes admin e trilha de auditoria para ações sensíveis
 
   **Descrição curta:**
   - Operação precisa localizar cliente por email/nome e consultar histórico básico de pedidos.
@@ -259,13 +259,13 @@ Disponibilizar os módulos administrativos de maior impacto operacional com regi
   **Arquivos/áreas afetadas:** `src/app/api/admin/customers/route.ts` (novo), `src/app/admin/customers/page.tsx` (novo), `src/lib/audit-log.ts` (novo), `prisma/schema.prisma`, `prisma/migrations/*`
 
   **Critérios de aceitação:**
-  - [ ] Busca de clientes funciona por nome/email com escopo de autorização correto.
-  - [ ] Toda ação sensível em pedidos/catálogo registra evento auditável.
+  - [x] Busca de clientes funciona por nome/email com escopo de autorização correto.
+  - [x] Toda ação sensível em pedidos/catálogo registra evento auditável.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 8h  
   **Dependências:** S06-OPS-001, S06-OPS-002  
-  **Status:** ⚪ Pendente
+  **Status:** 🟢 Concluída
 
 ### 📦 Testes, homologação e governança - Go/no-go seguro da Sprint 06
 

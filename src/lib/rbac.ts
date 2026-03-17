@@ -10,6 +10,7 @@ import { requireAdminAccess, type AdminAccessResult } from "@/lib/auth";
 import { type StructuredLogger } from "@/lib/logger";
 
 export type AdminRbacResource =
+  | "audit"
   | "dashboard"
   | "orders"
   | "catalog"
@@ -61,6 +62,9 @@ const ADMIN_RBAC_POLICY: Record<
   AdminRbacResource,
   Partial<Record<AdminRbacAction, readonly AdminRbacRole[]>>
 > = {
+  audit: {
+    read: ["STORE_ADMIN", "ADMIN", "SUPER_ADMIN"],
+  },
   dashboard: {
     read: ["STORE_ADMIN", "ADMIN", "SUPER_ADMIN"],
   },

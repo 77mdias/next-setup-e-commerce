@@ -75,6 +75,13 @@ describe("rbac", () => {
     ).toBe(true);
     expect(
       isAdminApiAccessAllowed({
+        action: "read",
+        resource: "audit",
+        role: "ADMIN",
+      }),
+    ).toBe(true);
+    expect(
+      isAdminApiAccessAllowed({
         action: "delete",
         resource: "catalog",
         role: "STORE_ADMIN",

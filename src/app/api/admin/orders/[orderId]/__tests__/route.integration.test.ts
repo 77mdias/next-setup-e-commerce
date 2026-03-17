@@ -1,26 +1,33 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockRequireAdminAccess, mockDb, mockTransactionClient } = vi.hoisted(
-  () => ({
-    mockDb: {
-      $transaction: vi.fn(),
-      order: {
-        findUnique: vi.fn(),
-      },
+const {
+  mockRequireAdminAccess,
+  mockDb,
+  mockTransactionClient,
+  mockWriteAdminAuditLog,
+} = vi.hoisted(() => ({
+  mockDb: {
+    $transaction: vi.fn(),
+    order: {
+      findUnique: vi.fn(),
     },
-    mockRequireAdminAccess: vi.fn(),
-    mockTransactionClient: {
-      order: {
-        findUnique: vi.fn(),
-        updateMany: vi.fn(),
-      },
-      orderStatusHistory: {
-        create: vi.fn(),
-      },
+  },
+  mockRequireAdminAccess: vi.fn(),
+  mockTransactionClient: {
+    adminAuditLog: {
+      create: vi.fn(),
     },
-  }),
-);
+    order: {
+      findUnique: vi.fn(),
+      updateMany: vi.fn(),
+    },
+    orderStatusHistory: {
+      create: vi.fn(),
+    },
+  },
+  mockWriteAdminAuditLog: vi.fn(),
+}));
 
 vi.mock("@/lib/auth", () => ({
   requireAdminAccess: mockRequireAdminAccess,
@@ -28,6 +35,10 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("@/lib/prisma", () => ({
   db: mockDb,
+}));
+
+vi.mock("@/lib/audit-log", () => ({
+  writeAdminAuditLog: mockWriteAdminAuditLog,
 }));
 
 import { GET, PATCH } from "@/app/api/admin/orders/[orderId]/route";
@@ -337,6 +348,14 @@ describe("/api/admin/orders/[orderId] integration", () => {
         status: "SHIPPED",
       },
     });
+    expect(mockWriteAdminAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "UPDATE",
+        resource: "ORDER",
+        storeId: "store-1",
+        targetId: 153,
+      }),
+    );
     expect(body.success).toBe(true);
     expect(body.order.status).toBe("SHIPPED");
     expect(body.order.history.at(-1)).toEqual({

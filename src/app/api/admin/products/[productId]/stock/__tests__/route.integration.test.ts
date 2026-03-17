@@ -11,6 +11,7 @@ const {
   mockAuthorizeAdminApiRequest,
   mockAuthorizeAdminStoreScopeAccess,
   mockDb,
+  mockWriteAdminAuditLog,
 } = vi.hoisted(() => ({
   mockAuthorizeAdminApiRequest: vi.fn(),
   mockAuthorizeAdminStoreScopeAccess: vi.fn(),
@@ -30,6 +31,7 @@ const {
       create: vi.fn(),
     },
   },
+  mockWriteAdminAuditLog: vi.fn(),
 }));
 
 vi.mock("@/lib/logger", () => ({
@@ -43,6 +45,10 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("@/lib/rbac", () => ({
   authorizeAdminApiRequest: mockAuthorizeAdminApiRequest,
   authorizeAdminStoreScopeAccess: mockAuthorizeAdminStoreScopeAccess,
+}));
+
+vi.mock("@/lib/audit-log", () => ({
+  writeAdminAuditLog: mockWriteAdminAuditLog,
 }));
 
 import { POST } from "@/app/api/admin/products/[productId]/stock/route";
@@ -177,6 +183,14 @@ describe("POST /api/admin/products/[productId]/stock integration", () => {
         },
       },
     });
+    expect(mockWriteAdminAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "UPDATE",
+        resource: "INVENTORY",
+        storeId: "store-1",
+        targetId: "product-1",
+      }),
+    );
   });
 
   it("rejects adjustments that would go below the reserved quantity", async () => {

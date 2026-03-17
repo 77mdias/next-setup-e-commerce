@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import { AdminAuditAction, AdminAuditResource, Prisma } from "@prisma/client";
 
 import type {
   AdminCatalogProductMutationResponse,
@@ -15,6 +15,7 @@ import {
   parseCatalogStringParam,
   serializeAdminCatalogProductSummary,
 } from "@/lib/admin/catalog";
+import { writeAdminAuditLog } from "@/lib/audit-log";
 import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
 import {
@@ -22,6 +23,32 @@ import {
   authorizeAdminStoreScopeAccess,
   getAuthorizedAdminStoreIds,
 } from "@/lib/rbac";
+
+function buildProductAuditSnapshot(params: {
+  brandId: string;
+  categoryId: string;
+  imageCount: number;
+  isActive: boolean;
+  isFeatured: boolean;
+  isOnSale: boolean;
+  name: string;
+  price: number;
+  sku: string;
+  storeId: string;
+}) {
+  return {
+    brandId: params.brandId,
+    categoryId: params.categoryId,
+    imageCount: params.imageCount,
+    isActive: params.isActive,
+    isFeatured: params.isFeatured,
+    isOnSale: params.isOnSale,
+    name: params.name,
+    price: params.price,
+    sku: params.sku,
+    storeId: params.storeId,
+  };
+}
 
 export async function GET(request: NextRequest) {
   const requestLogger = createRequestLogger({
@@ -383,6 +410,33 @@ export async function POST(request: NextRequest) {
           quantity: 0,
           storeId: targetStoreId,
         },
+      });
+
+      await writeAdminAuditLog({
+        action: AdminAuditAction.CREATE,
+        actor: authorization.user,
+        after: buildProductAuditSnapshot({
+          brandId: parsedPayload.value.brandId,
+          categoryId: parsedPayload.value.categoryId,
+          imageCount: parsedPayload.value.images.length,
+          isActive: parsedPayload.value.isActive,
+          isFeatured: parsedPayload.value.isFeatured,
+          isOnSale: parsedPayload.value.isOnSale,
+          name: parsedPayload.value.name,
+          price: parsedPayload.value.price,
+          sku: parsedPayload.value.sku,
+          storeId: targetStoreId,
+        }),
+        before: null,
+        client: transaction,
+        metadata: {
+          route: "/api/admin/products",
+        },
+        resource: AdminAuditResource.PRODUCT,
+        storeId: targetStoreId,
+        summary: `Produto ${parsedPayload.value.name} (${parsedPayload.value.sku}) criado no catalogo administrativo.`,
+        targetId: product.id,
+        targetLabel: parsedPayload.value.name,
       });
 
       return product;

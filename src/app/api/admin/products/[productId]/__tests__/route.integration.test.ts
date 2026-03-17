@@ -12,10 +12,12 @@ const {
   mockAuthorizeAdminStoreScopeAccess,
   mockDb,
   mockGetAuthorizedAdminStoreIds,
+  mockWriteAdminAuditLog,
 } = vi.hoisted(() => ({
   mockAuthorizeAdminApiRequest: vi.fn(),
   mockAuthorizeAdminStoreScopeAccess: vi.fn(),
   mockDb: {
+    $transaction: vi.fn(),
     brand: {
       findMany: vi.fn(),
       findUnique: vi.fn(),
@@ -42,6 +44,7 @@ const {
     },
   },
   mockGetAuthorizedAdminStoreIds: vi.fn(),
+  mockWriteAdminAuditLog: vi.fn(),
 }));
 
 vi.mock("@/lib/logger", () => ({
@@ -56,6 +59,10 @@ vi.mock("@/lib/rbac", () => ({
   authorizeAdminApiRequest: mockAuthorizeAdminApiRequest,
   authorizeAdminStoreScopeAccess: mockAuthorizeAdminStoreScopeAccess,
   getAuthorizedAdminStoreIds: mockGetAuthorizedAdminStoreIds,
+}));
+
+vi.mock("@/lib/audit-log", () => ({
+  writeAdminAuditLog: mockWriteAdminAuditLog,
 }));
 
 import { DELETE, GET, PUT } from "@/app/api/admin/products/[productId]/route";
@@ -96,11 +103,13 @@ const detailRow = {
     id: "brand-1",
     name: "Corsair",
   },
+  brandId: "brand-1",
   category: {
     id: "category-1",
     name: "Periféricos",
     slug: "perifericos",
   },
+  categoryId: "category-1",
   costPrice: 120,
   description: "Mouse gamer com sensor óptico e perfil operacional.",
   dimensions: {
@@ -133,6 +142,7 @@ const detailRow = {
     id: "store-1",
     name: "Loja Centro",
   },
+  storeId: "store-1",
   updatedAt: new Date("2026-03-17T12:00:00.000Z"),
   variants: [],
   warranty: "12 meses",
@@ -149,6 +159,9 @@ describe("/api/admin/products/[productId] integration", () => {
     mockAuthorizeAdminStoreScopeAccess.mockReturnValue({
       authorized: true,
     });
+    mockDb.$transaction.mockImplementation(async (callback: unknown) =>
+      (callback as (transaction: typeof mockDb) => Promise<unknown>)(mockDb),
+    );
     mockGetAuthorizedAdminStoreIds.mockReturnValue(null);
     mockDb.brand.findMany.mockResolvedValue([
       { id: "brand-1", name: "Corsair" },
@@ -248,6 +261,47 @@ describe("/api/admin/products/[productId] integration", () => {
       ],
     });
     expect(mockDb.product.update).not.toHaveBeenCalled();
+  });
+
+  it("writes an audit event when the product is updated successfully", async () => {
+    mockAuthorizeAdminApiRequest.mockResolvedValue(
+      buildAuthorizedResult("update"),
+    );
+    mockDb.brand.findUnique.mockResolvedValue({ id: "brand-1" });
+    mockDb.category.findUnique.mockResolvedValue({ id: "category-1" });
+    mockDb.product.findFirst.mockResolvedValue(null);
+    mockDb.product.update.mockResolvedValue(undefined);
+
+    const response = await PUT(
+      createRequest("PUT", {
+        brandId: "brand-1",
+        categoryId: "category-1",
+        description: "Mouse gamer com sensor óptico e perfil operacional.",
+        images: ["data:image/png;base64,product"],
+        isActive: true,
+        isFeatured: true,
+        isOnSale: false,
+        name: "Mouse RGB",
+        price: 199.9,
+        sku: "MOUSE-RGB",
+        specifications: {
+          dpi: "16000",
+        },
+      }),
+      {
+        params: Promise.resolve({ productId: "product-1" }),
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(mockWriteAdminAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "UPDATE",
+        resource: "PRODUCT",
+        storeId: "store-1",
+        targetId: "product-1",
+      }),
+    );
   });
 
   it("blocks deletion when the product already has order history", async () => {

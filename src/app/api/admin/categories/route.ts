@@ -1,3 +1,4 @@
+import { AdminAuditAction, AdminAuditResource } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 import type {
@@ -11,6 +12,7 @@ import {
   parseAdminCatalogCategoryPayload,
   serializeAdminCatalogCategory,
 } from "@/lib/admin/catalog";
+import { writeAdminAuditLog } from "@/lib/audit-log";
 import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
 import {
@@ -24,6 +26,24 @@ function requireGlobalCategoryWriteAccess(role: string) {
   }
 
   return null;
+}
+
+function buildCategoryAuditSnapshot(params: {
+  id: string;
+  isActive: boolean;
+  name: string;
+  parentId: string | null;
+  slug: string;
+  sortOrder: number;
+}) {
+  return {
+    id: params.id,
+    isActive: params.isActive,
+    name: params.name,
+    parentId: params.parentId,
+    slug: params.slug,
+    sortOrder: params.sortOrder,
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -161,32 +181,51 @@ export async function POST(request: NextRequest) {
       return createCatalogValidationErrorResponse(issues);
     }
 
-    const category = await db.category.create({
-      data: {
-        description: parsedPayload.value.description ?? null,
-        iconUrl: parsedPayload.value.iconUrl ?? null,
-        imageUrl: parsedPayload.value.imageUrl ?? null,
-        isActive: parsedPayload.value.isActive,
-        name: parsedPayload.value.name,
-        parentId: parsedPayload.value.parentId ?? null,
-        slug: parsedPayload.value.slug,
-        sortOrder: parsedPayload.value.sortOrder,
-      },
-      select: {
-        _count: {
-          select: {
-            children: true,
-            products: true,
-          },
+    const category = await db.$transaction(async (transaction) => {
+      const createdCategory = await transaction.category.create({
+        data: {
+          description: parsedPayload.value.description ?? null,
+          iconUrl: parsedPayload.value.iconUrl ?? null,
+          imageUrl: parsedPayload.value.imageUrl ?? null,
+          isActive: parsedPayload.value.isActive,
+          name: parsedPayload.value.name,
+          parentId: parsedPayload.value.parentId ?? null,
+          slug: parsedPayload.value.slug,
+          sortOrder: parsedPayload.value.sortOrder,
         },
-        description: true,
-        id: true,
-        isActive: true,
-        name: true,
-        parentId: true,
-        slug: true,
-        sortOrder: true,
-      },
+        select: {
+          _count: {
+            select: {
+              children: true,
+              products: true,
+            },
+          },
+          description: true,
+          id: true,
+          isActive: true,
+          name: true,
+          parentId: true,
+          slug: true,
+          sortOrder: true,
+        },
+      });
+
+      await writeAdminAuditLog({
+        action: AdminAuditAction.CREATE,
+        actor: authorization.user,
+        after: buildCategoryAuditSnapshot(createdCategory),
+        before: null,
+        client: transaction,
+        metadata: {
+          route: "/api/admin/categories",
+        },
+        resource: AdminAuditResource.CATEGORY,
+        summary: `Categoria ${createdCategory.name} criada no catalogo administrativo.`,
+        targetId: createdCategory.id,
+        targetLabel: createdCategory.name,
+      });
+
+      return createdCategory;
     });
 
     return NextResponse.json<AdminCatalogCategoryMutationResponse>({

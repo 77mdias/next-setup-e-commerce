@@ -1,17 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
-import { StockMoveType } from "@prisma/client";
+import {
+  AdminAuditAction,
+  AdminAuditResource,
+  StockMoveType,
+} from "@prisma/client";
 
 import type { AdminCatalogStockAdjustmentPayload } from "@/lib/admin/catalog-contract";
 import {
   createCatalogValidationErrorResponse,
   parseAdminCatalogStockAdjustmentPayload,
 } from "@/lib/admin/catalog";
+import { writeAdminAuditLog } from "@/lib/audit-log";
 import { createRequestLogger } from "@/lib/logger";
 import { db } from "@/lib/prisma";
 import {
   authorizeAdminApiRequest,
   authorizeAdminStoreScopeAccess,
 } from "@/lib/rbac";
+
+function buildInventoryAuditSnapshot(params: {
+  inventoryId: string | null;
+  maxStock: number;
+  minStock: number;
+  quantity: number;
+  reserved: number;
+  targetType: "product" | "variant";
+  variantId: string | null;
+}) {
+  return {
+    inventoryId: params.inventoryId,
+    maxStock: params.maxStock,
+    minStock: params.minStock,
+    quantity: params.quantity,
+    reserved: params.reserved,
+    targetType: params.targetType,
+    variantId: params.variantId,
+  };
+}
 
 export async function POST(
   request: NextRequest,
@@ -257,6 +282,43 @@ export async function POST(
             },
           },
         },
+      });
+
+      await writeAdminAuditLog({
+        action: AdminAuditAction.UPDATE,
+        actor: authorization.user,
+        after: buildInventoryAuditSnapshot({
+          inventoryId: updatedInventory.id,
+          maxStock: updatedInventory.maxStock,
+          minStock: updatedInventory.minStock,
+          quantity: updatedInventory.quantity,
+          reserved: updatedInventory.reserved,
+          targetType: targetVariant ? "variant" : "product",
+          variantId: targetVariant?.id ?? null,
+        }),
+        before: buildInventoryAuditSnapshot({
+          inventoryId: selectedInventory?.id ?? null,
+          maxStock: selectedInventory?.maxStock ?? nextMaxStock,
+          minStock: selectedInventory?.minStock ?? nextMinStock,
+          quantity: currentQuantity,
+          reserved: currentReserved,
+          targetType: targetVariant ? "variant" : "product",
+          variantId: targetVariant?.id ?? null,
+        }),
+        client: transaction,
+        metadata: {
+          delta: parsedPayload.value.delta,
+          reason: parsedPayload.value.reason,
+          reference: parsedPayload.value.reference ?? null,
+          route: "/api/admin/products/[productId]/stock",
+        },
+        resource: AdminAuditResource.INVENTORY,
+        storeId: product.storeId,
+        summary: `Estoque de ${targetVariant ? `${product.name} / ${targetVariant.value}` : product.name} ajustado em ${parsedPayload.value.delta}.`,
+        targetId: targetVariant?.id ?? product.id,
+        targetLabel: targetVariant
+          ? `${product.name} / ${targetVariant.value}`
+          : product.name,
       });
 
       return {

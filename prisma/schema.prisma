@@ -35,6 +35,7 @@ model User {
   sessions                   Session[]
   stockMovements             StockMovement[]
   stores                     Store[]
+  adminAuditLogs             AdminAuditLog[]      @relation("AdminAuditActor")
   wishlist                   Wishlist[]
 
   @@index([emailVerificationTokenHash], map: "users_emailVerificationToken_idx")
@@ -459,6 +460,30 @@ model Cart {
   @@map("carts")
 }
 
+model AdminAuditLog {
+  id          String             @id @default(uuid())
+  actorUserId String?
+  actorLabel  String
+  actorRole   String
+  action      AdminAuditAction
+  resource    AdminAuditResource
+  targetId    String
+  targetLabel String?
+  storeId     String?
+  summary     String
+  before      Json?
+  after       Json?
+  metadata    Json?
+  createdAt   DateTime           @default(now())
+  actor       User?              @relation("AdminAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([resource, action, createdAt])
+  @@index([storeId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@map("admin_audit_logs")
+}
+
 enum UserRole {
   CUSTOMER
   SELLER
@@ -509,4 +534,18 @@ enum WebhookEventStatus {
 enum CouponType {
   PERCENTAGE
   FIXED
+}
+
+enum AdminAuditAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+enum AdminAuditResource {
+  ORDER
+  PRODUCT
+  CATEGORY
+  INVENTORY
+  PRODUCT_IMAGE
 }

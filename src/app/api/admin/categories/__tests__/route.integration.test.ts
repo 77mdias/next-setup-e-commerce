@@ -7,16 +7,19 @@ const mockLogger = {
   warn: vi.fn(),
 };
 
-const { mockAuthorizeAdminApiRequest, mockDb } = vi.hoisted(() => ({
-  mockAuthorizeAdminApiRequest: vi.fn(),
-  mockDb: {
-    category: {
-      create: vi.fn(),
-      findMany: vi.fn(),
-      findUnique: vi.fn(),
+const { mockAuthorizeAdminApiRequest, mockDb, mockWriteAdminAuditLog } =
+  vi.hoisted(() => ({
+    mockAuthorizeAdminApiRequest: vi.fn(),
+    mockDb: {
+      $transaction: vi.fn(),
+      category: {
+        create: vi.fn(),
+        findMany: vi.fn(),
+        findUnique: vi.fn(),
+      },
     },
-  },
-}));
+    mockWriteAdminAuditLog: vi.fn(),
+  }));
 
 vi.mock("@/lib/logger", () => ({
   createRequestLogger: vi.fn(() => mockLogger),
@@ -40,6 +43,10 @@ vi.mock("@/lib/rbac", () => ({
       { status },
     ),
   ),
+}));
+
+vi.mock("@/lib/audit-log", () => ({
+  writeAdminAuditLog: mockWriteAdminAuditLog,
 }));
 
 import { GET, POST } from "@/app/api/admin/categories/route";
@@ -76,6 +83,9 @@ describe("/api/admin/categories integration", () => {
         role: "ADMIN",
       },
     });
+    mockDb.$transaction.mockImplementation(async (callback: unknown) =>
+      (callback as (transaction: typeof mockDb) => Promise<unknown>)(mockDb),
+    );
     mockDb.category.findMany.mockResolvedValue([
       {
         _count: {
@@ -171,6 +181,13 @@ describe("/api/admin/categories integration", () => {
       slug: "audio",
       sortOrder: 3,
     });
+    expect(mockWriteAdminAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "CREATE",
+        resource: "CATEGORY",
+        targetId: "category-2",
+      }),
+    );
   });
 
   it("blocks store admins from mutating global categories", async () => {

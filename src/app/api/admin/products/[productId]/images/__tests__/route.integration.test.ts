@@ -11,15 +11,18 @@ const {
   mockAuthorizeAdminApiRequest,
   mockAuthorizeAdminStoreScopeAccess,
   mockDb,
+  mockWriteAdminAuditLog,
 } = vi.hoisted(() => ({
   mockAuthorizeAdminApiRequest: vi.fn(),
   mockAuthorizeAdminStoreScopeAccess: vi.fn(),
   mockDb: {
+    $transaction: vi.fn(),
     product: {
       findUnique: vi.fn(),
       update: vi.fn(),
     },
   },
+  mockWriteAdminAuditLog: vi.fn(),
 }));
 
 vi.mock("@/lib/logger", () => ({
@@ -33,6 +36,10 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("@/lib/rbac", () => ({
   authorizeAdminApiRequest: mockAuthorizeAdminApiRequest,
   authorizeAdminStoreScopeAccess: mockAuthorizeAdminStoreScopeAccess,
+}));
+
+vi.mock("@/lib/audit-log", () => ({
+  writeAdminAuditLog: mockWriteAdminAuditLog,
 }));
 
 import { PUT } from "@/app/api/admin/products/[productId]/images/route";
@@ -75,8 +82,13 @@ describe("PUT /api/admin/products/[productId]/images integration", () => {
     mockAuthorizeAdminStoreScopeAccess.mockReturnValue({
       authorized: true,
     });
+    mockDb.$transaction.mockImplementation(async (callback: unknown) =>
+      (callback as (transaction: typeof mockDb) => Promise<unknown>)(mockDb),
+    );
     mockDb.product.findUnique.mockResolvedValue({
       id: "product-1",
+      images: ["data:image/png;base64,old-image"],
+      name: "Mouse RGB",
       storeId: "store-1",
     });
     mockDb.product.update.mockResolvedValue({
@@ -123,6 +135,14 @@ describe("PUT /api/admin/products/[productId]/images integration", () => {
         updatedAt: true,
       },
     });
+    expect(mockWriteAdminAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "UPDATE",
+        resource: "PRODUCT_IMAGE",
+        storeId: "store-1",
+        targetId: "product-1",
+      }),
+    );
   });
 
   it("rejects invalid image payloads with the shared validation contract", async () => {
