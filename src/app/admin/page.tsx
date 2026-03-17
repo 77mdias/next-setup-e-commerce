@@ -2,12 +2,14 @@ import Link from "next/link";
 import {
   ArrowRight,
   Boxes,
+  LayoutDashboard,
   ScrollText,
   ShieldCheck,
   ShoppingCart,
   Users,
 } from "lucide-react";
 
+import AdminDashboardClient from "@/components/admin/dashboard/AdminDashboardClient";
 import { ADMIN_NAV_ITEMS } from "@/components/admin/admin-navigation";
 import { ROUTE_PATHS } from "@/lib/routes";
 
@@ -45,12 +47,14 @@ const moduleHighlights = [
 const shellGuarantees = [
   "Guard server-side reaproveita o mesmo contrato de bloqueio de `/admin` já protegido no middleware.",
   "Escopo global ou por loja é exibido no shell para reduzir erro operacional e vazamento cross-store.",
-  "A API de métricas já existe em `/api/admin/dashboard`; a renderização de KPIs entra na task seguinte.",
+  "A renderização de KPIs consome `/api/admin/dashboard` sem recalcular regra de negócio no frontend.",
 ] as const;
 
 export default function AdminDashboardPage() {
   return (
     <section className="space-y-6">
+      <AdminDashboardClient />
+
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)]">
         <div className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 shadow-[0_20px_70px_rgba(15,23,42,0.4)]">
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold tracking-[0.24em] text-cyan-100 uppercase">
@@ -64,10 +68,10 @@ export default function AdminDashboardPage() {
             </h2>
             <p className="text-sm leading-7 text-slate-300 sm:text-base">
               O shell do painel agora concentra navegação, contexto de escopo e
-              acesso direto aos módulos previstos da fase 06. A estrutura está
-              pronta para receber KPIs e fluxos operacionais sem quebrar a
-              navegação entre dashboard, pedidos, catálogo, clientes e
-              auditoria.
+              acesso direto aos módulos previstos da fase 06. Os KPIs mínimos da
+              sprint ficam disponíveis no topo da rota e mantêm fallback seguro
+              para loading, empty e error sem quebrar a navegação entre
+              dashboard, pedidos, catálogo, clientes e auditoria.
             </p>
           </div>
 
@@ -85,25 +89,25 @@ export default function AdminDashboardPage() {
 
         <div className="rounded-[2rem] border border-rose-400/20 bg-rose-500/10 p-6">
           <p className="text-xs font-semibold tracking-[0.24em] text-rose-100 uppercase">
-            Próxima integração
+            KPI ativo
           </p>
           <h3 className="mt-4 text-xl font-semibold text-white">
-            KPIs administrativos
+            Dashboard administrativo
           </h3>
           <p className="mt-3 text-sm leading-7 text-slate-100">
             <code className="rounded bg-slate-950/60 px-1.5 py-0.5 text-xs text-cyan-100">
               S06-DSH-003
             </code>{" "}
-            passa a consumir o endpoint consolidado de métricas para preencher
-            cards, estados de loading, empty e error sem duplicar regra de
+            integra o endpoint consolidado de métricas para preencher cards,
+            comparativos por janela e fallback de erro sem duplicar regra de
             cálculo no frontend.
           </p>
           <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3 text-sm text-slate-100">
-            Contrato disponível via API com filtros de janela, estoque baixo e
-            <code className="rounded bg-slate-950/60 px-1.5 py-0.5 text-xs text-cyan-100">
-              storeId
-            </code>{" "}
-            respeitando RBAC e escopo por loja.
+            <div className="flex items-center gap-2">
+              <LayoutDashboard className="h-4 w-4 text-cyan-100" />
+              Janela padrão de 7 dias com atualização on-demand e preservação da
+              última leitura válida em falha de refresh.
+            </div>
           </div>
         </div>
       </div>

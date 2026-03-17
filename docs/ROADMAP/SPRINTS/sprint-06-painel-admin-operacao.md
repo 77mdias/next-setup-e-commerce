@@ -51,7 +51,8 @@ Entregar o primeiro painel administrativo da aplicacao (dashboard + operacao) co
 - ✅ `S06-ACC-003` consolidou isolamento multi-store nos endpoints administrativos.
 - ✅ `S06-DSH-001` entregou o contrato de KPIs e o endpoint `GET /api/admin/dashboard`.
 - ✅ `S06-DSH-002` entregou o shell administrativo em `/admin`, com contexto global/loja, breadcrumbs, links estáveis para `orders`, `catalog`, `customers` e `audit`, além do isolamento do chrome público para o painel.
-- 🔄 Próxima entrega: `S06-DSH-003` para consumir as métricas no dashboard com estados de loading, empty e error.
+- ✅ `S06-DSH-003` consumiu as métricas no dashboard com cards de KPI, comparativos por janela e fallback consistente para loading, empty e error.
+- 🔄 Próxima entrega: `S06-OPS-001` para abrir o módulo operacional de pedidos no painel.
 
 ## Etapa 4 - Testes e homologacao (S06-ADM-003)
 

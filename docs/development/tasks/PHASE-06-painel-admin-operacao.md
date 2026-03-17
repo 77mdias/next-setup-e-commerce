@@ -171,7 +171,7 @@ Entregar um dashboard funcional para acompanhamento rápido da operação, com m
   **Dependências:** S06-ACC-001  
   **Status:** ✅ Concluída em 2026-03-15
 
-- [ ] **S06-DSH-003** - Renderizar KPIs do dashboard com estados de loading/empty/error
+- [x] **S06-DSH-003** - Renderizar KPIs do dashboard com estados de loading/empty/error
 
   **Descrição curta:**
   - O dashboard deve comunicar o estado operacional de forma acionável.
@@ -185,13 +185,13 @@ Entregar um dashboard funcional para acompanhamento rápido da operação, com m
   **Arquivos/áreas afetadas:** `src/components/admin/dashboard/*` (novo), `src/app/admin/page.tsx`, `src/hooks/useAdminDashboard.ts` (novo)
 
   **Critérios de aceitação:**
-  - [ ] Dashboard exibe os quatro KPIs mínimos definidos para a sprint.
-  - [ ] Estados de loading/empty/error são consistentes e não quebram navegação.
+  - [x] Dashboard exibe os quatro KPIs mínimos definidos para a sprint.
+  - [x] Estados de loading/empty/error são consistentes e não quebram navegação.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 5h  
   **Dependências:** S06-DSH-001, S06-DSH-002  
-  **Status:** ⚪ Pendente
+  **Status:** ✅ Concluída em 2026-03-17
 
 ### 📦 Módulos operacionais e trilha de auditoria - Execução diária com rastreabilidade
 
