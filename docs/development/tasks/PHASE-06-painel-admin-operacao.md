@@ -201,7 +201,7 @@ Disponibilizar os módulos administrativos de maior impacto operacional com regi
 
 #### OPS.1 - Pedidos, catálogo e clientes no painel
 
-- [ ] **S06-OPS-001** - Entregar módulo de pedidos admin (listagem, filtros, detalhe e ação operacional)
+- [x] **S06-OPS-001** - Entregar módulo de pedidos admin (listagem, filtros, detalhe e ação operacional)
 
   **Descrição curta:**
   - Operação precisa monitorar pedidos e executar ações permitidas por papel.
@@ -215,13 +215,13 @@ Disponibilizar os módulos administrativos de maior impacto operacional com regi
   **Arquivos/áreas afetadas:** `src/app/api/admin/orders/route.ts` (novo), `src/app/api/admin/orders/[orderId]/route.ts` (novo), `src/app/admin/orders/page.tsx` (novo), `src/components/admin/orders/*` (novo)
 
   **Critérios de aceitação:**
-  - [ ] Operador autorizado consulta pedidos com filtros funcionais.
-  - [ ] Ação operacional em pedido respeita RBAC e atualiza histórico.
+  - [x] Operador autorizado consulta pedidos com filtros funcionais.
+  - [x] Ação operacional em pedido respeita RBAC e atualiza histórico.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 8h  
   **Dependências:** S06-ACC-002, S06-ACC-003  
-  **Status:** ⚪ Pendente
+  **Status:** 🟢 Concluída
 
 - [ ] **S06-OPS-002** - Entregar módulo de catálogo admin (CRUD, imagens e ajuste de estoque)
 
