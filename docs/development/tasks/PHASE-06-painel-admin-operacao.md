@@ -3,7 +3,7 @@
 **Status:** 🟠 EM ANDAMENTO
 **Última atualização:** 2026-03-18
 **Sprint Atual:** Sprint 06
-**Status Geral:** 🟡 33% (4/12 tarefas concluídas)
+**Status Geral:** 🟡 42% (5/12 tarefas concluídas)
 **ETA:** 2 semanas após kickoff da Sprint 06
 **Pré-requisito:** Fase 05 - Hardening de Identidade e Segurança (✅ concluída em 2026-03-13)
 
@@ -16,8 +16,8 @@
 | Fundação do painel e RBAC                  | 3      | 2         | 0            | 1        | 0         |
 | Dashboard operacional e KPIs               | 3      | 1         | 0            | 2        | 0         |
 | Módulos operacionais e trilha de auditoria | 3      | 0         | 0            | 3        | 0         |
-| Testes, homologação e governança           | 3      | 1         | 0            | 2        | 0         |
-| **TOTAL**                                  | **12** | **4**     | **0**        | **8**    | **0**     |
+| Testes, homologação e governança           | 3      | 2         | 0            | 1        | 0         |
+| **TOTAL**                                  | **12** | **5**     | **0**        | **7**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
@@ -297,7 +297,7 @@ Transformar o escopo do painel em entrega validada por testes críticos e crité
   **Dependências:** S06-ACC-002, S06-ACC-003, S06-OPS-003
   **Status:** 🟢 Concluída (2026-03-18)
 
-- [ ] **S06-ADM-002** - Cobrir fluxo E2E crítico do painel admin (dashboard, pedidos e catálogo)
+- [x] **S06-ADM-002** - Cobrir fluxo E2E crítico do painel admin (dashboard, pedidos e catálogo)
 
   **Descrição curta:**
   - O painel precisa de validação ponta a ponta para detectar quebras UI/API.
@@ -311,13 +311,13 @@ Transformar o escopo do painel em entrega validada por testes críticos e crité
   **Arquivos/áreas afetadas:** `e2e/admin-critical-flow.spec.ts` (novo), `playwright.config.ts`, `.github/workflows/ci.yml`, `package.json`
 
   **Critérios de aceitação:**
-  - [ ] Fluxo E2E crítico do painel executa em CI sem flakiness relevante.
-  - [ ] Falha no cenário crítico bloqueia merge/release da Sprint 06.
+  - [x] Fluxo E2E crítico do painel executa em CI sem flakiness relevante.
+  - [x] Falha no cenário crítico bloqueia merge/release da Sprint 06.
 
-  **Prioridade:** 🟡 Alta  
-  **Estimativa:** 7h  
-  **Dependências:** S06-DSH-003, S06-OPS-001, S06-OPS-002  
-  **Status:** ⚪ Pendente
+  **Prioridade:** 🟡 Alta
+  **Estimativa:** 7h
+  **Dependências:** S06-DSH-003, S06-OPS-001, S06-OPS-002
+  **Status:** 🟢 Concluída (2026-03-18)
 
 - [ ] **S06-ADM-003** - Executar checklist de homologação e validar plano de rollback da Sprint 06
 
