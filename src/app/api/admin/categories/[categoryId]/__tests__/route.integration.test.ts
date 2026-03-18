@@ -146,4 +146,19 @@ describe("/api/admin/categories/[categoryId] integration", () => {
       }),
     );
   });
+
+  it("returns 404 when the requested category does not exist", async () => {
+    mockDb.category.findUnique.mockResolvedValue(null);
+
+    const response = await DELETE(createRequest(), {
+      params: Promise.resolve({ categoryId: "nonexistent-category" }),
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body).toEqual({
+      error: "Categoria não encontrada",
+    });
+    expect(mockDb.category.delete).not.toHaveBeenCalled();
+  });
 });

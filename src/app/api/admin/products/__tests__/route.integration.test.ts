@@ -12,6 +12,7 @@ const {
   mockAuthorizeAdminStoreScopeAccess,
   mockDb,
   mockGetAuthorizedAdminStoreIds,
+  mockWriteAdminAuditLog,
 } = vi.hoisted(() => ({
   mockAuthorizeAdminApiRequest: vi.fn(),
   mockAuthorizeAdminStoreScopeAccess: vi.fn(),
@@ -40,6 +41,7 @@ const {
     },
   },
   mockGetAuthorizedAdminStoreIds: vi.fn(),
+  mockWriteAdminAuditLog: vi.fn(),
 }));
 
 vi.mock("@/lib/logger", () => ({
@@ -54,6 +56,10 @@ vi.mock("@/lib/rbac", () => ({
   authorizeAdminApiRequest: mockAuthorizeAdminApiRequest,
   authorizeAdminStoreScopeAccess: mockAuthorizeAdminStoreScopeAccess,
   getAuthorizedAdminStoreIds: mockGetAuthorizedAdminStoreIds,
+}));
+
+vi.mock("@/lib/audit-log", () => ({
+  writeAdminAuditLog: mockWriteAdminAuditLog,
 }));
 
 import { GET, POST } from "@/app/api/admin/products/route";
@@ -300,6 +306,14 @@ describe("/api/admin/products integration", () => {
         storeId: "store-1",
       },
     });
+    expect(mockWriteAdminAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "CREATE",
+        resource: "PRODUCT",
+        storeId: "store-1",
+        targetId: "product-2",
+      }),
+    );
   });
 
   it("rejects invalid catalog payloads with the shared validation contract", async () => {
