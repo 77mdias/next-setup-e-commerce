@@ -25,9 +25,7 @@ async function signInAsAdmin(page: Page, callbackPath = "/admin") {
 async function signInAsCustomer(page: Page) {
   await page.goto("/auth/signin?callbackUrl=/products");
 
-  await page
-    .getByRole("textbox", { name: /^Email$/ })
-    .fill(E2E_CUSTOMER_EMAIL);
+  await page.getByRole("textbox", { name: /^Email$/ }).fill(E2E_CUSTOMER_EMAIL);
   await page
     .getByRole("textbox", { name: /^Password$/ })
     .fill(E2E_CUSTOMER_PASSWORD);
@@ -55,9 +53,7 @@ test.describe("admin access control", () => {
       page.getByText("SEM PERMISSÃO", { exact: false }),
     ).toBeVisible();
     await expect(
-      page.getByText(
-        /não tem permissão para acessar/i,
-      ),
+      page.getByText(/não tem permissão para acessar/i),
     ).toBeVisible();
   });
 
@@ -94,21 +90,19 @@ test.describe("admin dashboard critical flow", () => {
 
     // KPI loading or rendered – wait for KPI section
     // The dashboard shows 4 KPI cards: Pedidos, Aprovação, Receita, Estoque baixo
-    const kpiSection = page.locator("[data-testid='kpi-cards']").or(
-      page.getByText(/Carregando indicadores operacionais/i),
-    );
+    const kpiSection = page
+      .locator("[data-testid='kpi-cards']")
+      .or(page.getByText(/Carregando indicadores operacionais/i));
 
     // Either KPIs load or we see loading state
     const kpiLoaded = page.getByText(/Pedidos/i).first();
-    const kpiLoading = page.getByText(
-      /Carregando indicadores operacionais/i,
-    );
+    const kpiLoading = page.getByText(/Carregando indicadores operacionais/i);
     const kpiError = page.getByText(/Tentar novamente/i);
 
     // Wait for one of the three states to appear
-    await expect(
-      kpiLoaded.or(kpiLoading).or(kpiError),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(kpiLoaded.or(kpiLoading).or(kpiError)).toBeVisible({
+      timeout: 15_000,
+    });
 
     // Verify navigation links to other admin modules exist
     await expect(
@@ -150,9 +144,10 @@ test.describe("admin dashboard critical flow", () => {
 
       // Page should still be functional (no crash)
       await expect(
-        page.getByText(/Pedidos/i).first().or(
-          page.getByText(/Carregando indicadores operacionais/i),
-        ),
+        page
+          .getByText(/Pedidos/i)
+          .first()
+          .or(page.getByText(/Carregando indicadores operacionais/i)),
       ).toBeVisible();
 
       // Switch back
@@ -174,9 +169,9 @@ test.describe("admin orders critical flow", () => {
 
     // Verify orders page loaded
     await expect(
-      page.getByText(/Fila administrativa/i).or(
-        page.getByText(/Pedidos administrativos/i),
-      ),
+      page
+        .getByText(/Fila administrativa/i)
+        .or(page.getByText(/Pedidos administrativos/i)),
     ).toBeVisible({ timeout: 15_000 });
 
     // Verify filter controls exist
@@ -211,9 +206,9 @@ test.describe("admin orders critical flow", () => {
 
     // Wait for initial load
     await expect(
-      page.getByText(/Fila administrativa/i).or(
-        page.getByText(/Pedidos administrativos/i),
-      ),
+      page
+        .getByText(/Fila administrativa/i)
+        .or(page.getByText(/Pedidos administrativos/i)),
     ).toBeVisible({ timeout: 15_000 });
 
     // Try to find and interact with status filter
@@ -226,9 +221,9 @@ test.describe("admin orders critical flow", () => {
 
       // Page should not break
       await expect(
-        page.getByText(/Fila administrativa/i).or(
-          page.getByText(/Pedidos administrativos/i),
-        ),
+        page
+          .getByText(/Fila administrativa/i)
+          .or(page.getByText(/Pedidos administrativos/i)),
       ).toBeVisible();
     }
   });
@@ -252,16 +247,16 @@ test.describe("admin catalog critical flow", () => {
 
     // Verify products section exists
     await expect(
-      page.getByText(/Produtos por loja/i).or(
-        page.getByText(/E2E Checkout Headset/i),
-      ),
+      page
+        .getByText(/Produtos por loja/i)
+        .or(page.getByText(/E2E Checkout Headset/i)),
     ).toBeVisible({ timeout: 15_000 });
 
     // Verify CRUD section is available
     await expect(
-      page.getByText(/CRUD administrativo/i).or(
-        page.getByText(/Ajuste com trilha/i),
-      ),
+      page
+        .getByText(/CRUD administrativo/i)
+        .or(page.getByText(/Ajuste com trilha/i)),
     ).toBeVisible();
   });
 
@@ -278,9 +273,9 @@ test.describe("admin catalog critical flow", () => {
 
     // Stock adjustment section should be visible
     await expect(
-      page.getByText(/Ajuste com trilha/i).or(
-        page.getByText(/estoque/i).first(),
-      ),
+      page
+        .getByText(/Ajuste com trilha/i)
+        .or(page.getByText(/estoque/i).first()),
     ).toBeVisible({ timeout: 10_000 });
 
     // The E2E product should be visible in the product list
@@ -309,16 +304,22 @@ test.describe("admin navigation resilience", () => {
     });
 
     // Navigate to Orders
-    await page.getByRole("link", { name: /Pedidos/i }).first().click();
+    await page
+      .getByRole("link", { name: /Pedidos/i })
+      .first()
+      .click();
     await page.waitForURL(/\/admin\/orders/);
     await expect(
-      page.getByText(/Fila administrativa/i).or(
-        page.getByText(/Pedidos administrativos/i),
-      ),
+      page
+        .getByText(/Fila administrativa/i)
+        .or(page.getByText(/Pedidos administrativos/i)),
     ).toBeVisible({ timeout: 15_000 });
 
     // Navigate to Catalog
-    await page.getByRole("link", { name: /Catálogo/i }).first().click();
+    await page
+      .getByRole("link", { name: /Catálogo/i })
+      .first()
+      .click();
     await page.waitForURL(/\/admin\/catalog/);
     await expect(
       page.getByRole("heading", {
@@ -327,25 +328,34 @@ test.describe("admin navigation resilience", () => {
     ).toBeVisible({ timeout: 15_000 });
 
     // Navigate to Customers
-    await page.getByRole("link", { name: /Clientes/i }).first().click();
+    await page
+      .getByRole("link", { name: /Clientes/i })
+      .first()
+      .click();
     await page.waitForURL(/\/admin\/customers/);
     await expect(
-      page.getByText(/Visão administrativa de clientes/i).or(
-        page.getByText(/Clientes administrativos/i),
-      ),
+      page
+        .getByText(/Visão administrativa de clientes/i)
+        .or(page.getByText(/Clientes administrativos/i)),
     ).toBeVisible({ timeout: 15_000 });
 
     // Navigate to Audit
-    await page.getByRole("link", { name: /Auditoria/i }).first().click();
+    await page
+      .getByRole("link", { name: /Auditoria/i })
+      .first()
+      .click();
     await page.waitForURL(/\/admin\/audit/);
     await expect(
-      page.getByText(/Trilha administrativa de auditoria/i).or(
-        page.getByText(/Auditoria administrativa/i),
-      ),
+      page
+        .getByText(/Trilha administrativa de auditoria/i)
+        .or(page.getByText(/Auditoria administrativa/i)),
     ).toBeVisible({ timeout: 15_000 });
 
     // Navigate back to Dashboard
-    await page.getByRole("link", { name: /Dashboard/i }).first().click();
+    await page
+      .getByRole("link", { name: /Dashboard/i })
+      .first()
+      .click();
     await page.waitForURL(/\/admin$/);
     await expect(page.getByText(/Dashboard/i).first()).toBeVisible({
       timeout: 15_000,
