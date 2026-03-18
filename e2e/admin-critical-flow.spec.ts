@@ -82,8 +82,8 @@ test.describe("admin dashboard critical flow", () => {
     // Shell context visible – use h1 heading to avoid strict mode violation
     await expect(page.locator("h1")).toBeVisible();
 
-    // Admin shell context cards: operator, role, scope
-    await expect(page.getByText(/Operador/i)).toBeVisible();
+    // Admin shell context cards: operator, role, scope (scoped to aside to avoid banner duplicates)
+    await expect(page.getByRole("complementary").getByText(/Operador/i)).toBeVisible();
     await expect(page.getByText(/Papel ativo/i)).toBeVisible();
     await expect(page.getByText(/Escopo/i)).toBeVisible();
 
@@ -180,9 +180,9 @@ test.describe("admin orders critical flow", () => {
     // Status filter dropdown
     await expect(page.getByText(/Status/i).first()).toBeVisible();
 
-    // Period filter
+    // Period filter – "30 dias" may be inside a <select>/<option> (hidden), so check the select or a visible label
     await expect(
-      page.getByText(/Período/i).or(page.getByText(/30 dias/i)),
+      page.locator("select").filter({ hasText: /30 dias/ }).or(page.getByLabel(/Período/i)),
     ).toBeVisible();
 
     // Orders list should be in one of three states: loaded, empty, or error
@@ -214,11 +214,9 @@ test.describe("admin orders critical flow", () => {
       // Wait for re-fetch
       await page.waitForTimeout(1000);
 
-      // Page should not break
+      // Page should not break – use heading role to avoid matching both h1 and h2
       await expect(
-        page
-          .getByText(/Fila administrativa/i)
-          .or(page.getByText(/Pedidos administrativos/i)),
+        page.getByRole("heading", { name: /Pedidos administrativos/i }),
       ).toBeVisible();
     }
   });
@@ -249,11 +247,12 @@ test.describe("admin catalog critical flow", () => {
         .or(page.getByText(/E2E Checkout Headset/i)),
     ).toBeVisible({ timeout: 15_000 });
 
-    // Verify CRUD section is available
+    // Verify CRUD section is available – use heading role with .first() to avoid matching both h2s
     await expect(
       page
-        .getByText(/CRUD administrativo/i)
-        .or(page.getByText(/Ajuste com trilha/i)),
+        .getByRole("heading", { name: /CRUD administrativo/i })
+        .or(page.getByRole("heading", { name: /Ajuste com trilha/i }))
+        .first(),
     ).toBeVisible();
   });
 
@@ -270,11 +269,11 @@ test.describe("admin catalog critical flow", () => {
         .first(),
     ).toBeVisible({ timeout: 15_000 });
 
-    // Stock adjustment section should be visible
+    // Stock adjustment section should be visible – use heading role to avoid matching sidebar nav text
     await expect(
       page
-        .getByText(/Ajuste com trilha/i)
-        .or(page.getByText(/estoque/i).first()),
+        .getByRole("heading", { name: /Ajuste com trilha/i })
+        .or(page.getByRole("heading", { name: /estoque/i }).first()),
     ).toBeVisible({ timeout: 10_000 });
 
     // The E2E product should be visible in the product list
