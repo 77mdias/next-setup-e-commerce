@@ -64,12 +64,12 @@ Entregar o primeiro painel administrativo da aplicacao (dashboard + operacao) co
 
 ### Checklist manual de homologacao (S06-ADM-003)
 
-| Cenario                                  | Resultado esperado                      | Evidencia tecnica                                            | Status |
-| ---------------------------------------- | --------------------------------------- | ------------------------------------------------------------ | ------ |
-| Usuario sem papel admin acessa painel    | Acesso negado com contrato consistente  | `docs/ROADMAP/Logs/S06-ACC-001.md`, `docs/ROADMAP/Logs/S06-ADM-002.md`, suites `src/app/admin/__tests__/layout.integration.test.ts` e `src/app/api/admin/**/__tests__/*.integration.test.ts` | [x]    |
-| Dashboard com indicadores da loja        | KPIs carregam sem vazamento cross-store | `docs/ROADMAP/Logs/S06-DSH-001.md`, `docs/ROADMAP/Logs/S06-DSH-003.md`, `docs/ROADMAP/Logs/S06-ADM-002.md`, `npm run build` | [x]    |
+| Cenario                                  | Resultado esperado                      | Evidencia tecnica                                                                                                                                                                                                  | Status |
+| ---------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| Usuario sem papel admin acessa painel    | Acesso negado com contrato consistente  | `docs/ROADMAP/Logs/S06-ACC-001.md`, `docs/ROADMAP/Logs/S06-ADM-002.md`, suites `src/app/admin/__tests__/layout.integration.test.ts` e `src/app/api/admin/**/__tests__/*.integration.test.ts`                       | [x]    |
+| Dashboard com indicadores da loja        | KPIs carregam sem vazamento cross-store | `docs/ROADMAP/Logs/S06-DSH-001.md`, `docs/ROADMAP/Logs/S06-DSH-003.md`, `docs/ROADMAP/Logs/S06-ADM-002.md`, `npm run build`                                                                                        | [x]    |
 | Atualizacao de produto/estoque no painel | Alteracao persistida e auditada         | `docs/ROADMAP/Logs/S06-OPS-002.md`, `docs/ROADMAP/Logs/S06-OPS-003.md`, suites `src/app/api/admin/products/**/__tests__/*.integration.test.ts` e `src/app/api/admin/categories/**/__tests__/*.integration.test.ts` | [x]    |
-| Operacao em pedido via painel            | Acao valida atualiza estado e historico | `docs/ROADMAP/Logs/S06-OPS-001.md`, `docs/ROADMAP/Logs/S06-OPS-003.md`, suite `src/app/api/admin/orders/[orderId]/__tests__/route.integration.test.ts`, `docs/ROADMAP/Logs/S06-ADM-002.md` | [x]    |
+| Operacao em pedido via painel            | Acao valida atualiza estado e historico | `docs/ROADMAP/Logs/S06-OPS-001.md`, `docs/ROADMAP/Logs/S06-OPS-003.md`, suite `src/app/api/admin/orders/[orderId]/__tests__/route.integration.test.ts`, `docs/ROADMAP/Logs/S06-ADM-002.md`                         | [x]    |
 
 ### Plano de rollback (S06-ADM-003)
 
