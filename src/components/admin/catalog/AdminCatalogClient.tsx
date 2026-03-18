@@ -101,7 +101,7 @@ const DEFAULT_FILTERS: AdminCatalogProductsFilters = {
 };
 
 const fieldClassName =
-  "min-h-10 w-full rounded-2xl border border-white/10 bg-slate-950/55 px-3 py-2 text-sm text-slate-100 shadow-sm outline-none transition focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/20";
+  "min-h-10 w-full rounded-2xl border border-white/6 bg-[#12151a] px-3 py-2 text-sm text-[#f1f3f5] shadow-sm outline-none transition focus:border-[#5c7cfa]/60 focus:ring-2 focus:ring-cyan-400/20";
 
 function createEmptyProductForm(
   defaults?: Partial<
@@ -298,7 +298,7 @@ function ProductImagePreview({ alt, src }: { alt: string; src: string }) {
   const normalizedSrc = normalizeProductImageSrc(src);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70">
+    <div className="overflow-hidden rounded-2xl border border-white/6 bg-[#171a21]">
       <Image
         alt={alt}
         className="h-28 w-full object-cover"
@@ -669,70 +669,22 @@ export default function AdminCatalogClient() {
   }
 
   return (
-    <div className="space-y-8 text-slate-100">
-      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.22),_transparent_38%),radial-gradient(circle_at_top_right,_rgba(96,165,250,0.18),_transparent_28%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(2,6,23,0.92))] p-8 shadow-[0_24px_80px_rgba(2,6,23,0.45)]">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl space-y-4">
-            <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-semibold tracking-[0.28em] text-cyan-100 uppercase">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              S06-OPS-002
-            </span>
-            <div className="space-y-2">
-              <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">
-                Catálogo admin com mídia segura e ajuste de estoque
-              </h1>
-              <p className="max-w-2xl text-sm leading-7 text-slate-300 md:text-base">
-                Operação de catálogo unificada para manter produto, categoria,
-                imagens processadas e trilha de estoque sem sair do escopo
-                autorizado da loja.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
-                Produtos visíveis
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {productsData?.total ?? 0}
-              </p>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
-                Categorias
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {categoriesData?.categories.length ?? 0}
-              </p>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
-                Lojas no escopo
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {meta?.stores.length ?? 0}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[1.05fr_1.45fr]">
-        <div className="space-y-6">
-          <div className="rounded-[1.8rem] border border-white/10 bg-slate-950/70 p-5">
+    <div className="space-y-6 text-[#f1f3f5]">
+      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.05fr_1.45fr]">
+        <div className={`space-y-5 ${selectedProductId !== null || isCreatingProduct ? "hidden xl:block" : "block"}`}>
+          <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
+                  <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#6a7282] uppercase">
                     Fila operacional
                   </p>
-                  <h2 className="mt-2 text-xl font-semibold text-white">
+                  <h2 className="[font-family:var(--font-space-grotesk)] mt-2 text-xl font-semibold text-[#f1f3f5]">
                     Produtos por loja
                   </h2>
                 </div>
                 <Button
-                  className="border-white/15 bg-white/10 hover:bg-white/15"
+                  className="border-white/10 bg-[#12151a] hover:bg-white/15"
                   type="button"
                   variant="outline"
                   onClick={resetForNewProduct}
@@ -744,16 +696,16 @@ export default function AdminCatalogClient() {
 
               <div className="grid gap-3 md:grid-cols-[1fr_auto]">
                 <label className="relative block">
-                  <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#6a7282]" />
                   <Input
-                    className="h-11 rounded-2xl border-white/10 bg-slate-950/55 pl-9 text-slate-100"
+                    className="h-10 rounded-2xl border-white/6 bg-[#12151a] pl-9 text-[#f1f3f5]"
                     placeholder="Buscar por nome ou SKU"
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
                   />
                 </label>
                 <Button
-                  className="h-11 rounded-2xl bg-cyan-500 text-slate-950 hover:bg-cyan-400"
+                  className="h-10 rounded-2xl bg-cyan-500 text-slate-950 hover:bg-cyan-400"
                   type="button"
                   onClick={() => {
                     startTransition(() => {
@@ -798,7 +750,7 @@ export default function AdminCatalogClient() {
                 Array.from({ length: 4 }).map((_, index) => (
                   <div
                     key={`product-skeleton-${index}`}
-                    className="h-28 animate-pulse rounded-[1.4rem] border border-white/8 bg-white/5"
+                    className="h-28 animate-pulse rounded-2xl border border-white/6 bg-[#12151a]"
                   />
                 ))
               ) : productsData?.products.length ? (
@@ -810,10 +762,10 @@ export default function AdminCatalogClient() {
                     <button
                       key={product.id}
                       className={cn(
-                        "w-full rounded-[1.5rem] border px-4 py-4 text-left transition",
+                        "w-full rounded-2xl border px-4 py-4 text-left transition",
                         isSelected
-                          ? "border-cyan-400/40 bg-cyan-400/10 shadow-[0_18px_45px_rgba(34,211,238,0.12)]"
-                          : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/8",
+                          ? "border-[#5c7cfa]/25 bg-[#5c7cfa]/10"
+                          : "border-white/6 bg-[#12151a] hover:border-white/20 hover:bg-white/8",
                       )}
                       type="button"
                       onClick={() => {
@@ -822,7 +774,7 @@ export default function AdminCatalogClient() {
                       }}
                     >
                       <div className="flex items-start gap-4">
-                        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-slate-900/80">
+                        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/6 bg-slate-900/80">
                           {product.images[0] ? (
                             <Image
                               alt={product.name}
@@ -833,25 +785,25 @@ export default function AdminCatalogClient() {
                               width={80}
                             />
                           ) : (
-                            <div className="flex h-full items-center justify-center text-slate-500">
+                            <div className="flex h-full items-center justify-center text-[#6a7282]">
                               <Boxes className="h-5 w-5" />
                             </div>
                           )}
                         </div>
                         <div className="min-w-0 flex-1 space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="truncate text-base font-semibold text-white">
+                            <h3 className="[font-family:var(--font-space-grotesk)] truncate text-base font-semibold text-[#f1f3f5]">
                               {product.name}
                             </h3>
-                            <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] tracking-[0.2em] text-slate-300 uppercase">
+                            <span className="[font-family:var(--font-arimo)] rounded-full border border-white/6 bg-[#12151a] px-2 py-1 text-[11px] tracking-[0.2em] text-[#99a1af] uppercase">
                               {product.sku}
                             </span>
                           </div>
-                          <p className="text-sm text-slate-300">
+                          <p className="[font-family:var(--font-arimo)] text-sm text-[#99a1af]">
                             {product.store.name} · {product.category.name} ·{" "}
                             {product.brand.name}
                           </p>
-                          <div className="flex flex-wrap gap-3 text-xs text-slate-300">
+                          <div className="[font-family:var(--font-arimo)] flex flex-wrap gap-3 text-xs text-[#99a1af]">
                             <span>{formatCurrency(product.price)}</span>
                             <span>Disponível: {product.availableQuantity}</span>
                             <span>Mínimo: {product.inventory.minStock}</span>
@@ -862,26 +814,26 @@ export default function AdminCatalogClient() {
                   );
                 })
               ) : (
-                <div className="rounded-[1.4rem] border border-dashed border-white/12 bg-white/5 px-4 py-8 text-center text-sm text-slate-300">
+                <div className="[font-family:var(--font-arimo)] rounded-2xl border border-dashed border-white/12 bg-[#12151a] px-4 py-8 text-center text-sm text-[#99a1af]">
                   Nenhum produto encontrado para o escopo e filtros atuais.
                 </div>
               )}
             </div>
 
             {(productsErrorMessage || categoriesErrorMessage) && (
-              <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-50">
+              <div className="[font-family:var(--font-arimo)] mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-50">
                 {productsErrorMessage ?? categoriesErrorMessage}
               </div>
             )}
 
-            <div className="mt-5 flex items-center justify-between text-sm text-slate-400">
-              <span>
+            <div className="mt-5 flex items-center justify-between text-sm text-[#6a7282]">
+              <span className="[font-family:var(--font-arimo)]">
                 Página {productsData?.page ?? filters.page} de{" "}
                 {productsData?.totalPages ?? 1}
               </span>
               <div className="flex items-center gap-2">
                 <Button
-                  className="border-white/10 bg-transparent hover:bg-white/10"
+                  className="border-white/6 bg-transparent hover:bg-[#12151a]"
                   disabled={(productsData?.page ?? filters.page) <= 1}
                   type="button"
                   variant="outline"
@@ -897,7 +849,7 @@ export default function AdminCatalogClient() {
                   Anterior
                 </Button>
                 <Button
-                  className="border-white/10 bg-transparent hover:bg-white/10"
+                  className="border-white/6 bg-transparent hover:bg-[#12151a]"
                   disabled={
                     (productsData?.page ?? filters.page) >=
                     (productsData?.totalPages ?? 1)
@@ -919,252 +871,33 @@ export default function AdminCatalogClient() {
             </div>
           </div>
 
-          <div className="rounded-[1.8rem] border border-white/10 bg-slate-950/70 p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
-                  Categorias
-                </p>
-                <h2 className="mt-2 text-xl font-semibold text-white">
-                  CRUD administrativo
-                </h2>
-              </div>
-              <Button
-                className="border-white/15 bg-white/10 hover:bg-white/15"
-                disabled={!meta?.canManageCategories}
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setSelectedCategoryId(null);
-                  setCategoryForm(createEmptyCategoryForm());
-                }}
-              >
-                <Plus className="h-4 w-4" />
-                Nova categoria
-              </Button>
-            </div>
-
-            {!meta?.canManageCategories ? (
-              <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
-                Admin de loja pode consultar categorias, mas a mutação global
-                foi restrita a perfis administrativos centrais para evitar
-                impacto cruzado entre lojas.
-              </div>
-            ) : null}
-
-            <div className="mt-5 grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="space-y-2">
-                {isCategoriesLoading && !categoriesData
-                  ? Array.from({ length: 4 }).map((_, index) => (
-                      <div
-                        key={`category-skeleton-${index}`}
-                        className="h-16 animate-pulse rounded-2xl border border-white/8 bg-white/5"
-                      />
-                    ))
-                  : categoriesData?.categories.map((category) => (
-                      <button
-                        key={category.id}
-                        className={cn(
-                          "w-full rounded-2xl border px-4 py-3 text-left transition",
-                          selectedCategoryId === category.id
-                            ? "border-cyan-400/40 bg-cyan-400/10"
-                            : "border-white/10 bg-white/5 hover:bg-white/8",
-                        )}
-                        type="button"
-                        onClick={() => {
-                          setSelectedCategoryId(category.id);
-                          setCategoryForm(mapCategoryToForm(category));
-                        }}
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <p className="font-medium text-white">
-                              {category.name}
-                            </p>
-                            <p className="text-xs text-slate-400">
-                              {category.slug}
-                            </p>
-                          </div>
-                          <div className="text-right text-xs text-slate-300">
-                            <p>{category.productCount} produto(s)</p>
-                            <p>{category.childrenCount} filho(s)</p>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-              </div>
-
-              <div className="space-y-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="sm:col-span-2">
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
-                      Nome
-                    </label>
-                    <Input
-                      className={fieldClassName}
-                      disabled={!meta?.canManageCategories}
-                      value={categoryForm.name}
-                      onChange={(event) =>
-                        setCategoryForm((currentValue) => ({
-                          ...currentValue,
-                          name: event.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
-                      Slug
-                    </label>
-                    <Input
-                      className={fieldClassName}
-                      disabled={!meta?.canManageCategories}
-                      value={categoryForm.slug}
-                      onChange={(event) =>
-                        setCategoryForm((currentValue) => ({
-                          ...currentValue,
-                          slug: event.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
-                      Ordem
-                    </label>
-                    <Input
-                      className={fieldClassName}
-                      disabled={!meta?.canManageCategories}
-                      value={categoryForm.sortOrder}
-                      onChange={(event) =>
-                        setCategoryForm((currentValue) => ({
-                          ...currentValue,
-                          sortOrder: event.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
-                      Categoria pai
-                    </label>
-                    <select
-                      className={fieldClassName}
-                      disabled={!meta?.canManageCategories}
-                      value={categoryForm.parentId}
-                      onChange={(event) =>
-                        setCategoryForm((currentValue) => ({
-                          ...currentValue,
-                          parentId: event.target.value,
-                        }))
-                      }
-                    >
-                      <option value="">Sem categoria pai</option>
-                      {categoriesData?.categories
-                        .filter(
-                          (category) => category.id !== selectedCategoryId,
-                        )
-                        .map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 text-sm text-slate-200">
-                  <input
-                    checked={categoryForm.isActive}
-                    className="h-4 w-4 rounded border-white/20 bg-slate-950/70"
-                    disabled={!meta?.canManageCategories}
-                    type="checkbox"
-                    onChange={(event) =>
-                      setCategoryForm((currentValue) => ({
-                        ...currentValue,
-                        isActive: event.target.checked,
-                      }))
-                    }
-                  />
-                  Categoria ativa
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
-                    Descrição
-                  </label>
-                  <textarea
-                    className={cn(fieldClassName, "min-h-28 resize-y")}
-                    disabled={!meta?.canManageCategories}
-                    value={categoryForm.description}
-                    onChange={(event) =>
-                      setCategoryForm((currentValue) => ({
-                        ...currentValue,
-                        description: event.target.value,
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    className="bg-cyan-500 text-slate-950 hover:bg-cyan-400"
-                    disabled={!meta?.canManageCategories || isSavingCategory}
-                    type="button"
-                    onClick={handleCategorySubmit}
-                  >
-                    {isSavingCategory ? (
-                      <LoaderCircle className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4" />
-                    )}
-                    Salvar categoria
-                  </Button>
-                  <Button
-                    className="border-white/10 bg-transparent hover:bg-white/10"
-                    disabled={!selectedCategoryId || isDeletingCategory}
-                    type="button"
-                    variant="outline"
-                    onClick={handleCategoryDelete}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Remover
-                  </Button>
-                  <Button
-                    className="border-white/10 bg-transparent hover:bg-white/10"
-                    type="button"
-                    variant="outline"
-                    onClick={retryCategories}
-                  >
-                    <RefreshCw
-                      className={cn(
-                        "h-4 w-4",
-                        isCategoriesRefreshing && "animate-spin",
-                      )}
-                    />
-                    Atualizar
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="rounded-[1.8rem] border border-white/10 bg-slate-950/70 p-5">
+        <div className={`space-y-5 ${selectedProductId !== null || isCreatingProduct ? "block" : "hidden xl:block"}`}>
+          <button
+            className="mb-4 flex items-center gap-2 rounded-full border border-white/6 bg-[#12151a] px-4 py-2 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5] transition hover:border-white/10 xl:hidden"
+            type="button"
+            onClick={() => {
+              setSelectedProductId(null);
+              setIsCreatingProduct(false);
+            }}
+          >
+            ← Voltar à lista
+          </button>
+          <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
+                <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#6a7282] uppercase">
                   Editor de catálogo
                 </p>
-                <h2 className="mt-2 text-xl font-semibold text-white">
+                <h2 className="[font-family:var(--font-space-grotesk)] mt-2 text-xl font-semibold text-[#f1f3f5]">
                   {isCreatingProduct
                     ? "Criar produto"
                     : selectedProduct
                       ? selectedProduct.name
                       : "Selecione um produto"}
                 </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                <p className="[font-family:var(--font-arimo)] mt-2 max-w-2xl text-sm leading-6 text-[#99a1af]">
                   Produto, mídia e preços seguem o mesmo contrato validado do
                   backend. Mudanças inválidas retornam mensagem uniforme antes
                   de persistir qualquer alteração.
@@ -1174,7 +907,7 @@ export default function AdminCatalogClient() {
               <div className="flex flex-wrap gap-3">
                 {!isCreatingProduct && selectedProduct ? (
                   <Button
-                    className="border-white/10 bg-transparent hover:bg-white/10"
+                    className="border-white/6 bg-transparent hover:bg-[#12151a]"
                     type="button"
                     variant="outline"
                     onClick={() =>
@@ -1206,18 +939,18 @@ export default function AdminCatalogClient() {
             </div>
 
             {detailErrorMessage && !isCreatingProduct ? (
-              <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-50">
+              <div className="[font-family:var(--font-arimo)] mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-50">
                 {detailErrorMessage}
               </div>
             ) : null}
 
             {isDetailLoading && !isCreatingProduct ? (
-              <div className="mt-6 h-72 animate-pulse rounded-[1.6rem] border border-white/8 bg-white/5" />
+              <div className="mt-5 h-72 animate-pulse rounded-2xl border border-white/6 bg-[#12151a]" />
             ) : (
-              <div className="mt-6 space-y-6">
+              <div className="mt-5 space-y-5">
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Nome
                     </label>
                     <Input
@@ -1232,7 +965,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       SKU
                     </label>
                     <Input
@@ -1250,7 +983,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-3">
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Loja
                     </label>
                     <select
@@ -1273,7 +1006,7 @@ export default function AdminCatalogClient() {
                     </select>
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Marca
                     </label>
                     <select
@@ -1295,7 +1028,7 @@ export default function AdminCatalogClient() {
                     </select>
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Categoria
                     </label>
                     <select
@@ -1320,7 +1053,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-4">
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Preço
                     </label>
                     <Input
@@ -1335,7 +1068,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Preço original
                     </label>
                     <Input
@@ -1350,7 +1083,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Custo
                     </label>
                     <Input
@@ -1365,7 +1098,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Peso
                     </label>
                     <Input
@@ -1383,7 +1116,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Descrição curta
                     </label>
                     <Input
@@ -1398,7 +1131,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Garantia
                     </label>
                     <Input
@@ -1415,7 +1148,7 @@ export default function AdminCatalogClient() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                     Descrição
                   </label>
                   <textarea
@@ -1432,7 +1165,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Especificações JSON
                     </label>
                     <textarea
@@ -1450,7 +1183,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Dimensões JSON
                     </label>
                     <textarea
@@ -1470,10 +1203,10 @@ export default function AdminCatalogClient() {
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-3">
-                  <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-100">
+                  <label className="[font-family:var(--font-arimo)] flex items-center gap-3 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 text-sm text-[#f1f3f5]">
                     <input
                       checked={productForm.isActive}
-                      className="h-4 w-4 rounded border-white/20 bg-slate-950/70"
+                      className="h-4 w-4 rounded border-white/20 bg-[#171a21]"
                       type="checkbox"
                       onChange={(event) =>
                         setProductForm((currentValue) => ({
@@ -1484,10 +1217,10 @@ export default function AdminCatalogClient() {
                     />
                     Produto ativo
                   </label>
-                  <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-100">
+                  <label className="[font-family:var(--font-arimo)] flex items-center gap-3 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 text-sm text-[#f1f3f5]">
                     <input
                       checked={productForm.isFeatured}
-                      className="h-4 w-4 rounded border-white/20 bg-slate-950/70"
+                      className="h-4 w-4 rounded border-white/20 bg-[#171a21]"
                       type="checkbox"
                       onChange={(event) =>
                         setProductForm((currentValue) => ({
@@ -1498,10 +1231,10 @@ export default function AdminCatalogClient() {
                     />
                     Destaque
                   </label>
-                  <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-100">
+                  <label className="[font-family:var(--font-arimo)] flex items-center gap-3 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 text-sm text-[#f1f3f5]">
                     <input
                       checked={productForm.isOnSale}
-                      className="h-4 w-4 rounded border-white/20 bg-slate-950/70"
+                      className="h-4 w-4 rounded border-white/20 bg-[#171a21]"
                       type="checkbox"
                       onChange={(event) =>
                         setProductForm((currentValue) => ({
@@ -1516,7 +1249,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Promoção a partir de
                     </label>
                     <Input
@@ -1532,7 +1265,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Promoção até
                     </label>
                     <Input
@@ -1549,19 +1282,19 @@ export default function AdminCatalogClient() {
                   </div>
                 </div>
 
-                <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+                <div className="rounded-2xl border border-white/6 bg-[#12151a] p-4">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                      <p className="text-xs tracking-[0.16em] text-slate-400 uppercase">
+                      <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                         Imagens
                       </p>
-                      <h3 className="mt-2 text-lg font-semibold text-white">
+                      <h3 className="[font-family:var(--font-space-grotesk)] mt-2 text-lg font-semibold text-[#f1f3f5]">
                         Lista validada e processamento seguro
                       </h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Button
-                        className="border-white/10 bg-transparent hover:bg-white/10"
+                        className="border-white/6 bg-transparent hover:bg-[#12151a]"
                         disabled={
                           isCreatingProduct ||
                           !selectedProduct ||
@@ -1582,7 +1315,7 @@ export default function AdminCatalogClient() {
                       </Button>
                       <Button
                         asChild
-                        className="border-white/10 bg-transparent hover:bg-white/10"
+                        className="border-white/6 bg-transparent hover:bg-[#12151a]"
                         type="button"
                         variant="outline"
                       >
@@ -1595,14 +1328,14 @@ export default function AdminCatalogClient() {
                   </div>
 
                   {isRemovingBackground ? (
-                    <div className="mt-4 rounded-2xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-50">
+                    <div className="[font-family:var(--font-arimo)] mt-4 rounded-2xl border border-[#5c7cfa]/25 bg-[#5c7cfa]/10 px-4 py-3 text-sm text-[#5c7cfa]">
                       Processando imagens com Remove.bg...{" "}
                       {Math.round(removeBgProgress)}%
                     </div>
                   ) : null}
 
                   <div className="mt-4">
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
+                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                       Uma imagem por linha
                     </label>
                     <textarea
@@ -1652,7 +1385,7 @@ export default function AdminCatalogClient() {
                   </Button>
                   {!isCreatingProduct && selectedProduct ? (
                     <Button
-                      className="border-white/10 bg-transparent hover:bg-white/10"
+                      className="border-white/6 bg-transparent hover:bg-[#12151a]"
                       type="button"
                       variant="outline"
                       onClick={() =>
@@ -1667,239 +1400,466 @@ export default function AdminCatalogClient() {
             )}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="rounded-[1.8rem] border border-white/10 bg-slate-950/70 p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
-                    Estoque
-                  </p>
-                  <h2 className="mt-2 text-xl font-semibold text-white">
-                    Ajuste com trilha
-                  </h2>
-                </div>
-                <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-100">
-                  {selectedProduct
-                    ? `${selectedProduct.availableQuantity} disponível`
-                    : "Sem produto"}
-                </div>
-              </div>
+        </div>
+      </section>
 
-              {selectedProduct ? (
-                <div className="mt-5 space-y-4">
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                      <p className="text-xs tracking-[0.16em] text-slate-400 uppercase">
-                        Quantidade
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold text-white">
-                        {selectedProduct.inventory.quantity}
-                      </p>
-                    </div>
-                    <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                      <p className="text-xs tracking-[0.16em] text-slate-400 uppercase">
-                        Reservado
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold text-white">
-                        {selectedProduct.inventory.reserved}
-                      </p>
-                    </div>
-                    <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                      <p className="text-xs tracking-[0.16em] text-slate-400 uppercase">
-                        Estoque mínimo
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold text-white">
-                        {selectedProduct.inventory.minStock}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
-                        Alvo do ajuste
-                      </label>
-                      <select
-                        className={fieldClassName}
-                        value={
-                          stockForm.targetType === "variant"
-                            ? stockForm.variantId
-                            : ""
-                        }
-                        onChange={(event) =>
-                          setStockForm((currentValue) => ({
-                            ...currentValue,
-                            targetType: event.target.value
-                              ? "variant"
-                              : "product",
-                            variantId: event.target.value,
-                          }))
-                        }
-                      >
-                        {stockTargets.map((target) => (
-                          <option
-                            key={`${target.type}-${target.id}`}
-                            value={target.id}
-                          >
-                            {target.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
-                        Delta
-                      </label>
-                      <Input
-                        className={fieldClassName}
-                        placeholder="Ex.: 5 ou -3"
-                        value={stockForm.delta}
-                        onChange={(event) =>
-                          setStockForm((currentValue) => ({
-                            ...currentValue,
-                            delta: event.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
-                        Estoque mínimo alvo
-                      </label>
-                      <Input
-                        className={fieldClassName}
-                        value={stockForm.minStock}
-                        onChange={(event) =>
-                          setStockForm((currentValue) => ({
-                            ...currentValue,
-                            minStock: event.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
-                        Estoque máximo alvo
-                      </label>
-                      <Input
-                        className={fieldClassName}
-                        value={stockForm.maxStock}
-                        onChange={(event) =>
-                          setStockForm((currentValue) => ({
-                            ...currentValue,
-                            maxStock: event.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
-                      Motivo
-                    </label>
-                    <Input
-                      className={fieldClassName}
-                      value={stockForm.reason}
-                      onChange={(event) =>
-                        setStockForm((currentValue) => ({
-                          ...currentValue,
-                          reason: event.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-xs tracking-[0.16em] text-slate-400 uppercase">
-                      Referência
-                    </label>
-                    <Input
-                      className={fieldClassName}
-                      value={stockForm.reference}
-                      onChange={(event) =>
-                        setStockForm((currentValue) => ({
-                          ...currentValue,
-                          reference: event.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-
-                  <Button
-                    className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
-                    disabled={isAdjustingStock}
-                    type="button"
-                    onClick={handleStockAdjustment}
-                  >
-                    {isAdjustingStock ? (
-                      <LoaderCircle className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Warehouse className="h-4 w-4" />
-                    )}
-                    Registrar ajuste
-                  </Button>
-                </div>
-              ) : (
-                <div className="mt-4 rounded-2xl border border-dashed border-white/12 bg-white/5 px-4 py-8 text-center text-sm text-slate-300">
-                  Selecione um produto para ajustar estoque.
-                </div>
-              )}
+      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[2.8fr_1fr]">
+        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#6a7282] uppercase">
+                Categorias
+              </p>
+              <h2 className="[font-family:var(--font-space-grotesk)] mt-2 text-xl font-semibold text-[#f1f3f5]">
+                CRUD administrativo
+              </h2>
             </div>
+            <Button
+              className="border-white/10 bg-[#12151a] hover:bg-white/15"
+              disabled={!meta?.canManageCategories}
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setSelectedCategoryId(null);
+                setCategoryForm(createEmptyCategoryForm());
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Nova categoria
+            </Button>
+          </div>
 
-            <div className="rounded-[1.8rem] border border-white/10 bg-slate-950/70 p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">
-                    Histórico
-                  </p>
-                  <h2 className="mt-2 text-xl font-semibold text-white">
-                    Trilha operacional
-                  </h2>
-                </div>
-                <History className="h-5 w-5 text-slate-400" />
-              </div>
+          {!meta?.canManageCategories ? (
+            <div className="[font-family:var(--font-arimo)] mt-4 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 text-sm text-[#99a1af]">
+              Admin de loja pode consultar categorias, mas a mutação global
+              foi restrita a perfis administrativos centrais para evitar
+              impacto cruzado entre lojas.
+            </div>
+          ) : null}
 
-              <div className="mt-5 space-y-3">
-                {selectedProduct?.inventoryHistory.length ? (
-                  selectedProduct.inventoryHistory.map((movement) => (
+          <div className="mt-5 grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
+            <div className="space-y-2">
+              {isCategoriesLoading && !categoriesData
+                ? Array.from({ length: 4 }).map((_, index) => (
                     <div
-                      key={movement.id}
-                      className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
+                      key={`category-skeleton-${index}`}
+                      className="h-16 animate-pulse rounded-2xl border border-white/6 bg-[#12151a]"
+                    />
+                  ))
+                : categoriesData?.categories.map((category) => (
+                    <button
+                      key={category.id}
+                      className={cn(
+                        "w-full rounded-2xl border px-4 py-3 text-left transition",
+                        selectedCategoryId === category.id
+                          ? "border-[#5c7cfa]/25 bg-[#5c7cfa]/10"
+                          : "border-white/6 bg-[#12151a] hover:bg-white/8",
+                      )}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategoryId(category.id);
+                        setCategoryForm(mapCategoryToForm(category));
+                      }}
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="font-medium text-white">
-                            {movement.reason}
+                          <p className="[font-family:var(--font-arimo)] font-medium text-[#f1f3f5]">
+                            {category.name}
                           </p>
-                          <p className="text-xs text-slate-400">
-                            {movement.userLabel} ·{" "}
-                            {formatDateTime(movement.createdAt)}
+                          <p className="[font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+                            {category.slug}
                           </p>
                         </div>
-                        <span className="rounded-full border border-white/10 bg-slate-950/70 px-2 py-1 text-xs text-slate-200">
-                          {movement.quantity > 0 ? "+" : ""}
-                          {movement.quantity}
-                        </span>
+                        <div className="[font-family:var(--font-arimo)] text-right text-xs text-[#99a1af]">
+                          <p>{category.productCount} produto(s)</p>
+                          <p>{category.childrenCount} filho(s)</p>
+                        </div>
                       </div>
-                      {movement.reference ? (
-                        <p className="mt-2 text-xs text-slate-400">
-                          Referência: {movement.reference}
-                        </p>
-                      ) : null}
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-white/12 bg-white/5 px-4 py-8 text-center text-sm text-slate-300">
-                    Nenhum ajuste registrado para este produto ainda.
-                  </div>
-                )}
+                    </button>
+                  ))}
+            </div>
+
+            <div className="space-y-4 rounded-2xl border border-white/6 bg-[#12151a] p-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Nome
+                  </label>
+                  <Input
+                    className={fieldClassName}
+                    disabled={!meta?.canManageCategories}
+                    value={categoryForm.name}
+                    onChange={(event) =>
+                      setCategoryForm((currentValue) => ({
+                        ...currentValue,
+                        name: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Slug
+                  </label>
+                  <Input
+                    className={fieldClassName}
+                    disabled={!meta?.canManageCategories}
+                    value={categoryForm.slug}
+                    onChange={(event) =>
+                      setCategoryForm((currentValue) => ({
+                        ...currentValue,
+                        slug: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Ordem
+                  </label>
+                  <Input
+                    className={fieldClassName}
+                    disabled={!meta?.canManageCategories}
+                    value={categoryForm.sortOrder}
+                    onChange={(event) =>
+                      setCategoryForm((currentValue) => ({
+                        ...currentValue,
+                        sortOrder: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Categoria pai
+                  </label>
+                  <select
+                    className={fieldClassName}
+                    disabled={!meta?.canManageCategories}
+                    value={categoryForm.parentId}
+                    onChange={(event) =>
+                      setCategoryForm((currentValue) => ({
+                        ...currentValue,
+                        parentId: event.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">Sem categoria pai</option>
+                    {categoriesData?.categories
+                      .filter(
+                        (category) => category.id !== selectedCategoryId,
+                      )
+                      .map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="[font-family:var(--font-arimo)] flex items-center gap-3 text-sm text-[#f1f3f5]">
+                <input
+                  checked={categoryForm.isActive}
+                  className="h-4 w-4 rounded border-white/20 bg-[#171a21]"
+                  disabled={!meta?.canManageCategories}
+                  type="checkbox"
+                  onChange={(event) =>
+                    setCategoryForm((currentValue) => ({
+                      ...currentValue,
+                      isActive: event.target.checked,
+                    }))
+                  }
+                />
+                Categoria ativa
+              </div>
+
+              <div>
+                <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                  Descrição
+                </label>
+                <textarea
+                  className={cn(fieldClassName, "min-h-28 resize-y")}
+                  disabled={!meta?.canManageCategories}
+                  value={categoryForm.description}
+                  onChange={(event) =>
+                    setCategoryForm((currentValue) => ({
+                      ...currentValue,
+                      description: event.target.value,
+                    }))
+                  }
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  className="bg-cyan-500 text-slate-950 hover:bg-cyan-400"
+                  disabled={!meta?.canManageCategories || isSavingCategory}
+                  type="button"
+                  onClick={handleCategorySubmit}
+                >
+                  {isSavingCategory ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  Salvar categoria
+                </Button>
+                <Button
+                  className="border-white/6 bg-transparent hover:bg-[#12151a]"
+                  disabled={!selectedCategoryId || isDeletingCategory}
+                  type="button"
+                  variant="outline"
+                  onClick={handleCategoryDelete}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Remover
+                </Button>
+                <Button
+                  className="border-white/6 bg-transparent hover:bg-[#12151a]"
+                  type="button"
+                  variant="outline"
+                  onClick={retryCategories}
+                >
+                  <RefreshCw
+                    className={cn(
+                      "h-4 w-4",
+                      isCategoriesRefreshing && "animate-spin",
+                    )}
+                  />
+                  Atualizar
+                </Button>
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#6a7282] uppercase">
+                Histórico
+              </p>
+              <h2 className="[font-family:var(--font-space-grotesk)] mt-2 text-xl font-semibold text-[#f1f3f5]">
+                Trilha operacional
+              </h2>
+            </div>
+            <History className="h-5 w-5 text-[#6a7282]" />
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {selectedProduct?.inventoryHistory.length ? (
+              selectedProduct.inventoryHistory.map((movement) => (
+                <div
+                  key={movement.id}
+                  className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="[font-family:var(--font-arimo)] font-medium text-[#f1f3f5]">
+                        {movement.reason}
+                      </p>
+                      <p className="[font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+                        {movement.userLabel} ·{" "}
+                        {formatDateTime(movement.createdAt)}
+                      </p>
+                    </div>
+                    <span className="[font-family:var(--font-arimo)] rounded-full border border-white/6 bg-[#171a21] px-2 py-1 text-xs text-[#f1f3f5]">
+                      {movement.quantity > 0 ? "+" : ""}
+                      {movement.quantity}
+                    </span>
+                  </div>
+                  {movement.reference ? (
+                    <p className="[font-family:var(--font-arimo)] mt-2 text-xs text-[#6a7282]">
+                      Referência: {movement.reference}
+                    </p>
+                  ) : null}
+                </div>
+              ))
+            ) : (
+              <div className="[font-family:var(--font-arimo)] rounded-2xl border border-dashed border-white/12 bg-[#12151a] px-4 py-8 text-center text-sm text-[#99a1af]">
+                Nenhum ajuste registrado para este produto ainda.
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="xl:col-span-2 rounded-2xl border border-white/6 bg-[#171a21] p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#6a7282] uppercase">
+                Estoque
+              </p>
+              <h2 className="[font-family:var(--font-space-grotesk)] mt-2 text-xl font-semibold text-[#f1f3f5]">
+                Ajuste com trilha
+              </h2>
+            </div>
+            <div className="rounded-full border border-[#5c7cfa]/25 bg-[#5c7cfa]/10 px-3 py-1 text-xs font-semibold text-[#5c7cfa]">
+              {selectedProduct
+                ? `${selectedProduct.availableQuantity} disponível`
+                : "Sem produto"}
+            </div>
+          </div>
+
+          {selectedProduct ? (
+            <div className="mt-5 space-y-4">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3">
+                  <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Quantidade
+                  </p>
+                  <p className="[font-family:var(--font-space-grotesk)] mt-2 text-2xl font-semibold text-[#f1f3f5]">
+                    {selectedProduct.inventory.quantity}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3">
+                  <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Reservado
+                  </p>
+                  <p className="[font-family:var(--font-space-grotesk)] mt-2 text-2xl font-semibold text-[#f1f3f5]">
+                    {selectedProduct.inventory.reserved}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3">
+                  <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Estoque mínimo
+                  </p>
+                  <p className="[font-family:var(--font-space-grotesk)] mt-2 text-2xl font-semibold text-[#f1f3f5]">
+                    {selectedProduct.inventory.minStock}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div>
+                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Alvo do ajuste
+                  </label>
+                  <select
+                    className={fieldClassName}
+                    value={
+                      stockForm.targetType === "variant"
+                        ? stockForm.variantId
+                        : ""
+                    }
+                    onChange={(event) =>
+                      setStockForm((currentValue) => ({
+                        ...currentValue,
+                        targetType: event.target.value ? "variant" : "product",
+                        variantId: event.target.value,
+                      }))
+                    }
+                  >
+                    {stockTargets.map((target) => (
+                      <option
+                        key={`${target.type}-${target.id}`}
+                        value={target.id}
+                      >
+                        {target.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Delta
+                  </label>
+                  <Input
+                    className={fieldClassName}
+                    placeholder="Ex.: 5 ou -3"
+                    value={stockForm.delta}
+                    onChange={(event) =>
+                      setStockForm((currentValue) => ({
+                        ...currentValue,
+                        delta: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Estoque mínimo alvo
+                  </label>
+                  <Input
+                    className={fieldClassName}
+                    value={stockForm.minStock}
+                    onChange={(event) =>
+                      setStockForm((currentValue) => ({
+                        ...currentValue,
+                        minStock: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Estoque máximo alvo
+                  </label>
+                  <Input
+                    className={fieldClassName}
+                    value={stockForm.maxStock}
+                    onChange={(event) =>
+                      setStockForm((currentValue) => ({
+                        ...currentValue,
+                        maxStock: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Motivo
+                  </label>
+                  <Input
+                    className={fieldClassName}
+                    value={stockForm.reason}
+                    onChange={(event) =>
+                      setStockForm((currentValue) => ({
+                        ...currentValue,
+                        reason: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    Referência
+                  </label>
+                  <Input
+                    className={fieldClassName}
+                    value={stockForm.reference}
+                    onChange={(event) =>
+                      setStockForm((currentValue) => ({
+                        ...currentValue,
+                        reference: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+
+              <Button
+                className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+                disabled={isAdjustingStock}
+                type="button"
+                onClick={handleStockAdjustment}
+              >
+                {isAdjustingStock ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Warehouse className="h-4 w-4" />
+                )}
+                Registrar ajuste
+              </Button>
+            </div>
+          ) : (
+            <div className="[font-family:var(--font-arimo)] mt-4 rounded-2xl border border-dashed border-white/12 bg-[#12151a] px-4 py-8 text-center text-sm text-[#99a1af]">
+              Selecione um produto para ajustar estoque.
+            </div>
+          )}
         </div>
       </section>
     </div>
