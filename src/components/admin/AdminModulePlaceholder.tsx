@@ -19,33 +19,33 @@ export default function AdminModulePlaceholder({
   title,
 }: AdminModulePlaceholderProps) {
   return (
-    <section className="space-y-6">
-      <div className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 shadow-[0_20px_70px_rgba(15,23,42,0.4)]">
-        <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold tracking-[0.24em] text-amber-100 uppercase">
+    <section className="space-y-5">
+      <div className="rounded-2xl border border-white/6 bg-[#171a21] p-6">
+        <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/10 px-3 py-1 text-xs font-semibold tracking-[0.2em] text-amber-300 uppercase">
           <Clock3 className="h-3.5 w-3.5" />
           {eyebrow}
         </div>
 
-        <div className="mt-4 max-w-3xl space-y-3">
-          <h2 className="text-2xl font-semibold tracking-tight text-white">
+        <div className="mt-4 max-w-3xl space-y-2">
+          <h2 className="[font-family:var(--font-space-grotesk)] text-2xl font-bold tracking-tight text-[#f1f3f5]">
             {title}
           </h2>
-          <p className="text-sm leading-7 text-slate-300 sm:text-base">
+          <p className="[font-family:var(--font-arimo)] text-sm leading-relaxed text-[#99a1af] sm:text-base">
             {description}
           </p>
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6">
-          <p className="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-6">
+          <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.2em] text-[#6a7282] uppercase">
             Escopo planejado
           </p>
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-2">
             {checklist.map((item) => (
               <div
                 key={item}
-                className="rounded-2xl border border-white/[0.08] bg-slate-950/[0.45] px-4 py-3 text-sm leading-6 text-slate-200"
+                className="rounded-xl border border-white/6 bg-[#12151a] px-4 py-3 [font-family:var(--font-arimo)] text-sm leading-6 text-[#f1f3f5]"
               >
                 {item}
               </div>
@@ -53,18 +53,18 @@ export default function AdminModulePlaceholder({
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-cyan-400/20 bg-cyan-400/10 p-6">
-          <p className="text-xs font-semibold tracking-[0.24em] text-cyan-100 uppercase">
+        <div className="rounded-2xl border border-[#5c7cfa]/20 bg-[#5c7cfa]/5 p-6">
+          <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.2em] text-[#5c7cfa] uppercase">
             Próximo passo
           </p>
-          <p className="mt-4 text-sm leading-7 text-slate-100">
+          <p className="mt-4 [font-family:var(--font-arimo)] text-sm leading-7 text-[#99a1af]">
             O módulo definitivo entra nas tasks operacionais seguintes. Até lá,
             a navegação já está estabilizada e sem links quebrados para
             preservar a entrada única do painel.
           </p>
 
           <Link
-            className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/[0.15] bg-slate-950/60 px-4 py-2 text-sm font-semibold text-white transition hover:border-cyan-300/50 hover:bg-slate-900"
+            className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#12151a] px-4 py-2 [font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5] transition hover:border-[#5c7cfa]/40 hover:text-[#5c7cfa]"
             href={ctaHref}
           >
             {ctaLabel}
