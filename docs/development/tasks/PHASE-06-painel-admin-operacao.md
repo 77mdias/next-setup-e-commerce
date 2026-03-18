@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 06: Painel Admin e Operacao
 
 **Status:** 🟠 EM ANDAMENTO
-**Última atualização:** 2026-03-15
+**Última atualização:** 2026-03-18
 **Sprint Atual:** Sprint 06
-**Status Geral:** 🟡 25% (3/12 tarefas concluídas)
+**Status Geral:** 🟡 33% (4/12 tarefas concluídas)
 **ETA:** 2 semanas após kickoff da Sprint 06
 **Pré-requisito:** Fase 05 - Hardening de Identidade e Segurança (✅ concluída em 2026-03-13)
 
@@ -16,8 +16,8 @@
 | Fundação do painel e RBAC                  | 3      | 2         | 0            | 1        | 0         |
 | Dashboard operacional e KPIs               | 3      | 1         | 0            | 2        | 0         |
 | Módulos operacionais e trilha de auditoria | 3      | 0         | 0            | 3        | 0         |
-| Testes, homologação e governança           | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                                  | **12** | **3**     | **0**        | **9**    | **0**     |
+| Testes, homologação e governança           | 3      | 1         | 0            | 2        | 0         |
+| **TOTAL**                                  | **12** | **4**     | **0**        | **8**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
@@ -275,7 +275,7 @@ Transformar o escopo do painel em entrega validada por testes críticos e crité
 
 #### ADM.1 - Qualidade e operação do painel
 
-- [ ] **S06-ADM-001** - Cobrir integração de RBAC e isolamento multi-store nos endpoints admin
+- [x] **S06-ADM-001** - Cobrir integração de RBAC e isolamento multi-store nos endpoints admin
 
   **Descrição curta:**
   - Mudanças de autorização exigem cobertura de regressão para evitar bypass.
@@ -286,16 +286,16 @@ Transformar o escopo do painel em entrega validada por testes críticos e crité
   - Cobrir cenários `401`, `403`, `404` e acesso cross-store indevido.
   - Garantir mocks determinísticos de sessão e contexto de papel.
 
-  **Arquivos/áreas afetadas:** `src/app/api/admin/**/__tests__/*.integration.test.ts` (novo), `vitest.integration.config.ts`
+  **Arquivos/áreas afetadas:** `src/app/api/admin/**/__tests__/*.integration.test.ts`, `package.json`
 
   **Critérios de aceitação:**
-  - [ ] RBAC e escopo de loja cobertos por testes de integração em cenários críticos.
-  - [ ] Regressão de autorização bloqueia pipeline da sprint.
+  - [x] RBAC e escopo de loja cobertos por testes de integração em cenários críticos.
+  - [x] Regressão de autorização bloqueia pipeline da sprint.
 
-  **Prioridade:** 🔴 Crítica  
-  **Estimativa:** 6h  
-  **Dependências:** S06-ACC-002, S06-ACC-003, S06-OPS-003  
-  **Status:** ⚪ Pendente
+  **Prioridade:** 🔴 Crítica
+  **Estimativa:** 6h
+  **Dependências:** S06-ACC-002, S06-ACC-003, S06-OPS-003
+  **Status:** 🟢 Concluída (2026-03-18)
 
 - [ ] **S06-ADM-002** - Cobrir fluxo E2E crítico do painel admin (dashboard, pedidos e catálogo)
 

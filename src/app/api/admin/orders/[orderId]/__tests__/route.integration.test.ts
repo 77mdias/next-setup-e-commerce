@@ -367,4 +367,36 @@ describe("/api/admin/orders/[orderId] integration", () => {
       status: "SHIPPED",
     });
   });
+
+  it("returns 404 when the requested order does not exist on GET", async () => {
+    mockDb.order.findUnique.mockResolvedValue(null);
+
+    const response = await GET(createGetRequest("999"), {
+      params: Promise.resolve({ orderId: "999" }),
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body).toEqual({
+      error: "Pedido administrativo nao encontrado",
+    });
+  });
+
+  it("returns 404 when the requested order does not exist on PATCH", async () => {
+    mockDb.order.findUnique.mockResolvedValue(null);
+
+    const response = await PATCH(
+      createPatchRequest("999", { nextStatus: "SHIPPED" }),
+      {
+        params: Promise.resolve({ orderId: "999" }),
+      },
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body).toEqual({
+      error: "Pedido administrativo nao encontrado",
+    });
+    expect(mockTransactionClient.order.updateMany).not.toHaveBeenCalled();
+  });
 });

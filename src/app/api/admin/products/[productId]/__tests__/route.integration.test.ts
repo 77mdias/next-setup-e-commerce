@@ -352,4 +352,18 @@ describe("/api/admin/products/[productId] integration", () => {
       error: "Ação administrativa não autorizada",
     });
   });
+
+  it("returns 404 when the requested product does not exist", async () => {
+    mockDb.product.findUnique.mockResolvedValue(null);
+
+    const response = await GET(createRequest("GET"), {
+      params: Promise.resolve({ productId: "nonexistent-product" }),
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body).toEqual({
+      error: "Produto não encontrado",
+    });
+  });
 });
