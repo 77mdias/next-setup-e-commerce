@@ -66,24 +66,34 @@ Entregar o primeiro painel administrativo da aplicacao (dashboard + operacao) co
 
 | Cenario                                  | Resultado esperado                      | Evidencia tecnica                                            | Status |
 | ---------------------------------------- | --------------------------------------- | ------------------------------------------------------------ | ------ |
-| Usuario sem papel admin acessa painel    | Acesso negado com contrato consistente  | Suite `src/app/api/admin/**/__tests__/*.integration.test.ts` | [ ]    |
-| Dashboard com indicadores da loja        | KPIs carregam sem vazamento cross-store | Logs + screenshot homologacao                                | [ ]    |
-| Atualizacao de produto/estoque no painel | Alteracao persistida e auditada         | Suite de catalogo + tabela de auditoria                      | [ ]    |
-| Operacao em pedido via painel            | Acao valida atualiza estado e historico | Suite de pedidos + smoke manual                              | [ ]    |
+| Usuario sem papel admin acessa painel    | Acesso negado com contrato consistente  | `docs/ROADMAP/Logs/S06-ACC-001.md`, `docs/ROADMAP/Logs/S06-ADM-002.md`, suites `src/app/admin/__tests__/layout.integration.test.ts` e `src/app/api/admin/**/__tests__/*.integration.test.ts` | [x]    |
+| Dashboard com indicadores da loja        | KPIs carregam sem vazamento cross-store | `docs/ROADMAP/Logs/S06-DSH-001.md`, `docs/ROADMAP/Logs/S06-DSH-003.md`, `docs/ROADMAP/Logs/S06-ADM-002.md`, `npm run build` | [x]    |
+| Atualizacao de produto/estoque no painel | Alteracao persistida e auditada         | `docs/ROADMAP/Logs/S06-OPS-002.md`, `docs/ROADMAP/Logs/S06-OPS-003.md`, suites `src/app/api/admin/products/**/__tests__/*.integration.test.ts` e `src/app/api/admin/categories/**/__tests__/*.integration.test.ts` | [x]    |
+| Operacao em pedido via painel            | Acao valida atualiza estado e historico | `docs/ROADMAP/Logs/S06-OPS-001.md`, `docs/ROADMAP/Logs/S06-OPS-003.md`, suite `src/app/api/admin/orders/[orderId]/__tests__/route.integration.test.ts`, `docs/ROADMAP/Logs/S06-ADM-002.md` | [x]    |
 
 ### Plano de rollback (S06-ADM-003)
 
 - **RTO alvo:** ate 20 minutos apos decisao de rollback.
 - **Gatilhos:**
   - bypass de RBAC;
-  - alteracao administrativa sem auditoria;
-  - impacto em fluxo publico de compra.
+  - alteracao administrativa sem auditoria em `admin_audit_logs`;
+  - impacto em fluxo publico de compra;
+  - regressao persistente em `/admin`, `/api/admin/dashboard`, `/api/admin/orders` ou `/api/admin/products` apos release.
 - **Passos de rollback:**
-  1. Desativar rotas/paginas do painel por feature flag.
-  2. Reverter release para versao estavel anterior.
-  3. Validar smoke de compra publica e APIs admin.
-  4. Registrar incidente e acao corretiva no log da sprint.
+  1. Aplicar contencao imediata da UI administrativa via `APP_MAINTENANCE_ROUTES=/admin` quando for necessario interromper acesso enquanto a reversao principal nao entra em producao.
+  2. Reverter a release para a versao estavel anterior, restaurando o conjunto `/admin` + `/api/admin/**` conhecido como saudavel.
+  3. Validar smoke pos-reversao em fluxo publico (`/`, `/produto`, `/carrinho`, `/checkout`) e em smoke admin minimo (`/admin`, `/api/admin/dashboard`, `/api/admin/orders`).
+  4. Confirmar integridade da trilha de auditoria e ausencia de mutacoes administrativas orfas na janela do incidente.
+  5. Registrar incidente, causa raiz e acao corretiva no log da sprint.
 - **Responsaveis:** engenharia fullstack, QA e produto.
+- **Observacao operacional:** o repositorio nao possui feature flag dedicada para o painel admin; `APP_MAINTENANCE_ROUTES=/admin` cobre apenas contencao temporaria da UI, enquanto o rollback efetivo depende da reversao da release estavel.
+
+### Decisao final da janela de homologacao
+
+- **Decisao:** `GO`
+- **Janela de homologacao:** 2026-03-18 (America/Sao_Paulo)
+- **Evidencias consolidadas:** `docs/ROADMAP/Logs/S06-ACC-001.md`, `docs/ROADMAP/Logs/S06-DSH-003.md`, `docs/ROADMAP/Logs/S06-OPS-001.md`, `docs/ROADMAP/Logs/S06-OPS-002.md`, `docs/ROADMAP/Logs/S06-OPS-003.md`, `docs/ROADMAP/Logs/S06-ADM-002.md`, `docs/ROADMAP/Logs/S06-ADM-003.md`
+- **Validacao operacional:** `npm run lint` e `npm run build` concluidos sem regressao, com cobertura critica previa documentada nas tasks dependentes.
 
 ## Criterios de aceite
 

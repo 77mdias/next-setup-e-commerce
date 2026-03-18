@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 06: Painel Admin e Operacao
 
-**Status:** 🟠 EM ANDAMENTO
+**Status:** ✅ CONCLUÍDA
 **Última atualização:** 2026-03-18
 **Sprint Atual:** Sprint 06
-**Status Geral:** 🟡 42% (5/12 tarefas concluídas)
+**Status Geral:** ✅ 100% (12/12 tarefas concluídas)
 **ETA:** 2 semanas após kickoff da Sprint 06
 **Pré-requisito:** Fase 05 - Hardening de Identidade e Segurança (✅ concluída em 2026-03-13)
 
@@ -13,20 +13,20 @@
 
 | Categoria                                  | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | ------------------------------------------ | ------ | --------- | ------------ | -------- | --------- |
-| Fundação do painel e RBAC                  | 3      | 2         | 0            | 1        | 0         |
-| Dashboard operacional e KPIs               | 3      | 1         | 0            | 2        | 0         |
-| Módulos operacionais e trilha de auditoria | 3      | 0         | 0            | 3        | 0         |
-| Testes, homologação e governança           | 3      | 2         | 0            | 1        | 0         |
-| **TOTAL**                                  | **12** | **5**     | **0**        | **7**    | **0**     |
+| Fundação do painel e RBAC                  | 3      | 3         | 0            | 0        | 0         |
+| Dashboard operacional e KPIs               | 3      | 3         | 0            | 0        | 0         |
+| Módulos operacionais e trilha de auditoria | 3      | 3         | 0            | 0        | 0         |
+| Testes, homologação e governança           | 3      | 3         | 0            | 0        | 0         |
+| **TOTAL**                                  | **12** | **12**    | **0**        | **0**    | **0**     |
 
 ### 🎯 Principais Indicadores
 
 - ✅ Guard inicial de acesso em `/admin` entregue com validação em middleware + layout server-side.
 - ✅ Matriz de autorização por recurso/ação entregue para `/api/admin/**` com contrato uniforme de erro.
-- 🔄 Contrato de KPIs e endpoint consolidado de dashboard entregues; resta a etapa de shell/UI para consumo operacional.
-- 🔄 Módulos operacionais priorizados: pedidos, catálogo/estoque/imagens e visão de clientes.
-- 🔄 Trilha de auditoria para ações sensíveis definida como requisito de aceite da fase.
-- 🔄 Checklist de homologação e plano de rollback já definidos no roadmap da Sprint 06.
+- ✅ Contrato de KPIs, shell e dashboard operacional entregues com estados resilientes e evidências rastreáveis.
+- ✅ Módulos operacionais priorizados entregues: pedidos, catálogo/estoque/imagens, visão de clientes e auditoria.
+- ✅ Trilha de auditoria para ações sensíveis entregue com persistência dedicada e cobertura de mutações críticas.
+- ✅ Checklist de homologação executado e plano de rollback validado com decisão formal de `GO`.
 
 ---
 
@@ -319,7 +319,7 @@ Transformar o escopo do painel em entrega validada por testes críticos e crité
   **Dependências:** S06-DSH-003, S06-OPS-001, S06-OPS-002
   **Status:** 🟢 Concluída (2026-03-18)
 
-- [ ] **S06-ADM-003** - Executar checklist de homologação e validar plano de rollback da Sprint 06
+- [x] **S06-ADM-003** - Executar checklist de homologação e validar plano de rollback da Sprint 06
 
   **Descrição curta:**
   - O encerramento da sprint exige evidências operacionais e decisão formal de go/no-go.
@@ -333,13 +333,13 @@ Transformar o escopo do painel em entrega validada por testes críticos e crité
   **Arquivos/áreas afetadas:** `docs/ROADMAP/SPRINTS/sprint-06-painel-admin-operacao.md`, `docs/ROADMAP/Logs/S06-ADM-003.md` (novo), `docs/development/tasks/PHASE-06-painel-admin-operacao.md`
 
   **Critérios de aceitação:**
-  - [ ] Checklist de homologação executado com evidências rastreáveis.
-  - [ ] Plano de rollback validado com decisão de go/no-go formal.
+  - [x] Checklist de homologação executado com evidências rastreáveis.
+  - [x] Plano de rollback validado com decisão de go/no-go formal.
 
   **Prioridade:** 🟡 Alta  
   **Estimativa:** 3h  
   **Dependências:** S06-ADM-001, S06-ADM-002  
-  **Status:** ⚪ Pendente
+  **Status:** 🟢 Concluída (2026-03-18)
 
 ---
 
@@ -348,7 +348,7 @@ Transformar o escopo do painel em entrega validada por testes críticos e crité
 - **Suites necessárias:** Unitário (Vitest) para RBAC/auditoria; integração (Vitest) para `/api/admin/**`; E2E crítico (Playwright) para fluxo admin; smoke de regressão do checkout público.
 - **Cobertura alvo:** 100% dos cenários P0 de autorização/admin e >=80% dos ramos críticos dos módulos admin alterados.
 - **Comandos de verificação:** `npm run prisma:generate`, `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm run build`, `npm run test:unit:critical`, `npm run test:integration:critical`, `npm run test:e2e:critical:ci`.
-- **Estado atual:** 🔄 Planejado; execução inicia após kickoff formal da Sprint 06.
+- **Estado atual:** ✅ Concluído; testes críticos, homologação operacional e rollback da Sprint 06 foram formalizados com evidências rastreáveis.
 
 ---
 
@@ -364,11 +364,11 @@ Transformar o escopo do painel em entrega validada por testes críticos e crité
 
 ## ✅ Checklist de Encerramento da Fase
 
-- [ ] Todas as tarefas da Fase 06 marcadas como concluídas.
-- [ ] RBAC aplicado em UI e API com validação de escopo por loja.
-- [ ] Dashboard com KPIs mínimos operacionais entregue e validado.
-- [ ] Módulos de pedidos, catálogo e clientes operacionais no painel.
-- [ ] Trilha de auditoria ativa para ações administrativas sensíveis.
-- [ ] Migrações de schema aplicadas e versionadas (se houver alteração no modelo de auditoria).
-- [ ] Testes unitários, integração, E2E crítico e checklist manual executados.
-- [ ] Plano de rollback validado com decisão formal de go/no-go.
+- [x] Todas as tarefas da Fase 06 marcadas como concluídas.
+- [x] RBAC aplicado em UI e API com validação de escopo por loja.
+- [x] Dashboard com KPIs mínimos operacionais entregue e validado.
+- [x] Módulos de pedidos, catálogo e clientes operacionais no painel.
+- [x] Trilha de auditoria ativa para ações administrativas sensíveis.
+- [x] Migrações de schema aplicadas e versionadas (se houver alteração no modelo de auditoria).
+- [x] Testes unitários, integração, E2E crítico e checklist manual executados.
+- [x] Plano de rollback validado com decisão formal de go/no-go.
