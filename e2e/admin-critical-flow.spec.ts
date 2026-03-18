@@ -83,7 +83,9 @@ test.describe("admin dashboard critical flow", () => {
     await expect(page.locator("h1")).toBeVisible();
 
     // Admin shell context cards: operator, role, scope (scoped to aside to avoid banner duplicates)
-    await expect(page.getByRole("complementary").getByText(/Operador/i)).toBeVisible();
+    await expect(
+      page.getByRole("complementary").getByText(/Operador/i),
+    ).toBeVisible();
     await expect(page.getByText(/Papel ativo/i)).toBeVisible();
     await expect(page.getByText(/Escopo/i)).toBeVisible();
 
@@ -182,7 +184,10 @@ test.describe("admin orders critical flow", () => {
 
     // Period filter – "30 dias" may be inside a <select>/<option> (hidden), so check the select or a visible label
     await expect(
-      page.locator("select").filter({ hasText: /30 dias/ }).or(page.getByLabel(/Período/i)),
+      page
+        .locator("select")
+        .filter({ hasText: /30 dias/ })
+        .or(page.getByLabel(/Período/i)),
     ).toBeVisible();
 
     // Orders list should be in one of three states: loaded, empty, or error
