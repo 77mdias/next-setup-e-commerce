@@ -87,7 +87,9 @@ test.describe("admin dashboard critical flow", () => {
       page.getByRole("complementary").getByText(/Operador/i),
     ).toBeVisible();
     await expect(page.getByText(/Papel ativo/i)).toBeVisible();
-    await expect(page.getByText(/Escopo/i)).toBeVisible();
+    await expect(
+      page.getByRole("complementary").getByText("Escopo", { exact: true }),
+    ).toBeVisible();
 
     // KPI loading or rendered – wait for KPI section
     const kpiLoading = page.getByText(/Carregando indicadores operacionais/i);
@@ -192,12 +194,12 @@ test.describe("admin orders critical flow", () => {
 
     // Orders list should be in one of three states: loaded, empty, or error
     const ordersList = page.getByText(/ORD-/i).first();
-    const emptyState = page.getByText(/Nenhum pedido/i);
+    const emptyState = page.getByText(/Nenhum pedido/i).first();
     const errorState = page.getByText(/Tentar novamente/i);
     const loadingState = page.locator('[class*="animate-pulse"]').first();
 
     await expect(
-      ordersList.or(emptyState).or(errorState).or(loadingState),
+      ordersList.or(emptyState).or(errorState).or(loadingState).first(),
     ).toBeVisible({ timeout: 15_000 });
   });
 
@@ -274,11 +276,11 @@ test.describe("admin catalog critical flow", () => {
         .first(),
     ).toBeVisible({ timeout: 15_000 });
 
-    // Stock adjustment section should be visible – use heading role to avoid matching sidebar nav text
+    // Stock adjustment section should be visible – target specific h2 to avoid matching the h1 page title
     await expect(
       page
-        .getByRole("heading", { name: /Ajuste com trilha/i })
-        .or(page.getByRole("heading", { name: /estoque/i }).first()),
+        .locator("h2", { hasText: /Ajuste com trilha/i })
+        .or(page.locator("h2", { hasText: /estoque/i }).first()),
     ).toBeVisible({ timeout: 10_000 });
 
     // The E2E product should be visible in the product list
