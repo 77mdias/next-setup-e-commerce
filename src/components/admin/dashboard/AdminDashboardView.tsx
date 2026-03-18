@@ -123,14 +123,14 @@ function getTrendIcon(trend: AdminDashboardMetricChange["trend"]) {
 
 function getTrendTone(trend: AdminDashboardMetricChange["trend"]) {
   if (trend === "up") {
-    return "border-emerald-400/30 bg-emerald-500/10 text-emerald-100";
+    return "border-emerald-400/30 bg-emerald-500/10 text-emerald-300";
   }
 
   if (trend === "down") {
-    return "border-amber-300/30 bg-amber-500/10 text-amber-50";
+    return "border-amber-300/30 bg-amber-500/10 text-amber-300";
   }
 
-  return "border-slate-500/30 bg-slate-500/10 text-slate-100";
+  return "border-white/6 bg-[#12151a] text-[#99a1af]";
 }
 
 function renderComparison(
@@ -145,18 +145,20 @@ function renderComparison(
         : "Queda";
 
   return (
-    <div
-      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${getTrendTone(
-        change.trend,
-      )}`}
-    >
-      {getTrendIcon(change.trend)}
-      <span>
-        {directionLabel}: {formatAbsoluteChange(change, kind)}
-      </span>
-      <span className="text-[11px] opacity-80">
+    <div className="space-y-2">
+      <div
+        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${getTrendTone(
+          change.trend,
+        )}`}
+      >
+        {getTrendIcon(change.trend)}
+        <span>
+          {directionLabel}: {formatAbsoluteChange(change, kind)}
+        </span>
+      </div>
+      <p className="[font-family:var(--font-arimo)] pl-1 text-xs text-[#6a7282]">
         {formatPercentageSuffix(change)}
-      </span>
+      </p>
     </div>
   );
 }
@@ -202,13 +204,13 @@ function KpiCard({
   title,
 }: KpiCardProps) {
   return (
-    <article className="rounded-[1.75rem] border border-white/10 bg-slate-950/75 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.28)]">
+    <article className="flex flex-col rounded-2xl border border-white/6 bg-[#171a21] p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold tracking-[0.22em] text-slate-400 uppercase">
+          <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#6a7282] uppercase">
             {title}
           </p>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-white">
+          <p className="mt-3 [font-family:var(--font-space-grotesk)] text-3xl font-bold tracking-tight text-[#f1f3f5]">
             {metric}
           </p>
         </div>
@@ -220,7 +222,9 @@ function KpiCard({
         </span>
       </div>
 
-      <p className="mt-4 text-sm leading-6 text-slate-300">{description}</p>
+      <p className="mt-4 flex-1 [font-family:var(--font-arimo)] text-sm leading-6 text-[#99a1af]">
+        {description}
+      </p>
       <div className="mt-4">{note}</div>
     </article>
   );
@@ -229,21 +233,21 @@ function KpiCard({
 function LoadingState() {
   return (
     <section
-      className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6"
+      className="rounded-2xl border border-white/6 bg-[#171a21] p-6"
       aria-live="polite"
     >
-      <div className="flex items-center gap-3 text-slate-100">
-        <RefreshCw className="h-4 w-4 animate-spin" />
-        <p className="text-sm font-medium">
+      <div className="flex items-center gap-3">
+        <RefreshCw className="h-4 w-4 animate-spin text-[#5c7cfa]" />
+        <p className="[font-family:var(--font-arimo)] text-sm text-[#6a7282]">
           Carregando indicadores operacionais do dashboard.
         </p>
       </div>
 
-      <div className="mt-6 grid gap-4 xl:grid-cols-4">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={`dashboard-loading-${index}`}
-            className="h-52 animate-pulse rounded-[1.75rem] border border-white/8 bg-white/5"
+            className="h-52 animate-pulse rounded-2xl border border-white/6 bg-[#12151a]"
           />
         ))}
       </div>
@@ -259,22 +263,22 @@ function ErrorState({
   onRetry?: () => void;
 }) {
   return (
-    <section className="rounded-[2rem] border border-rose-400/30 bg-rose-500/10 p-6 text-rose-50">
+    <section className="rounded-2xl border border-rose-400/25 bg-rose-500/10 p-6 text-rose-200">
       <div className="flex items-start gap-3">
         <Ban className="mt-0.5 h-5 w-5 shrink-0" />
         <div className="space-y-3">
           <div>
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="[font-family:var(--font-space-grotesk)] text-lg font-semibold text-[#f1f3f5]">
               Nao foi possivel carregar os KPIs do painel
             </h2>
-            <p className="mt-2 text-sm leading-6 text-rose-100">
+            <p className="mt-2 [font-family:var(--font-arimo)] text-sm leading-6 text-rose-200">
               {errorMessage}
             </p>
           </div>
 
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-slate-950/40 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/35"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#12151a] px-4 py-2 [font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5] transition hover:border-white/20"
             onClick={onRetry}
           >
             <RefreshCw className="h-4 w-4" />
@@ -322,64 +326,46 @@ export default function AdminDashboardView({
   );
 
   return (
-    <section className="space-y-6 rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.35)]">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-xs font-semibold tracking-[0.24em] text-cyan-100 uppercase">
-            <Boxes className="h-3.5 w-3.5" />
-            Dashboard operacional
-          </div>
-
-          <div className="space-y-2">
-            <h2 className="text-3xl font-semibold tracking-tight text-white">
-              KPIs criticos para a rotina diaria do painel admin
-            </h2>
-            <p className="text-sm leading-7 text-slate-300 sm:text-base">
-              A leitura do dashboard consome o contrato consolidado de `GET
-              /api/admin/dashboard`, mantendo filtros por janela e fallback
-              resiliente quando uma tentativa falha.
-            </p>
-          </div>
+    <section className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/6 bg-[#171a21] px-5 py-4">
+        <div className="flex flex-wrap gap-2">
+          {WINDOW_OPTIONS.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              className={`rounded-full border px-4 py-2 [font-family:var(--font-arimo)] text-sm font-medium transition ${
+                selectedWindow === option.key
+                  ? "border-[#5c7cfa]/50 bg-[#5c7cfa]/20 text-[#f1f3f5]"
+                  : "border-white/6 bg-[#12151a] text-[#6a7282] hover:border-[#5c7cfa]/30 hover:text-[#f1f3f5]"
+              }`}
+              disabled={isRefreshing}
+              onClick={() => onWindowChange?.(option.key)}
+            >
+              {option.label}
+            </button>
+          ))}
         </div>
 
-        <div className="space-y-3 xl:text-right">
-          <p className="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">
-            Janela de analise
-          </p>
-          <div className="flex flex-wrap gap-2 xl:justify-end">
-            {WINDOW_OPTIONS.map((option) => (
-              <button
-                key={option.key}
-                type="button"
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                  selectedWindow === option.key
-                    ? "border-cyan-300/40 bg-cyan-400/15 text-cyan-50"
-                    : "border-white/10 bg-white/5 text-slate-200 hover:border-white/20 hover:text-white"
-                }`}
-                disabled={isRefreshing}
-                onClick={() => onWindowChange?.(option.key)}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <p className="text-sm text-slate-400">
-            Ultima leitura valida em {formatDateTime(data.generatedAt)}
-          </p>
-        </div>
+        <p className="inline-flex items-center gap-2 [font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+          {isRefreshing ? (
+            <RefreshCw className="h-3.5 w-3.5 animate-spin text-[#5c7cfa]" />
+          ) : (
+            <Boxes className="h-3.5 w-3.5 text-[#5c7cfa]" />
+          )}
+          Última leitura: {formatDateTime(data.generatedAt)}
+        </p>
       </div>
 
       {errorMessage ? (
-        <div className="rounded-2xl border border-amber-300/25 bg-amber-500/10 p-4 text-sm text-amber-50">
+        <div className="rounded-2xl border border-amber-300/25 bg-amber-500/10 p-4 text-sm text-amber-300">
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
             <div className="space-y-1">
-              <p className="font-semibold text-white">
+              <p className="[font-family:var(--font-arimo)] font-semibold text-[#f1f3f5]">
                 A ultima leitura valida foi mantida.
               </p>
-              <p className="leading-6">
-                {errorMessage} Os cards abaixo seguem exibindo o snapshot
-                anterior sem quebrar a navegacao do painel.
+              <p className="[font-family:var(--font-arimo)] leading-6">
+                {errorMessage}
               </p>
             </div>
           </div>
@@ -387,15 +373,15 @@ export default function AdminDashboardView({
       ) : null}
 
       {dashboardIsEmpty ? (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
+        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-4 text-sm">
           <div className="flex items-start gap-3">
-            <PackageSearch className="mt-0.5 h-4 w-4 shrink-0 text-cyan-100" />
+            <PackageSearch className="mt-0.5 h-4 w-4 shrink-0 text-[#5c7cfa]" />
             <div className="space-y-1">
-              <p className="font-semibold text-white">
+              <p className="[font-family:var(--font-arimo)] font-semibold text-[#f1f3f5]">
                 Ainda nao existe movimentacao suficiente para os KPIs desta
                 janela.
               </p>
-              <p className="leading-6 text-slate-300">
+              <p className="[font-family:var(--font-arimo)] leading-6 text-[#99a1af]">
                 O dashboard continua estavel com cards zerados para permitir
                 navegacao e leitura do estado atual sem ruido operacional.
               </p>
@@ -404,9 +390,9 @@ export default function AdminDashboardView({
         </div>
       ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          accentClassName="border-cyan-400/30 bg-cyan-400/10 text-cyan-100"
+          accentClassName="border-[#5c7cfa]/25 bg-[#5c7cfa]/10 text-[#5c7cfa]"
           description={`Pedidos criados em ${data.filters.window.label.toLowerCase()}.`}
           icon={<ShoppingCart className="h-5 w-5" />}
           metric={formatNumber(data.kpis.orders.total)}
@@ -414,7 +400,7 @@ export default function AdminDashboardView({
           title="Pedidos"
         />
         <KpiCard
-          accentClassName="border-emerald-400/30 bg-emerald-500/10 text-emerald-100"
+          accentClassName="border-emerald-400/30 bg-emerald-500/10 text-emerald-400"
           description="Taxa de pagamentos aprovados na janela operacional."
           icon={<CreditCard className="h-5 w-5" />}
           metric={formatRate(data.kpis.paymentApproval.rate)}
@@ -422,7 +408,7 @@ export default function AdminDashboardView({
           title="Aprovacao"
         />
         <KpiCard
-          accentClassName="border-amber-300/30 bg-amber-500/10 text-amber-50"
+          accentClassName="border-amber-300/30 bg-amber-500/10 text-amber-400"
           description="Receita bruta confirmada por pedidos pagos."
           icon={<Wallet className="h-5 w-5" />}
           metric={formatCurrency(data.kpis.revenue.gross)}
@@ -430,12 +416,12 @@ export default function AdminDashboardView({
           title="Receita"
         />
         <KpiCard
-          accentClassName="border-rose-400/30 bg-rose-500/10 text-rose-100"
+          accentClassName="border-rose-400/30 bg-rose-500/10 text-rose-400"
           description="Produtos abaixo do limite de estoque configurado."
           icon={<AlertTriangle className="h-5 w-5" />}
           metric={formatNumber(data.kpis.lowStock.products)}
           note={
-            <div className="inline-flex items-center gap-2 rounded-full border border-rose-400/25 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-50">
+            <div className="inline-flex items-center gap-2 rounded-full border border-rose-400/25 bg-rose-500/10 px-3 py-1 [font-family:var(--font-arimo)] text-xs font-semibold text-rose-300">
               Snapshot atual com limite de {data.filters.lowStockLimit} itens
             </div>
           }
@@ -443,19 +429,19 @@ export default function AdminDashboardView({
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-        <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold tracking-[0.22em] text-slate-400 uppercase">
+              <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#6a7282] uppercase">
                 Composicao da janela
               </p>
-              <h3 className="mt-2 text-lg font-semibold text-white">
+              <h3 className="mt-2 [font-family:var(--font-space-grotesk)] text-base font-semibold text-[#f1f3f5]">
                 Sinais operacionais rapidos
               </h3>
             </div>
             {isRefreshing ? (
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/6 bg-[#12151a] px-3 py-1 [font-family:var(--font-arimo)] text-xs text-[#99a1af]">
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" />
                 Atualizando
               </span>
@@ -463,39 +449,35 @@ export default function AdminDashboardView({
           </div>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-1">
-            <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-              <p className="text-sm font-semibold text-white">
+            <div className="rounded-xl border border-white/6 bg-[#12151a] p-4">
+              <p className="[font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5]">
                 Pedidos por status
               </p>
               <div className="mt-4 space-y-3">
                 {orderRows.map((row) => (
                   <div
                     key={row.label}
-                    className="flex items-center justify-between gap-4 text-sm text-slate-200"
+                    className="flex items-center justify-between gap-4 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5]"
                   >
-                    <span>{row.label}</span>
-                    <span className="font-semibold text-white">
-                      {row.value}
-                    </span>
+                    <span className="text-[#99a1af]">{row.label}</span>
+                    <span className="font-semibold">{row.value}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-              <p className="text-sm font-semibold text-white">
+            <div className="rounded-xl border border-white/6 bg-[#12151a] p-4">
+              <p className="[font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5]">
                 Pagamentos por status
               </p>
               <div className="mt-4 space-y-3">
                 {paymentRows.map((row) => (
                   <div
                     key={row.label}
-                    className="flex items-center justify-between gap-4 text-sm text-slate-200"
+                    className="flex items-center justify-between gap-4 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5]"
                   >
-                    <span>{row.label}</span>
-                    <span className="font-semibold text-white">
-                      {row.value}
-                    </span>
+                    <span className="text-[#99a1af]">{row.label}</span>
+                    <span className="font-semibold">{row.value}</span>
                   </div>
                 ))}
               </div>
@@ -503,23 +485,23 @@ export default function AdminDashboardView({
           </div>
         </div>
 
-        <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5">
+        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold tracking-[0.22em] text-slate-400 uppercase">
+              <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#6a7282] uppercase">
                 Estoque critico
               </p>
-              <h3 className="mt-2 text-lg font-semibold text-white">
+              <h3 className="mt-2 [font-family:var(--font-space-grotesk)] text-base font-semibold text-[#f1f3f5]">
                 Produtos que exigem acao imediata
               </h3>
             </div>
-            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+            <div className="rounded-full border border-white/6 bg-[#12151a] px-3 py-1 [font-family:var(--font-arimo)] text-xs text-[#99a1af]">
               {data.kpis.lowStock.items.length} item(ns) listados
             </div>
           </div>
 
           {data.kpis.lowStock.items.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/60 p-5 text-sm leading-6 text-slate-300">
+            <div className="mt-5 rounded-xl border border-white/6 bg-[#12151a] p-5 [font-family:var(--font-arimo)] text-sm leading-6 text-[#99a1af]">
               Nenhum produto esta abaixo do limite configurado no snapshot
               atual.
             </div>
@@ -528,44 +510,44 @@ export default function AdminDashboardView({
               {data.kpis.lowStock.items.map((item) => (
                 <article
                   key={item.productId}
-                  className="rounded-2xl border border-white/10 bg-slate-950/60 p-4"
+                  className="rounded-2xl border border-white/6 bg-[#12151a] p-4"
                 >
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-white">
+                      <p className="[font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5]">
                         {item.productName}
                       </p>
-                      <p className="mt-1 text-sm text-slate-300">
+                      <p className="mt-1 [font-family:var(--font-arimo)] text-sm text-[#99a1af]">
                         {item.storeName}
                       </p>
                     </div>
-                    <div className="rounded-full border border-rose-400/25 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-50">
+                    <div className="rounded-full border border-rose-400/25 bg-rose-500/10 px-3 py-1 [font-family:var(--font-arimo)] text-xs font-semibold text-rose-300">
                       Disponivel: {formatNumber(item.availableQuantity)}
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-3 text-sm text-slate-200 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-3 py-2">
-                      <span className="block text-xs tracking-[0.2em] text-slate-400 uppercase">
+                  <div className="mt-4 grid gap-3 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5] sm:grid-cols-3">
+                    <div className="rounded-xl border border-white/6 bg-[#0b0d10] px-3 py-2">
+                      <span className="block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                         Minimo
                       </span>
-                      <span className="mt-1 block font-semibold text-white">
+                      <span className="mt-1 block font-semibold">
                         {formatNumber(item.minStock)}
                       </span>
                     </div>
-                    <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-3 py-2">
-                      <span className="block text-xs tracking-[0.2em] text-slate-400 uppercase">
+                    <div className="rounded-xl border border-white/6 bg-[#0b0d10] px-3 py-2">
+                      <span className="block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                         Reservado
                       </span>
-                      <span className="mt-1 block font-semibold text-white">
+                      <span className="mt-1 block font-semibold">
                         {formatNumber(item.reserved)}
                       </span>
                     </div>
-                    <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-3 py-2">
-                      <span className="block text-xs tracking-[0.2em] text-slate-400 uppercase">
+                    <div className="rounded-xl border border-white/6 bg-[#0b0d10] px-3 py-2">
+                      <span className="block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
                         Scope
                       </span>
-                      <span className="mt-1 block font-semibold text-white">
+                      <span className="mt-1 block font-semibold">
                         {item.storeId}
                       </span>
                     </div>
