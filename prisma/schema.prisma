@@ -209,22 +209,23 @@ model ProductVariant {
 }
 
 model Inventory {
-  id             String          @id @default(uuid())
-  productId      String
-  variantId      String?
-  storeId        String
-  quantity       Int             @default(0)
-  reserved       Int             @default(0)
-  minStock       Int             @default(0)
-  maxStock       Int             @default(1000)
-  location       String?
-  lastRestocked  DateTime?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
-  store          Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  variant        ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  stockMovements StockMovement[]
+  id                String             @id @default(uuid())
+  productId         String
+  variantId         String?
+  storeId           String
+  quantity          Int                @default(0)
+  reserved          Int                @default(0)
+  minStock          Int                @default(0)
+  maxStock          Int                @default(1000)
+  location          String?
+  lastRestocked     DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  product           Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  store             Store              @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  variant           ProductVariant?    @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  stockMovements    StockMovement[]
+  stockReservations StockReservation[]
 
   @@unique([productId, variantId, storeId])
   @@map("inventory")
@@ -243,6 +244,26 @@ model StockMovement {
   user        User?         @relation(fields: [userId], references: [id])
 
   @@map("stock_movements")
+}
+
+model StockReservation {
+  id          String                 @id @default(uuid())
+  inventoryId String
+  orderId     Int?
+  orderItemId String?                @unique
+  quantity    Int
+  status      StockReservationStatus @default(ACTIVE)
+  expiresAt   DateTime
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  inventory   Inventory              @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  order       Order?                 @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  orderItem   OrderItem?             @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
+
+  @@index([inventoryId, status])
+  @@index([orderId])
+  @@index([expiresAt, status])
+  @@map("stock_reservations")
 }
 
 model Order {
@@ -282,6 +303,7 @@ model Order {
   user                    User?                @relation(fields: [userId], references: [id])
   payments                Payment[]
   reviews                 Review[]
+  stockReservations       StockReservation[]
 
   @@index([userId, stripeCheckoutSessionId])
   @@index([stripePaymentIntentId])
@@ -289,20 +311,21 @@ model Order {
 }
 
 model OrderItem {
-  id             String          @id @default(uuid())
-  orderId        Int
-  productId      String
-  variantId      String?
-  quantity       Int
-  unitPrice      Float
-  totalPrice     Float
-  productName    String
-  productImage   String
-  specifications Json?
-  createdAt      DateTime        @default(now())
-  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
-  variant        ProductVariant? @relation(fields: [variantId], references: [id])
+  id               String            @id @default(uuid())
+  orderId          Int
+  productId        String
+  variantId        String?
+  quantity         Int
+  unitPrice        Float
+  totalPrice       Float
+  productName      String
+  productImage     String
+  specifications   Json?
+  createdAt        DateTime          @default(now())
+  order            Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product          Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant          ProductVariant?   @relation(fields: [variantId], references: [id])
+  stockReservation StockReservation?
 
   @@map("order_items")
 }
@@ -498,6 +521,13 @@ enum StockMoveType {
   ADJUSTMENT
   RESERVED
   RELEASED
+}
+
+enum StockReservationStatus {
+  ACTIVE
+  RELEASED
+  EXPIRED
+  CONFIRMED
 }
 
 enum OrderStatus {
