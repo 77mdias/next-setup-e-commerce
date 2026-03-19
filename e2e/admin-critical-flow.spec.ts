@@ -79,15 +79,18 @@ test.describe("admin dashboard critical flow", () => {
   }) => {
     await signInAsAdmin(page, "/admin");
 
-    // Shell context visible – use h1 heading to avoid strict mode violation
-    await expect(page.locator("h1")).toBeVisible();
+    // Shell context visible – scope to the shell header to avoid matching
+    // the dashboard content card that repeats the same heading text.
+    await expect(
+      page.locator("header").getByRole("heading", {
+        level: 1,
+        name: /Dashboard administrativo/i,
+      }),
+    ).toBeVisible();
 
     // Admin shell context is rendered in the sidebar as actor + role/scope summary.
     await expect(
       page.getByRole("complementary").getByText(/E2E Store Admin/i),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: /Dashboard administrativo/i }),
     ).toBeVisible();
     await expect(
       page.getByRole("complementary").getByText(/Admin · Visão global/i),
