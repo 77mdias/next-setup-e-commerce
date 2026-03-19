@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockDb, mockTx } = vi.hoisted(() => {
   const mockTx = {
+    $executeRaw: vi.fn(),
     inventory: {
       findUnique: vi.fn(),
       update: vi.fn(),
@@ -25,6 +26,7 @@ const { mockDb, mockTx } = vi.hoisted(() => {
       // For array of promises (batch $transaction)
       return Promise.all(fn as Promise<unknown>[]);
     }),
+    $executeRaw: vi.fn(),
     inventory: {
       findUnique: vi.fn(),
       update: vi.fn(),
@@ -101,11 +103,9 @@ describe("createReservation", () => {
   });
 
   it("returns success when stock is sufficient", async () => {
-    const inventory = makeInventory({ quantity: 10, reserved: 2, minStock: 0 });
-    mockTx.inventory.findUnique.mockResolvedValue(inventory);
+    mockTx.$executeRaw.mockResolvedValue(1);
     const created = makeReservation({ quantity: 5 });
     mockTx.stockReservation.create.mockResolvedValue(created);
-    mockTx.inventory.update.mockResolvedValue({});
 
     const result = await createReservation({
       inventoryId: "inv-1",
@@ -118,14 +118,12 @@ describe("createReservation", () => {
     if (result.success) {
       expect(result.reservation.quantity).toBe(5);
     }
-    expect(mockTx.inventory.update).toHaveBeenCalledWith({
-      where: { id: "inv-1" },
-      data: { reserved: { increment: 5 } },
-    });
+    expect(mockTx.$executeRaw).toHaveBeenCalledTimes(1);
   });
 
   it("returns failure when stock is insufficient", async () => {
     const inventory = makeInventory({ quantity: 5, reserved: 3, minStock: 0 });
+    mockTx.$executeRaw.mockResolvedValue(0);
     mockTx.inventory.findUnique.mockResolvedValue(inventory);
 
     const result = await createReservation({
@@ -142,6 +140,7 @@ describe("createReservation", () => {
 
   it("returns failure when reservation would breach minStock", async () => {
     const inventory = makeInventory({ quantity: 10, reserved: 0, minStock: 8 });
+    mockTx.$executeRaw.mockResolvedValue(0);
     mockTx.inventory.findUnique.mockResolvedValue(inventory);
 
     const result = await createReservation({
@@ -156,6 +155,7 @@ describe("createReservation", () => {
   });
 
   it("returns failure when inventory is not found", async () => {
+    mockTx.$executeRaw.mockResolvedValue(0);
     mockTx.inventory.findUnique.mockResolvedValue(null);
 
     const result = await createReservation({
@@ -170,11 +170,9 @@ describe("createReservation", () => {
   });
 
   it("respects custom TTL when creating reservation", async () => {
-    const inventory = makeInventory({ quantity: 10, reserved: 0, minStock: 0 });
-    mockTx.inventory.findUnique.mockResolvedValue(inventory);
+    mockTx.$executeRaw.mockResolvedValue(1);
     const created = makeReservation({ quantity: 2 });
     mockTx.stockReservation.create.mockResolvedValue(created);
-    mockTx.inventory.update.mockResolvedValue({});
 
     await createReservation({
       inventoryId: "inv-1",
@@ -187,6 +185,65 @@ describe("createReservation", () => {
     const diffMinutes = (expiresAt.getTime() - Date.now()) / 1000 / 60;
     expect(diffMinutes).toBeGreaterThan(55);
     expect(diffMinutes).toBeLessThan(65);
+  });
+
+  it("allows at most one concurrent reservation for the last unit", async () => {
+    let reserved = 0;
+
+    const concurrentDb = {
+      $executeRaw: vi.fn(async (...args: unknown[]) => {
+        const qty = args.find((value) => typeof value === "number");
+
+        if (typeof qty !== "number") {
+          throw new Error("Atomic reservation must receive a numeric quantity");
+        }
+
+        if (1 - reserved >= qty) {
+          reserved += qty;
+          return 1;
+        }
+
+        return 0;
+      }),
+      inventory: {
+        findUnique: vi.fn(async () => ({
+          id: "inv-1",
+          quantity: 1,
+          reserved,
+          minStock: 0,
+        })),
+      },
+      stockReservation: {
+        create: vi.fn(async ({ data }: { data: { quantity: number } }) => ({
+          ...makeReservation({ quantity: data.quantity }),
+          quantity: data.quantity,
+        })),
+      },
+    };
+
+    const [first, second] = await Promise.all([
+      createReservation(
+        {
+          inventoryId: "inv-1",
+          quantity: 1,
+          orderId: 1,
+          orderItemId: "item-1",
+        },
+        concurrentDb as never,
+      ),
+      createReservation(
+        {
+          inventoryId: "inv-1",
+          quantity: 1,
+          orderId: 2,
+          orderItemId: "item-2",
+        },
+        concurrentDb as never,
+      ),
+    ]);
+
+    expect([first, second].filter((result) => result.success)).toHaveLength(1);
+    expect([first, second].filter((result) => !result.success)).toHaveLength(1);
   });
 });
 
@@ -348,18 +405,22 @@ describe("getActiveReservationsByOrder", () => {
 describe("releaseReservationsByOrder", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockDb.$transaction.mockImplementation((ops: unknown) =>
-      Promise.all(ops as Promise<unknown>[]),
-    );
+    mockDb.$transaction.mockImplementation((arg: unknown) => {
+      if (typeof arg === "function") {
+        return arg(mockTx);
+      }
+
+      return Promise.all(arg as Promise<unknown>[]);
+    });
   });
 
   it("returns 0 when there are no active reservations", async () => {
-    mockDb.stockReservation.findMany.mockResolvedValue([]);
+    mockTx.stockReservation.findMany.mockResolvedValue([]);
 
     const result = await releaseReservationsByOrder(99);
 
     expect(result).toBe(0);
-    expect(mockDb.stockReservation.updateMany).not.toHaveBeenCalled();
+    expect(mockTx.stockReservation.updateMany).not.toHaveBeenCalled();
   });
 
   it("releases all active reservations for an order", async () => {
@@ -367,14 +428,14 @@ describe("releaseReservationsByOrder", () => {
       { id: "res-1", inventoryId: "inv-1", quantity: 3 },
       { id: "res-2", inventoryId: "inv-2", quantity: 7 },
     ];
-    mockDb.stockReservation.findMany.mockResolvedValue(active);
-    mockDb.stockReservation.updateMany.mockResolvedValue({ count: 2 });
-    mockDb.inventory.update.mockResolvedValue({});
+    mockTx.stockReservation.findMany.mockResolvedValue(active);
+    mockTx.stockReservation.updateMany.mockResolvedValue({ count: 2 });
+    mockTx.inventory.update.mockResolvedValue({});
 
     const result = await releaseReservationsByOrder(1);
 
     expect(result).toBe(2);
-    expect(mockDb.stockReservation.updateMany).toHaveBeenCalledWith({
+    expect(mockTx.stockReservation.updateMany).toHaveBeenCalledWith({
       where: { orderId: 1, status: "ACTIVE" },
       data: { status: "RELEASED" },
     });

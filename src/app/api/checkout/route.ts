@@ -8,6 +8,11 @@ import { createRequestLogger } from "@/lib/logger";
 import { INITIAL_ORDER_STATE } from "@/lib/order-state-machine";
 import { db } from "@/lib/prisma";
 import {
+  confirmReservationsByOrder,
+  createReservation,
+  releaseReservationsByOrder,
+} from "@/lib/stock-reservation";
+import {
   createStripeCheckoutSession,
   expireStripeCheckoutSession,
 } from "@/lib/stripe-config";
@@ -40,6 +45,7 @@ type CheckoutItemPayload = z.infer<typeof checkoutItemSchema>;
 type CanonicalCheckoutItem = {
   productId: string;
   variantId?: string;
+  inventoryId: string;
   quantity: number;
   unitPrice: number;
   unitPriceCents: number;
@@ -52,12 +58,20 @@ type CanonicalCheckoutItem = {
 };
 
 type InventorySnapshot = {
+  id: string;
   productId: string;
   variantId: string | null;
   quantity: number;
   reserved: number;
   minStock: number;
 };
+
+class CheckoutReservationConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CheckoutReservationConflictError";
+  }
+}
 
 function badRequest(
   error: string,
@@ -78,6 +92,17 @@ function notFound(error: string) {
 
 function conflict(error: string) {
   return NextResponse.json({ error }, { status: 409 });
+}
+
+function resolveReservationConflictMessage(
+  itemName: string,
+  reason: string,
+): string {
+  if (reason.includes("minimum stock")) {
+    return `Quantidade indisponível para ${itemName} devido ao estoque mínimo`;
+  }
+
+  return `Estoque insuficiente para ${itemName}`;
 }
 
 function normalizeItems(items: CheckoutItemPayload[]): CheckoutItemPayload[] {
@@ -232,6 +257,12 @@ async function finalizeE2EMockCheckout(params: {
       },
     });
 
+    if (params.outcome === "failed") {
+      await releaseReservationsByOrder(params.orderId, tx);
+    } else {
+      await confirmReservationsByOrder(params.orderId, tx);
+    }
+
     await tx.cart.deleteMany({
       where: { userId: params.userId },
     });
@@ -378,6 +409,7 @@ export async function POST(request: NextRequest) {
           productId: { in: productIds },
         },
         select: {
+          id: true,
           productId: true,
           variantId: true,
           quantity: true,
@@ -510,6 +542,7 @@ export async function POST(request: NextRequest) {
       canonicalItems.push({
         productId: product.id,
         variantId: selectedVariant?.id,
+        inventoryId: inventory.id,
         quantity: item.quantity,
         unitPrice,
         unitPriceCents,
@@ -602,45 +635,107 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const order = await db.$transaction((transaction) =>
-      transaction.order.create({
-        data: {
-          userId: session.user.id,
-          storeId: store.id,
-          addressId: payload.addressId,
-          customerName: customer.name?.trim() || session.user.name || "Cliente",
-          customerPhone: customer.phone?.trim() || "Não informado",
-          customerEmail: customer.email,
-          customerCpf: customer.cpf?.trim() || null,
-          status: initialOrderState.orderStatus,
-          paymentStatus: initialOrderState.paymentStatus,
-          shippingMethod: payload.shippingMethod,
-          subtotal,
-          shippingFee,
-          total,
-          paymentMethod: "stripe",
-          statusHistory: {
-            create: {
-              status: initialOrderState.orderStatus,
-              notes: initialStatusHistoryNote,
-              changedBy: session.user.id,
+    let order: { id: number };
+
+    try {
+      order = await db.$transaction(async (transaction) => {
+        const createdOrder = await transaction.order.create({
+          data: {
+            userId: session.user.id,
+            storeId: store.id,
+            addressId: payload.addressId,
+            customerName:
+              customer.name?.trim() || session.user.name || "Cliente",
+            customerPhone: customer.phone?.trim() || "Não informado",
+            customerEmail: customer.email,
+            customerCpf: customer.cpf?.trim() || null,
+            status: initialOrderState.orderStatus,
+            paymentStatus: initialOrderState.paymentStatus,
+            shippingMethod: payload.shippingMethod,
+            subtotal,
+            shippingFee,
+            total,
+            paymentMethod: "stripe",
+            statusHistory: {
+              create: {
+                status: initialOrderState.orderStatus,
+                notes: initialStatusHistoryNote,
+                changedBy: session.user.id,
+              },
+            },
+            items: {
+              create: canonicalItems.map((item) => ({
+                productId: item.productId,
+                variantId: item.variantId,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                totalPrice: item.totalPrice,
+                productName: item.productName,
+                productImage: item.productImage,
+                specifications: item.specifications,
+              })),
             },
           },
-          items: {
-            create: canonicalItems.map((item) => ({
-              productId: item.productId,
-              variantId: item.variantId,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              totalPrice: item.totalPrice,
-              productName: item.productName,
-              productImage: item.productImage,
-              specifications: item.specifications,
-            })),
+          select: {
+            id: true,
+            items: {
+              select: {
+                id: true,
+                productId: true,
+                variantId: true,
+              },
+            },
           },
-        },
-      }),
-    );
+        });
+
+        const orderItemIdByKey = new Map(
+          createdOrder.items.map((item) => [
+            buildInventoryKey(item.productId, item.variantId),
+            item.id,
+          ]),
+        );
+
+        for (const item of canonicalItems) {
+          const orderItemId = orderItemIdByKey.get(
+            buildInventoryKey(item.productId, item.variantId),
+          );
+
+          if (!orderItemId) {
+            throw new Error(
+              `Pedido ${createdOrder.id} sem item para reserva ${item.productId}`,
+            );
+          }
+
+          const reservationResult = await createReservation(
+            {
+              inventoryId: item.inventoryId,
+              quantity: item.quantity,
+              orderId: createdOrder.id,
+              orderItemId,
+            },
+            transaction,
+          );
+
+          if (!reservationResult.success) {
+            throw new CheckoutReservationConflictError(
+              resolveReservationConflictMessage(
+                item.productName,
+                reservationResult.reason,
+              ),
+            );
+          }
+        }
+
+        return { id: createdOrder.id };
+      });
+    } catch (error) {
+      if (error instanceof CheckoutReservationConflictError) {
+        return conflict(error.message);
+      }
+
+      throw error;
+    }
+
     const orderLogger = logger.child({ orderId: order.id });
 
     if (isE2ECheckoutMockModeEnabled()) {
@@ -760,8 +855,11 @@ export async function POST(request: NextRequest) {
       }
 
       try {
-        await db.order.delete({
-          where: { id: order.id },
+        await db.$transaction(async (transaction) => {
+          await releaseReservationsByOrder(order.id, transaction);
+          await transaction.order.delete({
+            where: { id: order.id },
+          });
         });
       } catch (rollbackError) {
         orderLogger.error("checkout.rollback_order_delete_failed", {

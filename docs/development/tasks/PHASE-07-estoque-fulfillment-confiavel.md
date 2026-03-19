@@ -1,9 +1,9 @@
 # 🚀 Tasks - Fase 07: Estoque e Fulfillment Confiável
 
 **Status:** 🟢 ATIVA
-**Última atualização:** 2026-03-18
+**Última atualização:** 2026-03-19
 **Sprint Atual:** Sprint 07
-**Status Geral:** 🟡 0% (0/12 tarefas concluídas) - FASE ATIVA
+**Status Geral:** 🟡 17% (2/12 tarefas concluídas) - FASE ATIVA
 **ETA:** 2 semanas após kickoff da Sprint 07
 **Pré-requisito:** Fase 06 - Painel Admin e Operação (✅ concluída em 2026-03-18)
 
@@ -17,7 +17,7 @@
 
 | Categoria                              | Total  | Concluído | Em Andamento | Pendente | Bloqueado |
 | -------------------------------------- | ------ | --------- | ------------ | -------- | --------- |
-| Reserva transacional e anti-oversell   | 3      | 0         | 0            | 3        | 0         |
+| Reserva transacional e anti-oversell   | 3      | 2         | 0            | 1        | 0         |
 | Confirmação de pagamento e compensação | 3      | 0         | 0            | 3        | 0         |
 | Operação de estoque e reconciliação    | 3      | 0         | 0            | 3        | 0         |
 | Testes, homologação e governança       | 3      | 0         | 0            | 3        | 0         |
@@ -55,7 +55,7 @@ Estabelecer a base de reserva de estoque da Sprint 07 para impedir venda acima d
 
 #### RES.1 - Reserva de estoque no início do checkout
 
-- [ ] **S07-RES-001** - Modelar persistência de reserva de estoque com TTL e vínculo por pedido/item
+- [x] **S07-RES-001** - Modelar persistência de reserva de estoque com TTL e vínculo por pedido/item
 
   **Descrição curta:**
   - O projeto já possui `Inventory.quantity` e `Inventory.reserved`, mas ainda não existe uma entidade canônica para rastrear ciclo de vida da reserva.
@@ -69,18 +69,18 @@ Estabelecer a base de reserva de estoque da Sprint 07 para impedir venda acima d
   **Arquivos/áreas afetadas:** `prisma/schema.prisma`, `prisma/migrations/*`, `src/lib/stock-reservation.ts` (novo), `src/lib/prisma.ts`
 
   **Critérios de aceitação:**
-  - [ ] Estrutura de reserva versionada em migration e validada com Prisma.
-  - [ ] Cada reserva fica rastreável por pedido, item, expiração e status operacional.
+  - [x] Estrutura de reserva versionada em migration e validada com Prisma.
+  - [x] Cada reserva fica rastreável por pedido, item, expiração e status operacional.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** nenhuma  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-19)
   **Notas adicionais (opcional):**
   - Preservar o invariante `quantity >= reserved >= 0`.
   - Se novos estados forem introduzidos, manter nomenclatura explícita para facilitar reconciliação e auditoria.
 
-- [ ] **S07-RES-002** - Introduzir reserva atômica de estoque no início do checkout
+- [x] **S07-RES-002** - Introduzir reserva atômica de estoque no início do checkout
 
   **Descrição curta:**
   - Hoje o checkout valida saldo, mas a Sprint 07 precisa impedir que dois compradores reservem o último item ao mesmo tempo.
@@ -94,13 +94,13 @@ Estabelecer a base de reserva de estoque da Sprint 07 para impedir venda acima d
   **Arquivos/áreas afetadas:** `src/app/api/checkout/route.ts`, `src/lib/stock-reservation.ts`, `src/lib/order-state-machine.ts`, `src/app/api/checkout/__tests__/route.integration.test.ts`
 
   **Critérios de aceitação:**
-  - [ ] Checkout com saldo disponível cria reserva consistente antes de avançar para pagamento.
-  - [ ] Compras concorrentes para o último item resultam em no máximo uma reserva bem-sucedida.
+  - [x] Checkout com saldo disponível cria reserva consistente antes de avançar para pagamento.
+  - [x] Compras concorrentes para o último item resultam em no máximo uma reserva bem-sucedida.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 8h  
   **Dependências:** S07-RES-001  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-19)
   **Notas adicionais (opcional):**
   - `AIDEV-CRITICAL` no ponto central de reserva/consumo do inventário.
   - Evitar solução distribuída; usar transação, contadores e checagens determinísticas.

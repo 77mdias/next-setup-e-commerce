@@ -12,6 +12,7 @@ const {
   mockExpireStripeCheckoutSession: vi.fn(),
   mockDb: {
     $transaction: vi.fn(),
+    $executeRaw: vi.fn(),
     store: {
       findUnique: vi.fn(),
     },
@@ -29,6 +30,13 @@ const {
     },
     inventory: {
       findMany: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    stockReservation: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+      updateMany: vi.fn(),
     },
     cart: {
       deleteMany: vi.fn(),
@@ -139,6 +147,7 @@ describe("POST /api/checkout integration", () => {
     mockDb.productVariant.findMany.mockResolvedValue([]);
     mockDb.inventory.findMany.mockResolvedValue([
       {
+        id: "inv-1",
         productId: "product-1",
         variantId: null,
         quantity: 10,
@@ -146,7 +155,31 @@ describe("POST /api/checkout integration", () => {
         minStock: 1,
       },
     ]);
-    mockDb.order.create.mockResolvedValue({ id: 123 });
+    mockDb.$executeRaw.mockResolvedValue(1);
+    mockDb.inventory.findUnique.mockResolvedValue({
+      id: "inv-1",
+      quantity: 10,
+      reserved: 9,
+      minStock: 1,
+    });
+    mockDb.inventory.update.mockResolvedValue({});
+    mockDb.stockReservation.create.mockResolvedValue({
+      id: "res-1",
+      inventoryId: "inv-1",
+      orderId: 123,
+      orderItemId: "item-1",
+      quantity: 1,
+      status: "ACTIVE",
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    mockDb.stockReservation.findMany.mockResolvedValue([]);
+    mockDb.stockReservation.updateMany.mockResolvedValue({ count: 1 });
+    mockDb.order.create.mockResolvedValue({
+      id: 123,
+      items: [{ id: "item-1", productId: "product-1", variantId: null }],
+    });
     mockDb.order.update.mockResolvedValue({ id: 123 });
     mockDb.order.delete.mockResolvedValue({ id: 123 });
     mockDb.cart.deleteMany.mockResolvedValue({ count: 1 });
@@ -252,6 +285,15 @@ describe("POST /api/checkout integration", () => {
         stripePaymentId: "cs_test_123",
         paymentMethod: "stripe",
       },
+    });
+    expect(mockDb.stockReservation.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        inventoryId: "inv-1",
+        orderId: 123,
+        orderItemId: "item-1",
+        quantity: 1,
+        status: "ACTIVE",
+      }),
     });
     expect(mockDb.cart.deleteMany).toHaveBeenCalledWith({
       where: { userId: "user-1" },
@@ -447,6 +489,7 @@ describe("POST /api/checkout integration", () => {
   it("returns 409 when requested quantity violates min stock protection", async () => {
     mockDb.inventory.findMany.mockResolvedValue([
       {
+        id: "inv-1",
         productId: "product-1",
         variantId: null,
         quantity: 14,
@@ -469,6 +512,31 @@ describe("POST /api/checkout integration", () => {
     expect(body.error).toContain("estoque mínimo");
     expect(mockDb.order.create).not.toHaveBeenCalled();
     expect(mockCreateStripeCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it("returns 409 when atomic reservation detects concurrent stock exhaustion", async () => {
+    mockDb.$executeRaw.mockResolvedValueOnce(0);
+    mockDb.inventory.findUnique.mockResolvedValueOnce({
+      id: "inv-1",
+      quantity: 1,
+      reserved: 1,
+      minStock: 0,
+    });
+
+    const response = await POST(
+      createCheckoutRequest({
+        storeId: "store-1",
+        items: [{ productId: "product-1", quantity: 1 }],
+        shippingMethod: "STANDARD",
+      }),
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(body.error).toContain("Estoque insuficiente");
+    expect(mockCreateStripeCheckoutSession).not.toHaveBeenCalled();
+    expect(mockDb.order.update).not.toHaveBeenCalled();
   });
 
   it("rolls back order and items when Stripe session creation fails", async () => {

@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 import { db } from "@/lib/prisma";
 import {
   RESERVATION_TTL_MINUTES,
@@ -7,21 +9,31 @@ import {
   type ReservationResult,
 } from "@/lib/stock-reservation-contract";
 
-/**
- * Creates a stock reservation for a given inventory record.
- *
- * Validates that the requested quantity is available (quantity - reserved >= qty),
- * then atomically increments Inventory.reserved and inserts a StockReservation row
- * with an expiry based on the configured TTL.
- */
-export async function createReservation(
+type ReservationMutationClient = typeof db | Prisma.TransactionClient;
+
+async function createReservationRecord(
+  database: ReservationMutationClient,
   input: ReservationInput,
 ): Promise<ReservationResult> {
   const { inventoryId, quantity, orderId, orderItemId, ttlMinutes } = input;
   const ttl = ttlMinutes ?? RESERVATION_TTL_MINUTES;
+  const expiresAt = new Date(Date.now() + ttl * 60 * 1000);
 
-  return db.$transaction(async (tx) => {
-    const inventory = await tx.inventory.findUnique({
+  // AIDEV-CRITICAL: reserva e incremento de `inventory.reserved` precisam
+  // acontecer como uma única mutação atômica para evitar oversell concorrente.
+  const updatedRows = Number(
+    await database.$executeRaw`
+      UPDATE "inventory"
+      SET "reserved" = "reserved" + ${quantity},
+          "updatedAt" = CURRENT_TIMESTAMP
+      WHERE "id" = ${inventoryId}
+        AND ("quantity" - "reserved") >= ${quantity}
+        AND ("quantity" - "reserved" - ${quantity}) >= "minStock"
+    `,
+  );
+
+  if (updatedRows === 0) {
+    const inventory = await database.inventory.findUnique({
       where: { id: inventoryId },
       select: { id: true, quantity: true, reserved: true, minStock: true },
     });
@@ -46,27 +58,42 @@ export async function createReservation(
       };
     }
 
-    const expiresAt = new Date(Date.now() + ttl * 60 * 1000);
+    return {
+      success: false,
+      reason: "Inventory reservation failed due to a concurrent update",
+    };
+  }
 
-    const [reservation] = await Promise.all([
-      tx.stockReservation.create({
-        data: {
-          inventoryId,
-          orderId: orderId ?? null,
-          orderItemId: orderItemId ?? null,
-          quantity,
-          status: "ACTIVE",
-          expiresAt,
-        },
-      }),
-      tx.inventory.update({
-        where: { id: inventoryId },
-        data: { reserved: { increment: quantity } },
-      }),
-    ]);
-
-    return { success: true, reservation: reservation as ReservationRecord };
+  const reservation = await database.stockReservation.create({
+    data: {
+      inventoryId,
+      orderId: orderId ?? null,
+      orderItemId: orderItemId ?? null,
+      quantity,
+      status: "ACTIVE",
+      expiresAt,
+    },
   });
+
+  return { success: true, reservation: reservation as ReservationRecord };
+}
+
+/**
+ * Creates a stock reservation for a given inventory record.
+ *
+ * Validates that the requested quantity is available (quantity - reserved >= qty),
+ * then atomically increments Inventory.reserved and inserts a StockReservation row
+ * with an expiry based on the configured TTL.
+ */
+export async function createReservation(
+  input: ReservationInput,
+  database?: ReservationMutationClient,
+): Promise<ReservationResult> {
+  if (database) {
+    return createReservationRecord(database, input);
+  }
+
+  return db.$transaction((tx) => createReservationRecord(tx, input));
 }
 
 /**
@@ -189,8 +216,13 @@ export async function getActiveReservationsByOrder(
  */
 export async function releaseReservationsByOrder(
   orderId: number,
+  database?: ReservationMutationClient,
 ): Promise<number> {
-  const active = await db.stockReservation.findMany({
+  if (!database) {
+    return db.$transaction((tx) => releaseReservationsByOrder(orderId, tx));
+  }
+
+  const active = await database.stockReservation.findMany({
     where: { orderId, status: "ACTIVE" },
     select: { id: true, inventoryId: true, quantity: true },
   });
@@ -202,18 +234,19 @@ export async function releaseReservationsByOrder(
     return acc;
   }, {});
 
-  await db.$transaction([
-    db.stockReservation.updateMany({
-      where: { orderId, status: "ACTIVE" },
-      data: { status: "RELEASED" },
-    }),
-    ...Object.entries(byInventory).map(([inventoryId, qty]) =>
-      db.inventory.update({
+  await database.stockReservation.updateMany({
+    where: { orderId, status: "ACTIVE" },
+    data: { status: "RELEASED" },
+  });
+
+  await Promise.all(
+    Object.entries(byInventory).map(([inventoryId, qty]) =>
+      database.inventory.update({
         where: { id: inventoryId },
         data: { reserved: { decrement: qty } },
       }),
     ),
-  ]);
+  );
 
   return active.length;
 }
@@ -223,8 +256,10 @@ export async function releaseReservationsByOrder(
  */
 export async function confirmReservationsByOrder(
   orderId: number,
+  database?: ReservationMutationClient,
 ): Promise<number> {
-  const result = await db.stockReservation.updateMany({
+  const client = database ?? db;
+  const result = await client.stockReservation.updateMany({
     where: { orderId, status: "ACTIVE" },
     data: { status: "CONFIRMED" },
   });
