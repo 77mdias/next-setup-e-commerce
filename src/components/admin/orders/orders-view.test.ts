@@ -156,7 +156,8 @@ describe("AdminOrdersView", () => {
       }),
     );
 
-    expect(html).toContain("Operacao de pedidos");
+    expect(html).toContain("0 pedido(s) no recorte atual");
+    expect(html).toContain("Busca textual");
     expect(html).toContain("Nenhum pedido selecionado");
   });
 
