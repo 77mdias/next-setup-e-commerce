@@ -3,6 +3,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   CreditCard,
+  LayoutDashboard,
   LoaderCircle,
   LogOut,
   MapPin,
@@ -24,6 +25,7 @@ import {
 } from "@/components/profile/address-form-modal";
 import { useAuth } from "@/hooks/useAuth";
 import { buildAccessFeedbackPath } from "@/lib/access-feedback";
+import { ROUTE_PATHS } from "@/lib/routes";
 
 type ProfilePageContentProps = {
   signOutCallbackUrl: string;
@@ -273,7 +275,7 @@ export function ProfilePageContent({
   signOutCallbackUrl,
 }: ProfilePageContentProps) {
   const router = useRouter();
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isAdmin, isLoading, isAuthenticated } = useAuth();
   const [activeSection, setActiveSection] =
     useState<ProfileSection>("personal");
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
@@ -550,7 +552,7 @@ export function ProfilePageContent({
                 />
 
                 <Link
-                  href="/orders"
+                  href={ROUTE_PATHS.orders}
                   className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm text-[#64748b] transition-colors hover:bg-[#edf2ff] hover:text-[#0f172a] dark:text-[#99A1AF] dark:hover:bg-white/5 dark:hover:text-[#F1F3F5]"
                 >
                   <Package className="h-5 w-5" />
@@ -558,6 +560,18 @@ export function ProfilePageContent({
                     My Orders
                   </span>
                 </Link>
+
+                {isAdmin ? (
+                  <Link
+                    href={ROUTE_PATHS.admin}
+                    className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm text-[#64748b] transition-colors hover:bg-[#edf2ff] hover:text-[#0f172a] dark:text-[#99A1AF] dark:hover:bg-white/5 dark:hover:text-[#F1F3F5]"
+                  >
+                    <LayoutDashboard className="h-5 w-5" />
+                    <span className="text-sm font-[var(--font-arimo)]">
+                      Painel admin
+                    </span>
+                  </Link>
+                ) : null}
               </nav>
 
               <div className="border-t border-[#dbe4ff] pt-8 dark:border-white/[0.05]">

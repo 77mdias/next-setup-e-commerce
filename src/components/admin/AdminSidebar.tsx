@@ -71,7 +71,7 @@ export default function AdminSidebar({
     <>
       <nav
         aria-label="Navegação administrativa"
-        className="overflow-x-auto pb-1 lg:hidden"
+        className="overflow-x-auto pb-1 lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         <div className="flex min-w-max gap-1.5">
           {ADMIN_NAV_ITEMS.map((item) => {

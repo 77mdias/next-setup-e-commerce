@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ChevronRight, ShieldCheck } from "lucide-react";
 
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import {
@@ -28,6 +28,11 @@ export default function AdminShell({ children, context }: AdminShellProps) {
   const route = getAdminRouteMeta(pathname);
   const breadcrumbs = getAdminBreadcrumbs(pathname);
 
+  const backHref =
+    breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 2].href : "/";
+  const backLabel =
+    breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 2].label : "Loja";
+
   return (
     <div className="min-h-screen bg-[#0b0d10] text-[#f1f3f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-screen-2xl flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row lg:px-10 xl:px-12">
@@ -36,9 +41,20 @@ export default function AdminShell({ children, context }: AdminShellProps) {
         <div className="flex-1 space-y-6">
           <header className="overflow-hidden rounded-2xl border border-white/6 bg-[#171a21]">
             <div className="border-b border-white/6 px-4 py-3 sm:px-5">
+              {/* Mobile: back button */}
+              <Link
+                aria-label={`Voltar para ${backLabel}`}
+                className="inline-flex items-center gap-1.5 [font-family:var(--font-arimo)] text-sm text-[#6a7282] transition hover:text-[#f1f3f5] lg:hidden"
+                href={backHref}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                {backLabel}
+              </Link>
+
+              {/* Desktop: breadcrumbs */}
               <nav
                 aria-label="Breadcrumbs do painel"
-                className="flex flex-wrap items-center gap-2 [font-family:var(--font-arimo)] text-sm text-[#6a7282]"
+                className="hidden flex-wrap items-center gap-2 [font-family:var(--font-arimo)] text-sm text-[#6a7282] lg:flex"
               >
                 {breadcrumbs.map((breadcrumb, index) => (
                   <span
