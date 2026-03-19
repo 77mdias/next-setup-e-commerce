@@ -2,21 +2,172 @@ import { Prisma } from "@prisma/client";
 
 import { db } from "@/lib/prisma";
 import {
-  RESERVATION_TTL_MINUTES,
   type ExpiredReservationsResult,
+  type ReservationCleanupResult,
+  type ReservationCleanupSnapshot,
   type ReservationInput,
   type ReservationRecord,
   type ReservationResult,
+  resolveReservationTtlMinutes,
 } from "@/lib/stock-reservation-contract";
 
 type ReservationMutationClient = typeof db | Prisma.TransactionClient;
+type ReservationMutationRow = {
+  id: string;
+  inventoryId: string;
+  quantity: number;
+};
+
+function normalizeReservationMutationRows(
+  rows: ReservationMutationRow[],
+): ReservationMutationRow[] {
+  return rows.map((row) => ({
+    id: row.id,
+    inventoryId: row.inventoryId,
+    quantity: Number(row.quantity),
+  }));
+}
+
+function aggregateInventoryDeltas(rows: ReservationMutationRow[]) {
+  return rows.reduce<Record<string, number>>((acc, row) => {
+    acc[row.inventoryId] = (acc[row.inventoryId] ?? 0) + row.quantity;
+    return acc;
+  }, {});
+}
+
+async function decrementReservedCounters(
+  database: ReservationMutationClient,
+  rows: ReservationMutationRow[],
+) {
+  if (rows.length === 0) {
+    return;
+  }
+
+  const deltas = Object.entries(aggregateInventoryDeltas(rows));
+
+  await database.$executeRaw(
+    Prisma.sql`
+      WITH "reservation_deltas" ("inventoryId", "quantity") AS (
+        VALUES ${Prisma.join(
+          deltas.map(
+            ([inventoryId, quantity]) =>
+              Prisma.sql`(${inventoryId}, ${quantity})`,
+          ),
+        )}
+      )
+      UPDATE "inventory" AS i
+      SET "reserved" = GREATEST(i."reserved" - d."quantity", 0),
+          "updatedAt" = CURRENT_TIMESTAMP
+      FROM "reservation_deltas" AS d
+      WHERE i."id" = d."inventoryId"
+    `,
+  );
+}
+
+async function expireActiveReservations(
+  database: ReservationMutationClient,
+  referenceDate: Date,
+) {
+  const expiredRows = await database.$queryRaw<ReservationMutationRow[]>(
+    Prisma.sql`
+      WITH "expired_rows" AS (
+        UPDATE "stock_reservations" AS sr
+        SET "status" = 'EXPIRED'::"StockReservationStatus",
+            "updatedAt" = CURRENT_TIMESTAMP
+        WHERE sr."status" = 'ACTIVE'::"StockReservationStatus"
+          AND sr."expiresAt" < ${referenceDate}
+        RETURNING sr."id", sr."inventoryId", sr."quantity"
+      )
+      SELECT "id", "inventoryId", "quantity"
+      FROM "expired_rows"
+    `,
+  );
+
+  return normalizeReservationMutationRows(expiredRows);
+}
+
+async function releaseAbandonedOrFailedReservations(
+  database: ReservationMutationClient,
+  referenceDate: Date,
+) {
+  const releasedRows = await database.$queryRaw<ReservationMutationRow[]>(
+    Prisma.sql`
+      WITH "released_rows" AS (
+        UPDATE "stock_reservations" AS sr
+        SET "status" = 'RELEASED'::"StockReservationStatus",
+            "updatedAt" = CURRENT_TIMESTAMP
+        WHERE sr."status" = 'ACTIVE'::"StockReservationStatus"
+          AND sr."expiresAt" >= ${referenceDate}
+          AND (
+            sr."orderId" IS NULL
+            OR EXISTS (
+              SELECT 1
+              FROM "orders" AS o
+              WHERE o."id" = sr."orderId"
+                AND (
+                  o."status" = 'CANCELLED'::"OrderStatus"
+                  OR o."paymentStatus" IN (
+                    'FAILED'::"PaymentStatus",
+                    'CANCELLED'::"PaymentStatus"
+                  )
+                )
+            )
+          )
+        RETURNING sr."id", sr."inventoryId", sr."quantity"
+      )
+      SELECT "id", "inventoryId", "quantity"
+      FROM "released_rows"
+    `,
+  );
+
+  return normalizeReservationMutationRows(releasedRows);
+}
+
+async function buildCleanupSnapshot(
+  database: ReservationMutationClient,
+  referenceDate: Date,
+): Promise<ReservationCleanupSnapshot> {
+  const [expiredCount, abandonedOrFailedCount] = await Promise.all([
+    database.stockReservation.count({
+      where: {
+        status: "ACTIVE",
+        expiresAt: { lt: referenceDate },
+      },
+    }),
+    database.stockReservation.count({
+      where: {
+        status: "ACTIVE",
+        expiresAt: { gte: referenceDate },
+        OR: [
+          { orderId: null },
+          {
+            order: {
+              is: {
+                OR: [
+                  { status: "CANCELLED" },
+                  { paymentStatus: { in: ["FAILED", "CANCELLED"] } },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    }),
+  ]);
+
+  return {
+    referenceDate,
+    expiredCount,
+    abandonedOrFailedCount,
+  };
+}
 
 async function createReservationRecord(
   database: ReservationMutationClient,
   input: ReservationInput,
 ): Promise<ReservationResult> {
   const { inventoryId, quantity, orderId, orderItemId, ttlMinutes } = input;
-  const ttl = ttlMinutes ?? RESERVATION_TTL_MINUTES;
+  const ttl = ttlMinutes ?? resolveReservationTtlMinutes();
   const expiresAt = new Date(Date.now() + ttl * 60 * 1000);
 
   // AIDEV-CRITICAL: reserva e incremento de `inventory.reserved` precisam
@@ -157,45 +308,66 @@ export async function confirmReservation(
  * Intended to be called by a scheduled job or on-demand cleanup routine.
  */
 export async function expireStaleReservations(): Promise<ExpiredReservationsResult> {
-  const now = new Date();
+  const referenceDate = new Date();
 
-  const stale = await db.stockReservation.findMany({
-    where: { status: "ACTIVE", expiresAt: { lt: now } },
-    select: { id: true, inventoryId: true, quantity: true },
+  return db.$transaction(async (tx) => {
+    const expiredRows = await expireActiveReservations(tx, referenceDate);
+    await decrementReservedCounters(tx, expiredRows);
+
+    return {
+      expiredCount: expiredRows.length,
+      reservationIds: expiredRows.map((row) => row.id),
+    };
   });
+}
 
-  if (stale.length === 0) {
-    return { expiredCount: 0, reservationIds: [] };
+export async function inspectReservationCleanup(
+  referenceDate: Date = new Date(),
+  database?: ReservationMutationClient,
+): Promise<ReservationCleanupSnapshot> {
+  const client = database ?? db;
+  return buildCleanupSnapshot(client, referenceDate);
+}
+
+/**
+ * AIDEV-CRITICAL: limpeza de reservas precisa ser determinística e idempotente.
+ * A mutação troca status + baixa de `inventory.reserved` em transação única
+ * para evitar dupla liberação sob concorrência.
+ */
+export async function cleanupAbandonedReservations(params?: {
+  referenceDate?: Date;
+  database?: ReservationMutationClient;
+}): Promise<ReservationCleanupResult> {
+  const referenceDate = params?.referenceDate ?? new Date();
+
+  const executeCleanup = async (
+    database: ReservationMutationClient,
+  ): Promise<ReservationCleanupResult> => {
+    const expiredRows = await expireActiveReservations(database, referenceDate);
+    const releasedRows = await releaseAbandonedOrFailedReservations(
+      database,
+      referenceDate,
+    );
+
+    await decrementReservedCounters(database, [
+      ...expiredRows,
+      ...releasedRows,
+    ]);
+
+    return {
+      referenceDate,
+      expiredCount: expiredRows.length,
+      releasedCount: releasedRows.length,
+      expiredReservationIds: expiredRows.map((row) => row.id),
+      releasedReservationIds: releasedRows.map((row) => row.id),
+    };
+  };
+
+  if (params?.database) {
+    return executeCleanup(params.database);
   }
 
-  await db.$transaction(
-    stale.map((r) =>
-      db.stockReservation.update({
-        where: { id: r.id },
-        data: { status: "EXPIRED" },
-      }),
-    ),
-  );
-
-  // Decrement reserved counts per inventory in aggregate
-  const byInventory = stale.reduce<Record<string, number>>((acc, r) => {
-    acc[r.inventoryId] = (acc[r.inventoryId] ?? 0) + r.quantity;
-    return acc;
-  }, {});
-
-  await db.$transaction(
-    Object.entries(byInventory).map(([inventoryId, qty]) =>
-      db.inventory.update({
-        where: { id: inventoryId },
-        data: { reserved: { decrement: qty } },
-      }),
-    ),
-  );
-
-  return {
-    expiredCount: stale.length,
-    reservationIds: stale.map((r) => r.id),
-  };
+  return db.$transaction((tx) => executeCleanup(tx));
 }
 
 /**

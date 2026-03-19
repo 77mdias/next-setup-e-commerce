@@ -12,6 +12,7 @@ const {
   mockExpireStripeCheckoutSession: vi.fn(),
   mockDb: {
     $transaction: vi.fn(),
+    $queryRaw: vi.fn(),
     $executeRaw: vi.fn(),
     store: {
       findUnique: vi.fn(),
@@ -156,6 +157,7 @@ describe("POST /api/checkout integration", () => {
       },
     ]);
     mockDb.$executeRaw.mockResolvedValue(1);
+    mockDb.$queryRaw.mockResolvedValue([]);
     mockDb.inventory.findUnique.mockResolvedValue({
       id: "inv-1",
       quantity: 10,

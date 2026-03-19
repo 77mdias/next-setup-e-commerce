@@ -105,7 +105,7 @@ Estabelecer a base de reserva de estoque da Sprint 07 para impedir venda acima d
   - `AIDEV-CRITICAL` no ponto central de reserva/consumo do inventário.
   - Evitar solução distribuída; usar transação, contadores e checagens determinísticas.
 
-- [ ] **S07-RES-003** - Expirar e liberar reservas abandonadas ou falhas sem prender estoque
+- [x] **S07-RES-003** - Expirar e liberar reservas abandonadas ou falhas sem prender estoque
 
   **Descrição curta:**
   - Reservas que não chegam a pagamento confirmado não podem permanecer indefinidamente no inventário reservado.
@@ -119,13 +119,15 @@ Estabelecer a base de reserva de estoque da Sprint 07 para impedir venda acima d
   **Arquivos/áreas afetadas:** `src/app/api/checkout/route.ts`, `src/lib/stock-reservation.ts`, `scripts/inventory-reservations-cleanup.ts` (novo), `package.json`, `docs/04-setup-e-integracoes/ENVIRONMENT_VARIABLES.md`
 
   **Critérios de aceitação:**
-  - [ ] Reservas expiradas ou abandonadas são liberadas sem deixar `reserved` preso.
-  - [ ] Existe comando operacional repetível para limpeza e diagnóstico de reservas vencidas.
+  - [x] Reservas expiradas ou abandonadas são liberadas sem deixar `reserved` preso.
+  - [x] Existe comando operacional repetível para limpeza e diagnóstico de reservas vencidas.
 
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** S07-RES-001, S07-RES-002  
-  **Status:** 🔴 Pendente
+  **Status:** 🟢 Concluída (2026-03-19)
+  **Notas adicionais (opcional):**
+  - `AIDEV-CRITICAL` adicionado no cleanup transacional/idempotente de reservas para evitar dupla liberação sob concorrência.
 
 ### 📦 Confirmação de pagamento e compensação - Estoque consistente do webhook ao pós-pagamento
 

@@ -6,6 +6,8 @@ const { mockConstructEvent, mockStripeCtor, mockDb } = vi.hoisted(() => ({
   mockStripeCtor: vi.fn(),
   mockDb: {
     $transaction: vi.fn(),
+    $queryRaw: vi.fn(),
+    $executeRaw: vi.fn(),
     order: {
       findFirst: vi.fn(),
       findUnique: vi.fn(),
@@ -130,6 +132,8 @@ describe("POST /api/webhooks/stripe integration", () => {
     mockDb.stripeWebhookEvent.create.mockResolvedValue({ id: "evt-log-1" });
     mockDb.stripeWebhookEvent.findUnique.mockResolvedValue(null);
     mockDb.stripeWebhookEvent.updateMany.mockResolvedValue({ count: 1 });
+    mockDb.$queryRaw.mockResolvedValue([]);
+    mockDb.$executeRaw.mockResolvedValue(0);
   });
 
   it("processes checkout completed atomically and marks event as completed", async () => {
@@ -553,6 +557,34 @@ describe("POST /api/webhooks/stripe integration", () => {
         notes: expect.stringContaining("source:webhook"),
       },
     });
+  });
+
+  it("runs reservation cleanup after failure cancellation to release abandoned holds", async () => {
+    mockDb.$queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      {
+        id: "res-1",
+        inventoryId: "inv-1",
+        quantity: 2,
+      },
+    ]);
+
+    mockConstructEvent.mockReturnValue({
+      id: "evt_failure_cleanup_123",
+      type: "checkout.session.expired",
+      data: {
+        object: {
+          id: "cs_test_123",
+          metadata: { orderId: "123" },
+          payment_intent: "pi_test_123",
+        },
+      },
+    });
+
+    const response = await POST(createWebhookRequest({ example: true }));
+
+    expect(response.status).toBe(200);
+    expect(mockDb.$queryRaw).toHaveBeenCalledTimes(2);
+    expect(mockDb.$executeRaw).toHaveBeenCalledTimes(1);
   });
 
   it("ignores failure event when order is already in a non-cancellable state", async () => {

@@ -8,6 +8,7 @@ import { createRequestLogger } from "@/lib/logger";
 import { INITIAL_ORDER_STATE } from "@/lib/order-state-machine";
 import { db } from "@/lib/prisma";
 import {
+  cleanupAbandonedReservations,
   confirmReservationsByOrder,
   createReservation,
   releaseReservationsByOrder,
@@ -269,6 +270,10 @@ async function finalizeE2EMockCheckout(params: {
   });
 }
 
+async function runBestEffortReservationCleanup() {
+  return cleanupAbandonedReservations();
+}
+
 export async function POST(request: NextRequest) {
   const logger = createRequestLogger({
     headers: request.headers,
@@ -308,6 +313,24 @@ export async function POST(request: NextRequest) {
 
     const payload = parsedPayload.data;
     const normalizedItems = normalizeItems(payload.items);
+
+    try {
+      const cleanupResult = await runBestEffortReservationCleanup();
+
+      if (cleanupResult.expiredCount > 0 || cleanupResult.releasedCount > 0) {
+        logger.info("checkout.reservations_cleanup_applied", {
+          data: {
+            referenceDate: cleanupResult.referenceDate.toISOString(),
+            expiredCount: cleanupResult.expiredCount,
+            releasedCount: cleanupResult.releasedCount,
+          },
+        });
+      }
+    } catch (cleanupError) {
+      logger.warn("checkout.reservations_cleanup_failed", {
+        error: cleanupError,
+      });
+    }
 
     const [store, customer] = await Promise.all([
       db.store.findUnique({

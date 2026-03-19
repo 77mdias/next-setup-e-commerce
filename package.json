@@ -22,6 +22,8 @@
     "reprocess-images": "node scripts/auto-reprocess-images.js",
     "check-images": "node scripts/check-processed-images.js",
     "seed": "prisma db seed",
+    "inventory:reservations:cleanup": "ts-node scripts/inventory-reservations-cleanup.ts --apply",
+    "inventory:reservations:cleanup:dry-run": "ts-node scripts/inventory-reservations-cleanup.ts",
     "tokens:cleanup-expired": "node scripts/cleanup-expired-auth-tokens.js --apply",
     "e2e:prepare": "node scripts/prepare-e2e-data.js",
     "orders:backfill-user-id": "node scripts/backfill-order-user-id.js",

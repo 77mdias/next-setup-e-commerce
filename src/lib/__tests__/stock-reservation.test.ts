@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockDb, mockTx } = vi.hoisted(() => {
   const mockTx = {
+    $queryRaw: vi.fn(),
     $executeRaw: vi.fn(),
     inventory: {
       findUnique: vi.fn(),
@@ -13,6 +14,7 @@ const { mockDb, mockTx } = vi.hoisted(() => {
     },
     stockReservation: {
       create: vi.fn(),
+      count: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
       findMany: vi.fn(),
@@ -26,12 +28,14 @@ const { mockDb, mockTx } = vi.hoisted(() => {
       // For array of promises (batch $transaction)
       return Promise.all(fn as Promise<unknown>[]);
     }),
+    $queryRaw: vi.fn(),
     $executeRaw: vi.fn(),
     inventory: {
       findUnique: vi.fn(),
       update: vi.fn(),
     },
     stockReservation: {
+      count: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
       findMany: vi.fn(),
@@ -45,11 +49,13 @@ const { mockDb, mockTx } = vi.hoisted(() => {
 vi.mock("@/lib/prisma", () => ({ db: mockDb }));
 
 import {
+  cleanupAbandonedReservations,
   confirmReservation,
   confirmReservationsByOrder,
   createReservation,
   expireStaleReservations,
   getActiveReservationsByOrder,
+  inspectReservationCleanup,
   releaseReservation,
   releaseReservationsByOrder,
 } from "@/lib/stock-reservation";
@@ -351,12 +357,13 @@ describe("expireStaleReservations", () => {
   });
 
   it("returns zero counts when no stale reservations exist", async () => {
-    mockDb.stockReservation.findMany.mockResolvedValue([]);
+    mockTx.$queryRaw.mockResolvedValue([]);
 
     const result = await expireStaleReservations();
 
     expect(result.expiredCount).toBe(0);
     expect(result.reservationIds).toHaveLength(0);
+    expect(mockTx.$executeRaw).not.toHaveBeenCalled();
   });
 
   it("expires stale reservations and decrements inventory.reserved", async () => {
@@ -365,14 +372,89 @@ describe("expireStaleReservations", () => {
       { id: "res-2", inventoryId: "inv-1", quantity: 2 },
       { id: "res-3", inventoryId: "inv-2", quantity: 1 },
     ];
-    mockDb.stockReservation.findMany.mockResolvedValue(stale);
-    mockDb.stockReservation.update.mockResolvedValue({});
-    mockDb.inventory.update.mockResolvedValue({});
+    mockTx.$queryRaw.mockResolvedValue(stale);
+    mockTx.$executeRaw.mockResolvedValue(2);
 
     const result = await expireStaleReservations();
 
     expect(result.expiredCount).toBe(3);
     expect(result.reservationIds).toEqual(["res-1", "res-2", "res-3"]);
+    expect(mockTx.$executeRaw).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// inspectReservationCleanup
+// ---------------------------------------------------------------------------
+
+describe("inspectReservationCleanup", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns cleanup candidates grouped by scenario", async () => {
+    mockDb.stockReservation.count
+      .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(3);
+
+    const referenceDate = new Date("2026-03-19T10:00:00.000Z");
+    const result = await inspectReservationCleanup(referenceDate);
+
+    expect(result).toEqual({
+      referenceDate,
+      expiredCount: 2,
+      abandonedOrFailedCount: 3,
+    });
+    expect(mockDb.stockReservation.count).toHaveBeenCalledTimes(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// cleanupAbandonedReservations
+// ---------------------------------------------------------------------------
+
+describe("cleanupAbandonedReservations", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockDb.$transaction.mockImplementation((arg: unknown) => {
+      if (typeof arg === "function") return arg(mockTx);
+      return Promise.all(arg as Promise<unknown>[]);
+    });
+  });
+
+  it("returns zero counters when no eligible reservations exist", async () => {
+    mockTx.$queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
+
+    const result = await cleanupAbandonedReservations();
+
+    expect(result.expiredCount).toBe(0);
+    expect(result.releasedCount).toBe(0);
+    expect(result.expiredReservationIds).toEqual([]);
+    expect(result.releasedReservationIds).toEqual([]);
+    expect(mockTx.$executeRaw).not.toHaveBeenCalled();
+  });
+
+  it("expires stale and releases abandoned reservations in one transaction", async () => {
+    mockTx.$queryRaw
+      .mockResolvedValueOnce([
+        { id: "res-expired-1", inventoryId: "inv-1", quantity: 2 },
+      ])
+      .mockResolvedValueOnce([
+        { id: "res-released-1", inventoryId: "inv-1", quantity: 3 },
+        { id: "res-released-2", inventoryId: "inv-2", quantity: 1 },
+      ]);
+    mockTx.$executeRaw.mockResolvedValue(2);
+
+    const result = await cleanupAbandonedReservations();
+
+    expect(result.expiredCount).toBe(1);
+    expect(result.releasedCount).toBe(2);
+    expect(result.expiredReservationIds).toEqual(["res-expired-1"]);
+    expect(result.releasedReservationIds).toEqual([
+      "res-released-1",
+      "res-released-2",
+    ]);
+    expect(mockTx.$executeRaw).toHaveBeenCalledTimes(1);
   });
 });
 

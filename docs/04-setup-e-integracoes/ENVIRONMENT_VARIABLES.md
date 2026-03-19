@@ -32,6 +32,18 @@ STRIPE_SECRET_KEY="sk_test_..."
 STRIPE_WEBHOOK_SECRET_KEY="whsec_..."
 ```
 
+## Reserva de estoque (opcional)
+
+```
+STOCK_RESERVATION_TTL_MINUTES="30"
+```
+
+- TTL em minutos para reservas criadas no checkout.
+- Valor padrao: `30`.
+- Faixa suportada: `5` a `1440` (24h).
+- Reservas `ACTIVE` vencidas sao marcadas como `EXPIRED` e liberam `inventory.reserved`.
+- Reservas `ACTIVE` de pedidos cancelados/falhos tambem sao liberadas no cleanup do checkout/webhook.
+
 ## Automacao DEMO de pedido (opcional)
 
 ```

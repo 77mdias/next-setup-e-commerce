@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import { createRequestLogger, type StructuredLogger } from "@/lib/logger";
 import { validateOrderStateTransition } from "@/lib/order-state-machine";
 import { db } from "@/lib/prisma";
+import { cleanupAbandonedReservations } from "@/lib/stock-reservation";
 
 type WebhookProcessResult = {
   completed: boolean;
@@ -756,6 +757,20 @@ async function processWebhookEventAtomically(
       event,
       logger,
     );
+
+    const cleanupResult = await cleanupAbandonedReservations({
+      database: tx,
+    });
+
+    if (cleanupResult.expiredCount > 0 || cleanupResult.releasedCount > 0) {
+      logger.info("webhooks.stripe.reservations_cleanup_applied", {
+        data: {
+          referenceDate: cleanupResult.referenceDate.toISOString(),
+          expiredCount: cleanupResult.expiredCount,
+          releasedCount: cleanupResult.releasedCount,
+        },
+      });
+    }
 
     if (result.completed) {
       await tx.stripeWebhookEvent.updateMany({
