@@ -21,7 +21,7 @@
 | Confirmação de pagamento e compensação | 3      | 0         | 0            | 3        | 0         |
 | Operação de estoque e reconciliação    | 3      | 0         | 0            | 3        | 0         |
 | Testes, homologação e governança       | 3      | 0         | 0            | 3        | 0         |
-| **TOTAL**                              | **12** | **0**     | **0**        | **12**   | **0**     |
+| **TOTAL**                              | **12** | **2**     | **0**        | **10**   | **0**     |
 
 ### 🎯 Principais Indicadores
 
