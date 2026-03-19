@@ -4,37 +4,41 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mock Prisma db
 // ---------------------------------------------------------------------------
 
-const mockTx = {
-  inventory: {
-    findUnique: vi.fn(),
-    update: vi.fn(),
-  },
-  stockReservation: {
-    create: vi.fn(),
-    findUnique: vi.fn(),
-    update: vi.fn(),
-    findMany: vi.fn(),
-    updateMany: vi.fn(),
-  },
-};
+const { mockDb, mockTx } = vi.hoisted(() => {
+  const mockTx = {
+    inventory: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    stockReservation: {
+      create: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+      findMany: vi.fn(),
+      updateMany: vi.fn(),
+    },
+  };
 
-const mockDb = {
-  $transaction: vi.fn((fn: unknown) => {
-    if (typeof fn === "function") return fn(mockTx);
-    // For array of promises (batch $transaction)
-    return Promise.all(fn as Promise<unknown>[]);
-  }),
-  inventory: {
-    findUnique: vi.fn(),
-    update: vi.fn(),
-  },
-  stockReservation: {
-    findUnique: vi.fn(),
-    update: vi.fn(),
-    findMany: vi.fn(),
-    updateMany: vi.fn(),
-  },
-};
+  const mockDb = {
+    $transaction: vi.fn((fn: unknown) => {
+      if (typeof fn === "function") return fn(mockTx);
+      // For array of promises (batch $transaction)
+      return Promise.all(fn as Promise<unknown>[]);
+    }),
+    inventory: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    stockReservation: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+      findMany: vi.fn(),
+      updateMany: vi.fn(),
+    },
+  };
+
+  return { mockDb, mockTx };
+});
 
 vi.mock("@/lib/prisma", () => ({ db: mockDb }));
 
