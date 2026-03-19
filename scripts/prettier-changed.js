@@ -18,7 +18,13 @@ const SUPPORTED_EXTENSIONS = new Set([
   ".prisma",
 ]);
 
-const IGNORED_PREFIXES = [".next/", ".next-dev/", "node_modules/"];
+const IGNORED_PREFIXES = [
+  ".next/",
+  ".next-dev/",
+  "node_modules/",
+  "playwright-report/",
+  "test-results/",
+];
 
 function runGitCommand(args) {
   const result = spawnSync("git", args, {
