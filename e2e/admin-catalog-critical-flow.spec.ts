@@ -31,7 +31,7 @@ test.describe("admin catalog critical flow", () => {
 
     await expect(
       page.getByRole("heading", {
-        name: /Catálogo admin com mídia segura e ajuste de estoque/i,
+        name: /Catálogo administrativo/i,
       }),
     ).toBeVisible();
     await expect(

@@ -82,13 +82,15 @@ test.describe("admin dashboard critical flow", () => {
     // Shell context visible – use h1 heading to avoid strict mode violation
     await expect(page.locator("h1")).toBeVisible();
 
-    // Admin shell context cards: operator, role, scope (scoped to aside to avoid banner duplicates)
+    // Admin shell context is rendered in the sidebar as actor + role/scope summary.
     await expect(
-      page.getByRole("complementary").getByText(/Operador/i),
+      page.getByRole("complementary").getByText(/E2E Store Admin/i),
     ).toBeVisible();
-    await expect(page.getByText(/Papel ativo/i)).toBeVisible();
     await expect(
-      page.getByRole("complementary").getByText("Escopo", { exact: true }),
+      page.getByRole("heading", { name: /Dashboard administrativo/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("complementary").getByText(/Admin · Visão global/i),
     ).toBeVisible();
 
     // KPI loading or rendered – wait for KPI section
