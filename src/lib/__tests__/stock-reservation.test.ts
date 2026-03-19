@@ -52,7 +52,13 @@ import {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeInventory(overrides: Partial<{ quantity: number; reserved: number; minStock: number }> = {}) {
+function makeInventory(
+  overrides: Partial<{
+    quantity: number;
+    reserved: number;
+    minStock: number;
+  }> = {},
+) {
   return {
     id: "inv-1",
     quantity: overrides.quantity ?? 100,
@@ -61,7 +67,13 @@ function makeInventory(overrides: Partial<{ quantity: number; reserved: number; 
   };
 }
 
-function makeReservation(overrides: Partial<{ status: string; quantity: number; inventoryId: string }> = {}) {
+function makeReservation(
+  overrides: Partial<{
+    status: string;
+    quantity: number;
+    inventoryId: string;
+  }> = {},
+) {
   return {
     id: "res-1",
     inventoryId: overrides.inventoryId ?? "inv-1",
@@ -112,7 +124,10 @@ describe("createReservation", () => {
     const inventory = makeInventory({ quantity: 5, reserved: 3, minStock: 0 });
     mockTx.inventory.findUnique.mockResolvedValue(inventory);
 
-    const result = await createReservation({ inventoryId: "inv-1", quantity: 5 });
+    const result = await createReservation({
+      inventoryId: "inv-1",
+      quantity: 5,
+    });
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -125,7 +140,10 @@ describe("createReservation", () => {
     const inventory = makeInventory({ quantity: 10, reserved: 0, minStock: 8 });
     mockTx.inventory.findUnique.mockResolvedValue(inventory);
 
-    const result = await createReservation({ inventoryId: "inv-1", quantity: 5 });
+    const result = await createReservation({
+      inventoryId: "inv-1",
+      quantity: 5,
+    });
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -136,7 +154,10 @@ describe("createReservation", () => {
   it("returns failure when inventory is not found", async () => {
     mockTx.inventory.findUnique.mockResolvedValue(null);
 
-    const result = await createReservation({ inventoryId: "missing", quantity: 1 });
+    const result = await createReservation({
+      inventoryId: "missing",
+      quantity: 1,
+    });
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -151,7 +172,11 @@ describe("createReservation", () => {
     mockTx.stockReservation.create.mockResolvedValue(created);
     mockTx.inventory.update.mockResolvedValue({});
 
-    await createReservation({ inventoryId: "inv-1", quantity: 2, ttlMinutes: 60 });
+    await createReservation({
+      inventoryId: "inv-1",
+      quantity: 2,
+      ttlMinutes: 60,
+    });
 
     const call = mockTx.stockReservation.create.mock.calls[0][0];
     const expiresAt: Date = call.data.expiresAt;
@@ -232,7 +257,9 @@ describe("confirmReservation", () => {
   });
 
   it("returns false for a non-ACTIVE reservation", async () => {
-    mockDb.stockReservation.findUnique.mockResolvedValue(makeReservation({ status: "EXPIRED" }));
+    mockDb.stockReservation.findUnique.mockResolvedValue(
+      makeReservation({ status: "EXPIRED" }),
+    );
 
     const result = await confirmReservation("res-1");
 
@@ -305,7 +332,7 @@ describe("getActiveReservationsByOrder", () => {
 
     expect(result).toHaveLength(2);
     expect(mockDb.stockReservation.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { orderId: 1, status: "ACTIVE" } })
+      expect.objectContaining({ where: { orderId: 1, status: "ACTIVE" } }),
     );
   });
 });
@@ -317,7 +344,9 @@ describe("getActiveReservationsByOrder", () => {
 describe("releaseReservationsByOrder", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockDb.$transaction.mockImplementation((ops: unknown) => Promise.all(ops as Promise<unknown>[]));
+    mockDb.$transaction.mockImplementation((ops: unknown) =>
+      Promise.all(ops as Promise<unknown>[]),
+    );
   });
 
   it("returns 0 when there are no active reservations", async () => {

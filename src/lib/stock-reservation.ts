@@ -15,7 +15,7 @@ import {
  * with an expiry based on the configured TTL.
  */
 export async function createReservation(
-  input: ReservationInput
+  input: ReservationInput,
 ): Promise<ReservationResult> {
   const { inventoryId, quantity, orderId, orderItemId, ttlMinutes } = input;
   const ttl = ttlMinutes ?? RESERVATION_TTL_MINUTES;
@@ -74,7 +74,7 @@ export async function createReservation(
  * Idempotent: returns true if the reservation was already released/expired.
  */
 export async function releaseReservation(
-  reservationId: string
+  reservationId: string,
 ): Promise<boolean> {
   return db.$transaction(async (tx) => {
     const reservation = await tx.stockReservation.findUnique({
@@ -106,7 +106,7 @@ export async function releaseReservation(
  * stock is actually deducted (OUT movement) upon order fulfilment.
  */
 export async function confirmReservation(
-  reservationId: string
+  reservationId: string,
 ): Promise<boolean> {
   const reservation = await db.stockReservation.findUnique({
     where: { id: reservationId },
@@ -146,8 +146,8 @@ export async function expireStaleReservations(): Promise<ExpiredReservationsResu
       db.stockReservation.update({
         where: { id: r.id },
         data: { status: "EXPIRED" },
-      })
-    )
+      }),
+    ),
   );
 
   // Decrement reserved counts per inventory in aggregate
@@ -161,8 +161,8 @@ export async function expireStaleReservations(): Promise<ExpiredReservationsResu
       db.inventory.update({
         where: { id: inventoryId },
         data: { reserved: { decrement: qty } },
-      })
-    )
+      }),
+    ),
   );
 
   return {
@@ -175,7 +175,7 @@ export async function expireStaleReservations(): Promise<ExpiredReservationsResu
  * Returns all active reservations linked to a given order.
  */
 export async function getActiveReservationsByOrder(
-  orderId: number
+  orderId: number,
 ): Promise<ReservationRecord[]> {
   const rows = await db.stockReservation.findMany({
     where: { orderId, status: "ACTIVE" },
@@ -188,7 +188,7 @@ export async function getActiveReservationsByOrder(
  * Releases all ACTIVE reservations for a given order (e.g. on cancellation).
  */
 export async function releaseReservationsByOrder(
-  orderId: number
+  orderId: number,
 ): Promise<number> {
   const active = await db.stockReservation.findMany({
     where: { orderId, status: "ACTIVE" },
@@ -211,7 +211,7 @@ export async function releaseReservationsByOrder(
       db.inventory.update({
         where: { id: inventoryId },
         data: { reserved: { decrement: qty } },
-      })
+      }),
     ),
   ]);
 
@@ -222,7 +222,7 @@ export async function releaseReservationsByOrder(
  * Confirms all ACTIVE reservations for a given order (e.g. after payment success).
  */
 export async function confirmReservationsByOrder(
-  orderId: number
+  orderId: number,
 ): Promise<number> {
   const result = await db.stockReservation.updateMany({
     where: { orderId, status: "ACTIVE" },
