@@ -125,9 +125,7 @@ Estabelecer a base de reserva de estoque da Sprint 07 para impedir venda acima d
   **Prioridade:** 🔴 Crítica  
   **Estimativa:** 6h  
   **Dependências:** S07-RES-001, S07-RES-002  
-  **Status:** 🟢 Concluída (2026-03-19)
-  **Notas adicionais (opcional):**
-  - `AIDEV-CRITICAL` adicionado no cleanup transacional/idempotente de reservas para evitar dupla liberação sob concorrência.
+  **Status:** 🟢 Concluída
 
 ### 📦 Confirmação de pagamento e compensação - Estoque consistente do webhook ao pós-pagamento
 
