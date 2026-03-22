@@ -47,8 +47,8 @@ function AdminSidebarLink({
       aria-current={isActive ? "page" : undefined}
       className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm transition-colors ${
         isActive
-          ? "bg-[#5c7cfa] text-white shadow-[0_8px_20px_-10px_rgba(92,124,250,0.9)]"
-          : "text-[#6a7282] hover:bg-[#5c7cfa]/10 hover:text-[#f1f3f5]"
+          ? "bg-[#59627a] text-white shadow-[0_8px_20px_-10px_rgba(92,124,250,0.9)]"
+          : "text-[#9f9383] hover:bg-[#59627a]/10 hover:text-[#f2eee8]"
       }`}
       href={href}
     >
@@ -71,7 +71,7 @@ export default function AdminSidebar({
     <>
       <nav
         aria-label="Navegação administrativa"
-        className="overflow-x-auto pb-1 lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="overflow-x-auto pb-1 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden"
       >
         <div className="flex min-w-max gap-1.5">
           {ADMIN_NAV_ITEMS.map((item) => {
@@ -83,8 +83,8 @@ export default function AdminSidebar({
                 aria-current={isActive ? "page" : undefined}
                 className={`rounded-full border px-4 py-2 [font-family:var(--font-arimo)] text-sm font-medium transition ${
                   isActive
-                    ? "border-[#5c7cfa]/50 bg-[#5c7cfa]/20 text-[#f1f3f5]"
-                    : "border-white/6 bg-[#171a21] text-[#6a7282]"
+                    ? "border-[#59627a]/50 bg-[#59627a]/20 text-[#f2eee8]"
+                    : "border-white/6 bg-[#1b1712] text-[#9f9383]"
                 }`}
                 href={item.href}
               >
@@ -96,16 +96,16 @@ export default function AdminSidebar({
       </nav>
 
       <aside className="hidden w-full max-w-[240px] shrink-0 lg:block">
-        <div className="sticky top-6 space-y-5 rounded-2xl border border-white/6 bg-[#171a21] p-5">
+        <div className="sticky top-6 space-y-5 rounded-2xl border border-white/6 bg-[#1b1712] p-5">
           <div className="flex items-center gap-3 border-b border-white/6 pb-5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#12151a]">
-              <ShieldCheck className="h-4 w-4 text-[#5c7cfa]" />
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#17140f]">
+              <ShieldCheck className="h-4 w-4 text-[#59627a]" />
             </span>
             <div className="min-w-0">
-              <p className="truncate [font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5]">
+              <p className="truncate [font-family:var(--font-arimo)] text-sm font-semibold text-[#f2eee8]">
                 {actorName}
               </p>
-              <p className="truncate [font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+              <p className="truncate [font-family:var(--font-arimo)] text-xs text-[#9f9383]">
                 {roleLabel} · {scopeLabel}
               </p>
             </div>

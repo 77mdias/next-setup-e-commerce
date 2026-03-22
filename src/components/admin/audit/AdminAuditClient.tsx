@@ -50,23 +50,23 @@ export default function AdminAuditClient() {
 
   return (
     <section className="space-y-5">
-      <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
+      <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="[font-family:var(--font-arimo)] text-sm text-[#6a7282]">
+          <p className="[font-family:var(--font-arimo)] text-sm text-[#9f9383]">
             {headerLabel}
           </p>
           {isRefreshing ? (
-            <span className="[font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+            <span className="[font-family:var(--font-arimo)] text-xs text-[#9f9383]">
               Atualizando leitura...
             </span>
           ) : null}
         </div>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_170px_180px] xl:grid-cols-[minmax(0,1fr)_170px_180px_220px_140px]">
-          <label className="flex items-center gap-3 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5]">
-            <Search className="h-4 w-4 text-[#5c7cfa]" />
+          <label className="flex items-center gap-3 rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f2eee8]">
+            <Search className="h-4 w-4 text-[#59627a]" />
             <input
-              className="w-full bg-transparent outline-none placeholder:text-[#6a7282]"
+              className="w-full bg-transparent outline-none placeholder:text-[#9f9383]"
               onChange={(event) => {
                 setSearchInput(event.target.value);
               }}
@@ -87,7 +87,7 @@ export default function AdminAuditClient() {
           </label>
 
           <select
-            className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5] outline-none focus:border-[#5c7cfa]/60"
+            className="rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f2eee8] outline-none focus:border-[#59627a]/60"
             onChange={(event) => {
               startTransition(() => {
                 setFilters((currentFilters) => ({
@@ -107,7 +107,7 @@ export default function AdminAuditClient() {
           </select>
 
           <select
-            className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5] outline-none focus:border-[#5c7cfa]/60"
+            className="rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f2eee8] outline-none focus:border-[#59627a]/60"
             onChange={(event) => {
               startTransition(() => {
                 setFilters((currentFilters) => ({
@@ -126,8 +126,8 @@ export default function AdminAuditClient() {
             ))}
           </select>
 
-          <label className="flex items-center gap-3 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5]">
-            <Store className="h-4 w-4 text-[#5c7cfa]" />
+          <label className="flex items-center gap-3 rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f2eee8]">
+            <Store className="h-4 w-4 text-[#59627a]" />
             <select
               className="w-full bg-transparent outline-none"
               onChange={(event) => {
@@ -172,12 +172,12 @@ export default function AdminAuditClient() {
 
       {errorMessage && !data ? (
         <div className="rounded-2xl border border-rose-400/25 bg-rose-500/10 p-6 [font-family:var(--font-arimo)] text-sm text-rose-300">
-          <p className="font-semibold text-[#f1f3f5]">
+          <p className="font-semibold text-[#f2eee8]">
             Falha ao carregar auditoria
           </p>
           <p className="mt-2">{errorMessage}</p>
           <button
-            className="mt-4 rounded-full border border-white/10 bg-[#12151a] px-4 py-2 font-semibold text-[#f1f3f5] transition hover:border-white/20"
+            className="mt-4 rounded-full border border-white/10 bg-[#17140f] px-4 py-2 font-semibold text-[#f2eee8] transition hover:border-white/20"
             onClick={retry}
             type="button"
           >
@@ -187,13 +187,13 @@ export default function AdminAuditClient() {
       ) : null}
 
       {!errorMessage && isLoading && !data ? (
-        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-6 [font-family:var(--font-arimo)] text-sm text-[#99a1af]">
+        <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-6 [font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
           Carregando trilha administrativa...
         </div>
       ) : null}
 
       {data && data.events.length === 0 ? (
-        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-6 [font-family:var(--font-arimo)] text-sm text-[#99a1af]">
+        <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-6 [font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
           Nenhum evento auditavel encontrado para os filtros atuais.
         </div>
       ) : null}
@@ -203,67 +203,67 @@ export default function AdminAuditClient() {
           {data.events.map((event) => (
             <article
               key={event.id}
-              className="rounded-2xl border border-white/6 bg-[#171a21] p-6"
+              className="rounded-2xl border border-white/6 bg-[#1b1712] p-6"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-[#5c7cfa]/25 bg-[#5c7cfa]/10 px-3 py-1 [font-family:var(--font-arimo)] text-xs font-semibold text-[#5c7cfa]">
+                    <span className="rounded-full border border-[#59627a]/25 bg-[#59627a]/10 px-3 py-1 [font-family:var(--font-arimo)] text-xs font-semibold text-[#59627a]">
                       {event.resource}
                     </span>
                     <span className="rounded-full border border-rose-400/25 bg-rose-500/10 px-3 py-1 [font-family:var(--font-arimo)] text-xs font-semibold text-rose-300">
                       {event.action}
                     </span>
                   </div>
-                  <h3 className="[font-family:var(--font-space-grotesk)] text-lg font-semibold text-[#f1f3f5]">
+                  <h3 className="[font-family:var(--font-space-grotesk)] text-lg font-semibold text-[#f2eee8]">
                     {event.summary}
                   </h3>
-                  <p className="[font-family:var(--font-arimo)] text-sm text-[#99a1af]">
+                  <p className="[font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
                     {event.target.label ?? event.target.id}
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5]">
-                  <div className="flex items-center gap-2 text-[#5c7cfa]">
+                <div className="rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f2eee8]">
+                  <div className="flex items-center gap-2 text-[#59627a]">
                     <Activity className="h-4 w-4" />
                     {dateFormatter.format(new Date(event.createdAt))}
                   </div>
-                  <p className="mt-2 text-xs text-[#99a1af]">
+                  <p className="mt-2 text-xs text-[#b8ad9f]">
                     Ator {event.actor.label} · perfil {event.actor.role}
                   </p>
-                  <p className="mt-1 text-xs text-[#6a7282]">
+                  <p className="mt-1 text-xs text-[#9f9383]">
                     alvo {event.target.id}
                     {event.storeId ? ` · loja ${event.storeId}` : ""}
                   </p>
                 </div>
               </div>
 
-              <details className="mt-5 rounded-2xl border border-white/6 bg-[#12151a] p-4">
-                <summary className="cursor-pointer [font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5]">
+              <details className="mt-5 rounded-2xl border border-white/6 bg-[#17140f] p-4">
+                <summary className="cursor-pointer [font-family:var(--font-arimo)] text-sm font-semibold text-[#f2eee8]">
                   Ver snapshots before / after
                 </summary>
                 <div className="mt-4 grid gap-4 md:grid-cols-3">
-                  <div className="rounded-xl border border-white/6 bg-[#0b0d10] p-4">
-                    <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#6a7282] uppercase">
+                  <div className="rounded-xl border border-white/6 bg-[#11100d] p-4">
+                    <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#9f9383] uppercase">
                       Before
                     </p>
-                    <pre className="mt-3 overflow-x-auto [font-family:var(--font-arimo)] text-xs leading-6 text-[#99a1af]">
+                    <pre className="mt-3 overflow-x-auto [font-family:var(--font-arimo)] text-xs leading-6 text-[#b8ad9f]">
                       {formatJsonBlock(event.before)}
                     </pre>
                   </div>
-                  <div className="rounded-xl border border-white/6 bg-[#0b0d10] p-4">
-                    <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#6a7282] uppercase">
+                  <div className="rounded-xl border border-white/6 bg-[#11100d] p-4">
+                    <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#9f9383] uppercase">
                       After
                     </p>
-                    <pre className="mt-3 overflow-x-auto [font-family:var(--font-arimo)] text-xs leading-6 text-[#99a1af]">
+                    <pre className="mt-3 overflow-x-auto [font-family:var(--font-arimo)] text-xs leading-6 text-[#b8ad9f]">
                       {formatJsonBlock(event.after)}
                     </pre>
                   </div>
-                  <div className="rounded-xl border border-white/6 bg-[#0b0d10] p-4">
-                    <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#6a7282] uppercase">
+                  <div className="rounded-xl border border-white/6 bg-[#11100d] p-4">
+                    <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#9f9383] uppercase">
                       Metadata
                     </p>
-                    <pre className="mt-3 overflow-x-auto [font-family:var(--font-arimo)] text-xs leading-6 text-[#99a1af]">
+                    <pre className="mt-3 overflow-x-auto [font-family:var(--font-arimo)] text-xs leading-6 text-[#b8ad9f]">
                       {formatJsonBlock(event.metadata)}
                     </pre>
                   </div>
@@ -272,13 +272,13 @@ export default function AdminAuditClient() {
             </article>
           ))}
 
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/6 bg-[#171a21] px-5 py-4">
-            <div className="[font-family:var(--font-arimo)] text-sm text-[#99a1af]">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/6 bg-[#1b1712] px-5 py-4">
+            <div className="[font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
               Pagina {data.pagination.page} de {data.pagination.totalPages}
             </div>
             <div className="flex gap-3">
               <button
-                className="rounded-full border border-white/6 bg-[#12151a] px-4 py-2 [font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5] transition hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-full border border-white/6 bg-[#17140f] px-4 py-2 [font-family:var(--font-arimo)] text-sm font-semibold text-[#f2eee8] transition hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                 disabled={!data.pagination.hasPrev}
                 onClick={() => {
                   startTransition(() => {
@@ -293,7 +293,7 @@ export default function AdminAuditClient() {
                 Anterior
               </button>
               <button
-                className="rounded-full border border-white/6 bg-[#12151a] px-4 py-2 [font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5] transition hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-full border border-white/6 bg-[#17140f] px-4 py-2 [font-family:var(--font-arimo)] text-sm font-semibold text-[#f2eee8] transition hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                 disabled={!data.pagination.hasNext}
                 onClick={() => {
                   startTransition(() => {

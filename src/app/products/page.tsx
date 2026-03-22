@@ -12,11 +12,11 @@ export default function ProductsPage() {
   return (
     <main
       style={fontVariablesStyle}
-      className="min-h-screen bg-[#f6f8ff] px-4 py-14 text-[#0f172a] sm:px-6 sm:py-16 lg:px-8 dark:bg-[#0b0d10] dark:text-[#f1f3f5]"
+      className="min-h-screen bg-[#efebe3] px-4 py-14 text-[#11100d] sm:px-6 sm:py-16 lg:px-8 dark:bg-[#11100d] dark:text-[#f2eee8]"
     >
       <Suspense
         fallback={
-          <div className="mx-auto w-full max-w-[1536px] rounded-2xl border border-[#dbe4ff] bg-[#edf2ff] p-7 text-sm text-[#64748b] sm:p-8 dark:border-white/10 dark:bg-[#171a21] dark:text-[#99a1af]">
+          <div className="mx-auto w-full max-w-[1536px] rounded-2xl border border-[#d8cfbf] bg-[#f4efe5] p-7 text-sm text-[#655a4e] sm:p-8 dark:border-white/10 dark:bg-[#1b1712] dark:text-[#b8ad9f]">
             Carregando produtos...
           </div>
         }

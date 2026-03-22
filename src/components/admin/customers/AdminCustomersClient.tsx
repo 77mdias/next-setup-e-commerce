@@ -48,23 +48,23 @@ export default function AdminCustomersClient() {
 
   return (
     <section className="space-y-5">
-      <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
+      <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="[font-family:var(--font-arimo)] text-sm text-[#6a7282]">
+          <p className="[font-family:var(--font-arimo)] text-sm text-[#9f9383]">
             {summaryLabel}
           </p>
           {isRefreshing ? (
-            <span className="[font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+            <span className="[font-family:var(--font-arimo)] text-xs text-[#9f9383]">
               Atualizando leitura...
             </span>
           ) : null}
         </div>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_220px_140px]">
-          <label className="flex items-center gap-3 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5]">
-            <Search className="h-4 w-4 text-[#5c7cfa]" />
+          <label className="flex items-center gap-3 rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f2eee8]">
+            <Search className="h-4 w-4 text-[#59627a]" />
             <input
-              className="w-full bg-transparent outline-none placeholder:text-[#6a7282]"
+              className="w-full bg-transparent outline-none placeholder:text-[#9f9383]"
               onChange={(event) => {
                 setSearchInput(event.target.value);
               }}
@@ -84,8 +84,8 @@ export default function AdminCustomersClient() {
             />
           </label>
 
-          <label className="flex items-center gap-3 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5]">
-            <Store className="h-4 w-4 text-[#5c7cfa]" />
+          <label className="flex items-center gap-3 rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f2eee8]">
+            <Store className="h-4 w-4 text-[#59627a]" />
             <select
               className="w-full bg-transparent outline-none"
               onChange={(event) => {
@@ -130,12 +130,12 @@ export default function AdminCustomersClient() {
 
       {errorMessage && !data ? (
         <div className="rounded-2xl border border-rose-400/25 bg-rose-500/10 p-6 [font-family:var(--font-arimo)] text-sm text-rose-300">
-          <p className="font-semibold text-[#f1f3f5]">
+          <p className="font-semibold text-[#f2eee8]">
             Falha ao carregar clientes
           </p>
           <p className="mt-2">{errorMessage}</p>
           <button
-            className="mt-4 rounded-full border border-white/10 bg-[#12151a] px-4 py-2 font-semibold text-[#f1f3f5] transition hover:border-white/20"
+            className="mt-4 rounded-full border border-white/10 bg-[#17140f] px-4 py-2 font-semibold text-[#f2eee8] transition hover:border-white/20"
             onClick={retry}
             type="button"
           >
@@ -145,13 +145,13 @@ export default function AdminCustomersClient() {
       ) : null}
 
       {!errorMessage && isLoading && !data ? (
-        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-6 [font-family:var(--font-arimo)] text-sm text-[#99a1af]">
+        <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-6 [font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
           Carregando base administrativa de clientes...
         </div>
       ) : null}
 
       {data && data.customers.length === 0 ? (
-        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-6 [font-family:var(--font-arimo)] text-sm text-[#99a1af]">
+        <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-6 [font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
           Nenhum cliente encontrado para os filtros atuais.
         </div>
       ) : null}
@@ -161,12 +161,12 @@ export default function AdminCustomersClient() {
           {data.customers.map((customer) => (
             <article
               key={customer.id}
-              className="rounded-2xl border border-white/6 bg-[#171a21] p-6"
+              className="rounded-2xl border border-white/6 bg-[#1b1712] p-6"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="[font-family:var(--font-space-grotesk)] text-xl font-semibold text-[#f1f3f5]">
+                    <h3 className="[font-family:var(--font-space-grotesk)] text-xl font-semibold text-[#f2eee8]">
                       {customer.name ?? "Cliente sem nome informado"}
                     </h3>
                     <span
@@ -179,36 +179,36 @@ export default function AdminCustomersClient() {
                       {customer.isActive ? "Ativo" : "Cadastro inativo"}
                     </span>
                   </div>
-                  <p className="[font-family:var(--font-arimo)] text-sm text-[#99a1af]">
+                  <p className="[font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
                     {customer.email}
                   </p>
-                  <p className="[font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+                  <p className="[font-family:var(--font-arimo)] text-xs text-[#9f9383]">
                     Cadastro criado em {formatDate(customer.createdAt)}
                   </p>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3">
-                    <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#6a7282] uppercase">
+                  <div className="rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3">
+                    <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#9f9383] uppercase">
                       Pedidos
                     </p>
-                    <p className="mt-2 [font-family:var(--font-space-grotesk)] text-lg font-semibold text-[#f1f3f5]">
+                    <p className="mt-2 [font-family:var(--font-space-grotesk)] text-lg font-semibold text-[#f2eee8]">
                       {customer.orderCount}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3">
-                    <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#6a7282] uppercase">
+                  <div className="rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3">
+                    <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#9f9383] uppercase">
                       Total gasto
                     </p>
-                    <p className="mt-2 [font-family:var(--font-space-grotesk)] text-lg font-semibold text-[#f1f3f5]">
+                    <p className="mt-2 [font-family:var(--font-space-grotesk)] text-lg font-semibold text-[#f2eee8]">
                       {currencyFormatter.format(customer.totalSpent)}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3">
-                    <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#6a7282] uppercase">
+                  <div className="rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3">
+                    <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#9f9383] uppercase">
                       Ultimo pedido
                     </p>
-                    <p className="mt-2 [font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5]">
+                    <p className="mt-2 [font-family:var(--font-arimo)] text-sm font-semibold text-[#f2eee8]">
                       {formatDate(customer.lastOrderAt)}
                     </p>
                   </div>
@@ -219,7 +219,7 @@ export default function AdminCustomersClient() {
                 {customer.stores.map((store) => (
                   <span
                     key={store.id}
-                    className="rounded-full border border-[#5c7cfa]/25 bg-[#5c7cfa]/10 px-3 py-1 [font-family:var(--font-arimo)] text-xs font-semibold text-[#5c7cfa]"
+                    className="rounded-full border border-[#59627a]/25 bg-[#59627a]/10 px-3 py-1 [font-family:var(--font-arimo)] text-xs font-semibold text-[#59627a]"
                   >
                     {store.name}
                   </span>
@@ -227,41 +227,41 @@ export default function AdminCustomersClient() {
               </div>
 
               <div className="mt-6 space-y-3">
-                <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#6a7282] uppercase">
+                <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.16em] text-[#9f9383] uppercase">
                   Historico resumido de pedidos
                 </p>
 
                 {customer.recentOrders.length === 0 ? (
-                  <div className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#6a7282]">
+                  <div className="rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#9f9383]">
                     Sem pedidos recentes neste escopo.
                   </div>
                 ) : (
                   customer.recentOrders.map((order) => (
                     <div
                       key={order.id}
-                      className="grid gap-3 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,0.6fr)]"
+                      className="grid gap-3 rounded-2xl border border-white/6 bg-[#17140f] px-4 py-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,0.6fr)]"
                     >
                       <div className="space-y-1">
-                        <p className="[font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5]">
+                        <p className="[font-family:var(--font-arimo)] text-sm font-semibold text-[#f2eee8]">
                           {order.code}
                         </p>
-                        <p className="[font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+                        <p className="[font-family:var(--font-arimo)] text-xs text-[#9f9383]">
                           {order.store.name}
                         </p>
                       </div>
                       <div className="space-y-1">
-                        <p className="[font-family:var(--font-arimo)] text-sm text-[#f1f3f5]">
+                        <p className="[font-family:var(--font-arimo)] text-sm text-[#f2eee8]">
                           {order.itemCount} item(ns) · status {order.status}
                         </p>
-                        <p className="[font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+                        <p className="[font-family:var(--font-arimo)] text-xs text-[#9f9383]">
                           Criado em {formatDate(order.createdAt)}
                         </p>
                       </div>
                       <div className="space-y-1 text-left lg:text-right">
-                        <p className="[font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5]">
+                        <p className="[font-family:var(--font-arimo)] text-sm font-semibold text-[#f2eee8]">
                           {currencyFormatter.format(order.total)}
                         </p>
-                        <p className="[font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+                        <p className="[font-family:var(--font-arimo)] text-xs text-[#9f9383]">
                           Tracking {order.trackingCode ?? "nao informado"}
                         </p>
                       </div>
@@ -272,13 +272,13 @@ export default function AdminCustomersClient() {
             </article>
           ))}
 
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/6 bg-[#171a21] px-5 py-4">
-            <div className="[font-family:var(--font-arimo)] text-sm text-[#99a1af]">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/6 bg-[#1b1712] px-5 py-4">
+            <div className="[font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
               Pagina {data.pagination.page} de {data.pagination.totalPages}
             </div>
             <div className="flex gap-3">
               <button
-                className="rounded-full border border-white/6 bg-[#12151a] px-4 py-2 [font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5] transition hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-full border border-white/6 bg-[#17140f] px-4 py-2 [font-family:var(--font-arimo)] text-sm font-semibold text-[#f2eee8] transition hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                 disabled={!data.pagination.hasPrev}
                 onClick={() => {
                   startTransition(() => {
@@ -293,7 +293,7 @@ export default function AdminCustomersClient() {
                 Anterior
               </button>
               <button
-                className="rounded-full border border-white/6 bg-[#12151a] px-4 py-2 [font-family:var(--font-arimo)] text-sm font-semibold text-[#f1f3f5] transition hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-full border border-white/6 bg-[#17140f] px-4 py-2 [font-family:var(--font-arimo)] text-sm font-semibold text-[#f2eee8] transition hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                 disabled={!data.pagination.hasNext}
                 onClick={() => {
                   startTransition(() => {

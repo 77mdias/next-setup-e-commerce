@@ -100,7 +100,7 @@ export default function CheckoutPage() {
     (addresses.length > 0 && !selectedAddressId);
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] bg-[#0B0D10]">
+    <div className="min-h-[calc(100vh-5rem)] bg-[#11100d]">
       <form
         onSubmit={handleSubmit}
         className="mx-auto flex w-full max-w-[1248px] flex-col gap-8 px-4 pt-8 pb-16 sm:px-6 lg:px-8 xl:px-0"
@@ -116,8 +116,8 @@ export default function CheckoutPage() {
           </button>
 
           <div className="flex items-center gap-3">
-            <ShoppingBag className="h-7 w-7 text-[#FF2E63]" />
-            <h1 className="[font-family:var(--font-space-grotesk)] text-3xl leading-10 font-bold text-[#F1F3F5]">
+            <ShoppingBag className="h-7 w-7 text-[#916130]" />
+            <h1 className="[font-family:var(--font-space-grotesk)] text-3xl leading-10 font-bold text-[#f2eee8]">
               Finalizar Compra
             </h1>
           </div>
@@ -132,16 +132,16 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_394px]">
           <div className="space-y-6">
-            <section className="rounded-2xl border border-white/10 bg-[#171A21] p-6 sm:p-7">
-              <h2 className="mb-6 flex items-center gap-3 [font-family:var(--font-space-grotesk)] text-2xl font-bold text-[#F1F3F5]">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-b from-[#5C7CFA] to-[#FF2E63]">
+            <section className="rounded-2xl border border-white/10 bg-[#1b1712] p-6 sm:p-7">
+              <h2 className="mb-6 flex items-center gap-3 [font-family:var(--font-space-grotesk)] text-2xl font-bold text-[#f2eee8]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-b from-[#59627a] to-[#916130]">
                   <MapPin className="h-5 w-5 text-white" />
                 </span>
                 Endereço de Entrega
               </h2>
 
               {isLoadingAddresses ? (
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#12151A] p-4 text-sm text-[#9CA3AF]">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#17140f] p-4 text-sm text-[#9CA3AF]">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#9CA3AF] border-t-transparent"></div>
                   Carregando seus endereços...
                 </div>
@@ -165,13 +165,13 @@ export default function CheckoutPage() {
               {!isLoadingAddresses &&
               !addressError &&
               addresses.length === 0 ? (
-                <div className="space-y-3 rounded-2xl border border-white/10 bg-[#12151A] p-4">
+                <div className="space-y-3 rounded-2xl border border-white/10 bg-[#17140f] p-4">
                   <p className="text-sm text-[#9CA3AF]">
                     Você ainda não possui um endereço salvo.
                   </p>
                   <Link
                     href="/perfil"
-                    className="inline-flex text-sm font-medium text-[#5C7CFA] hover:underline"
+                    className="inline-flex text-sm font-medium text-[#59627a] hover:underline"
                   >
                     Ir para meu perfil e cadastrar endereço
                   </Link>
@@ -188,7 +188,7 @@ export default function CheckoutPage() {
                         key={address.id}
                         className={`block cursor-pointer rounded-2xl border-2 p-[18px] transition-colors ${
                           isSelected
-                            ? "border-[#FF2E63] bg-[rgba(255,46,99,0.05)]"
+                            ? "border-[#916130] bg-[rgba(255,46,99,0.05)]"
                             : "border-white/10 bg-transparent hover:border-white/20"
                         }`}
                       >
@@ -204,11 +204,11 @@ export default function CheckoutPage() {
                         <div className="flex items-start justify-between gap-4">
                           <div className="space-y-2">
                             <div className="flex flex-wrap items-center gap-2">
-                              <p className="[font-family:var(--font-space-grotesk)] text-base font-bold text-[#F1F3F5]">
+                              <p className="[font-family:var(--font-space-grotesk)] text-base font-bold text-[#f2eee8]">
                                 {address.label}
                               </p>
                               {address.isDefault ? (
-                                <span className="rounded px-2 py-0.5 text-xs font-bold text-[#FF2E63] [background:rgba(255,46,99,0.1)]">
+                                <span className="rounded px-2 py-0.5 text-xs font-bold text-[#916130] [background:rgba(255,46,99,0.1)]">
                                   Padrão
                                 </span>
                               ) : null}
@@ -231,7 +231,7 @@ export default function CheckoutPage() {
                           <span
                             className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
                               isSelected
-                                ? "bg-[#FF2E63]"
+                                ? "bg-[#916130]"
                                 : "border border-white/20"
                             }`}
                           >
@@ -256,15 +256,15 @@ export default function CheckoutPage() {
 
               <Link
                 href="/perfil"
-                className="mt-4 inline-flex text-sm font-medium text-[#5C7CFA] hover:underline"
+                className="mt-4 inline-flex text-sm font-medium text-[#59627a] hover:underline"
               >
                 + Adicionar novo endereço
               </Link>
             </section>
 
-            <section className="rounded-2xl border border-white/10 bg-[#171A21] p-6 sm:p-7">
-              <h2 className="mb-6 flex items-center gap-3 [font-family:var(--font-space-grotesk)] text-2xl font-bold text-[#F1F3F5]">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-b from-[#5C7CFA] to-[#FF2E63]">
+            <section className="rounded-2xl border border-white/10 bg-[#1b1712] p-6 sm:p-7">
+              <h2 className="mb-6 flex items-center gap-3 [font-family:var(--font-space-grotesk)] text-2xl font-bold text-[#f2eee8]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-b from-[#59627a] to-[#916130]">
                   <CreditCard className="h-5 w-5 text-white" />
                 </span>
                 Método de Pagamento
@@ -281,16 +281,16 @@ export default function CheckoutPage() {
                       onClick={() => setSelectedPaymentMethodId(method.id)}
                       className={`flex w-full items-center justify-between rounded-2xl border-2 p-[18px] text-left transition-colors ${
                         isSelected
-                          ? "border-[#FF2E63] bg-[rgba(255,46,99,0.05)]"
+                          ? "border-[#916130] bg-[rgba(255,46,99,0.05)]"
                           : "border-white/10 hover:border-white/20"
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-b from-[#5C7CFA] to-[#FF2E63]">
+                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-b from-[#59627a] to-[#916130]">
                           <CreditCard className="h-6 w-6 text-white" />
                         </span>
                         <div className="space-y-0.5">
-                          <p className="[font-family:var(--font-space-grotesk)] text-base font-bold text-[#F1F3F5] uppercase">
+                          <p className="[font-family:var(--font-space-grotesk)] text-base font-bold text-[#f2eee8] uppercase">
                             {method.label}
                           </p>
                           <p className="text-sm text-[#9CA3AF]">
@@ -301,7 +301,7 @@ export default function CheckoutPage() {
 
                       <span
                         className={`flex h-6 w-6 items-center justify-center rounded-full ${
-                          isSelected ? "bg-[#FF2E63]" : "border border-white/20"
+                          isSelected ? "bg-[#916130]" : "border border-white/20"
                         }`}
                       >
                         {isSelected ? (
@@ -315,15 +315,15 @@ export default function CheckoutPage() {
 
               <Link
                 href="/perfil"
-                className="mt-4 inline-flex text-sm font-medium text-[#5C7CFA] hover:underline"
+                className="mt-4 inline-flex text-sm font-medium text-[#59627a] hover:underline"
               >
                 + Adicionar novo cartão
               </Link>
             </section>
 
-            <section className="rounded-2xl border border-white/10 bg-[#171A21] p-6 sm:p-7">
-              <h2 className="mb-6 flex items-center gap-3 [font-family:var(--font-space-grotesk)] text-2xl font-bold text-[#F1F3F5]">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-b from-[#5C7CFA] to-[#FF2E63]">
+            <section className="rounded-2xl border border-white/10 bg-[#1b1712] p-6 sm:p-7">
+              <h2 className="mb-6 flex items-center gap-3 [font-family:var(--font-space-grotesk)] text-2xl font-bold text-[#f2eee8]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-b from-[#59627a] to-[#916130]">
                   <User className="h-5 w-5 text-white" />
                 </span>
                 Dados da Conta
@@ -331,20 +331,20 @@ export default function CheckoutPage() {
 
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <p className="text-sm font-medium text-[#99A1AF]">Nome</p>
-                  <div className="rounded-2xl border border-white/10 bg-[#12151A] px-4 py-3 text-base text-[#F1F3F5]">
+                  <p className="text-sm font-medium text-[#b8ad9f]">Nome</p>
+                  <div className="rounded-2xl border border-white/10 bg-[#17140f] px-4 py-3 text-base text-[#f2eee8]">
                     {user?.name?.trim() || "Não informado"}
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <p className="text-sm font-medium text-[#99A1AF]">Email</p>
-                  <div className="rounded-2xl border border-white/10 bg-[#12151A] px-4 py-3 text-base text-[#F1F3F5]">
+                  <p className="text-sm font-medium text-[#b8ad9f]">Email</p>
+                  <div className="rounded-2xl border border-white/10 bg-[#17140f] px-4 py-3 text-base text-[#f2eee8]">
                     {user?.email?.trim() || "Não informado"}
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 rounded-xl border border-[#FE9A00]/20 bg-[rgba(254,154,0,0.05)] px-3 py-3 text-xs text-[#99A1AF]">
+                <div className="flex items-start gap-2 rounded-xl border border-[#FE9A00]/20 bg-[rgba(254,154,0,0.05)] px-3 py-3 text-xs text-[#b8ad9f]">
                   <AlertCircle className="mt-px h-4 w-4 flex-shrink-0 text-[#FE9A00]" />
                   <p>
                     Nome, telefone e CPF poderão ser confirmados durante a
@@ -356,8 +356,8 @@ export default function CheckoutPage() {
           </div>
 
           <aside className="lg:sticky lg:top-28 lg:self-start">
-            <section className="space-y-4 rounded-2xl border border-white/10 bg-[#171A21] p-6 sm:p-7">
-              <h2 className="[font-family:var(--font-space-grotesk)] text-2xl font-bold text-[#F1F3F5]">
+            <section className="space-y-4 rounded-2xl border border-white/10 bg-[#1b1712] p-6 sm:p-7">
+              <h2 className="[font-family:var(--font-space-grotesk)] text-2xl font-bold text-[#f2eee8]">
                 Resumo do Pedido
               </h2>
 
@@ -367,7 +367,7 @@ export default function CheckoutPage() {
 
                   return (
                     <div key={product.id} className="flex items-center gap-4">
-                      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-[#12151A]">
+                      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-[#17140f]">
                         <Image
                           src={imageSrc}
                           alt={product.name}
@@ -379,13 +379,13 @@ export default function CheckoutPage() {
                       </div>
 
                       <div className="min-w-0 flex-1 space-y-1">
-                        <h3 className="truncate [font-family:var(--font-space-grotesk)] text-sm font-medium text-[#F1F3F5]">
+                        <h3 className="truncate [font-family:var(--font-space-grotesk)] text-sm font-medium text-[#f2eee8]">
                           {product.name}
                         </h3>
                         <p className="text-sm text-[#9CA3AF]">
                           Qtd: {product.quantity}
                         </p>
-                        <p className="text-sm font-bold text-[#FF2E63]">
+                        <p className="text-sm font-bold text-[#916130]">
                           {formatCurrency(product.price * product.quantity)}
                         </p>
                       </div>
@@ -399,7 +399,7 @@ export default function CheckoutPage() {
                   <span className="text-[#9CA3AF]">
                     Subtotal ({totalQuantity} itens)
                   </span>
-                  <span className="font-medium text-[#F1F3F5]">
+                  <span className="font-medium text-[#f2eee8]">
                     {formatCurrency(total)}
                   </span>
                 </div>
@@ -411,8 +411,8 @@ export default function CheckoutPage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-lg font-bold text-[#F1F3F5]">Total</span>
-                <span className="text-3xl font-bold text-[#FF2E63]">
+                <span className="text-lg font-bold text-[#f2eee8]">Total</span>
+                <span className="text-3xl font-bold text-[#916130]">
                   {formatCurrency(total)}
                 </span>
               </div>
@@ -420,7 +420,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={isSubmitDisabled}
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[#FF2E63] text-lg font-medium text-white transition-colors hover:bg-[#ff4b7b] disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[#916130] text-lg font-medium text-white transition-colors hover:bg-[#ff4b7b] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isLoading ? (
                   <>
@@ -435,28 +435,28 @@ export default function CheckoutPage() {
                 )}
               </button>
 
-              <div className="space-y-3 rounded-2xl border border-white/5 bg-[#12151A] p-4">
-                <h3 className="[font-family:var(--font-space-grotesk)] text-sm font-bold text-[#F1F3F5]">
+              <div className="space-y-3 rounded-2xl border border-white/5 bg-[#17140f] p-4">
+                <h3 className="[font-family:var(--font-space-grotesk)] text-sm font-bold text-[#f2eee8]">
                   Informações Importantes
                 </h3>
 
                 <div className="space-y-2 text-xs text-[#9CA3AF]">
                   <div className="flex items-start gap-2">
-                    <Package className="mt-px h-3.5 w-3.5 flex-shrink-0 text-[#5C7CFA]" />
+                    <Package className="mt-px h-3.5 w-3.5 flex-shrink-0 text-[#59627a]" />
                     <p>
                       Seu pedido será processado após a confirmação de pagamento
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Truck className="mt-px h-3.5 w-3.5 flex-shrink-0 text-[#5C7CFA]" />
+                    <Truck className="mt-px h-3.5 w-3.5 flex-shrink-0 text-[#59627a]" />
                     <p>Você receberá um email com os detalhes do pedido</p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Shield className="mt-px h-3.5 w-3.5 flex-shrink-0 text-[#5C7CFA]" />
+                    <Shield className="mt-px h-3.5 w-3.5 flex-shrink-0 text-[#59627a]" />
                     <p>O prazo de entrega será informado após a confirmação</p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="mt-px h-3.5 w-3.5 flex-shrink-0 text-[#5C7CFA]" />
+                    <AlertCircle className="mt-px h-3.5 w-3.5 flex-shrink-0 text-[#59627a]" />
                     <p>Em caso de dúvidas, entre em contato conosco</p>
                   </div>
                 </div>

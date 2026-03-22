@@ -173,8 +173,8 @@ function SidebarItem({
       onClick={onClick}
       className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm transition-colors ${
         isActive
-          ? "bg-[#5C7CFA] text-white shadow-[0_8px_20px_-10px_rgba(92,124,250,0.9)] dark:shadow-[0_10px_15px_-3px_rgba(92,124,250,0.2),0_4px_6px_-4px_rgba(92,124,250,0.2)]"
-          : "text-[#64748b] hover:bg-[#edf2ff] hover:text-[#0f172a] dark:text-[#99A1AF] dark:hover:bg-white/5 dark:hover:text-[#F1F3F5]"
+          ? "bg-[#59627a] text-white shadow-[0_8px_20px_-10px_rgba(92,124,250,0.9)] dark:shadow-[0_10px_15px_-3px_rgba(92,124,250,0.2),0_4px_6px_-4px_rgba(92,124,250,0.2)]"
+          : "text-[#655a4e] hover:bg-[#f4efe5] hover:text-[#11100d] dark:text-[#b8ad9f] dark:hover:bg-white/5 dark:hover:text-[#f2eee8]"
       }`}
       aria-current={isActive ? "page" : undefined}
     >
@@ -187,11 +187,11 @@ function SidebarItem({
 function InfoField({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm font-[var(--font-arimo)] text-[#64748b] dark:text-[#99A1AF]">
+      <label className="text-sm font-[var(--font-arimo)] text-[#655a4e] dark:text-[#b8ad9f]">
         {label}
       </label>
-      <div className="flex h-[50px] items-center rounded-2xl border border-[#dbe4ff] bg-[#f8faff] px-4 dark:border-white/[0.06] dark:bg-[#12151A]">
-        <p className="text-base font-[var(--font-arimo)] text-[#0f172a] dark:text-[#F1F3F5]">
+      <div className="flex h-[50px] items-center rounded-2xl border border-[#d8cfbf] bg-[#f8f4ec] px-4 dark:border-white/[0.06] dark:bg-[#17140f]">
+        <p className="text-base font-[var(--font-arimo)] text-[#11100d] dark:text-[#f2eee8]">
           {value}
         </p>
       </div>
@@ -215,12 +215,12 @@ function AddressCard({
   const lineThree = address.country || "Brasil";
 
   return (
-    <div className="relative min-h-[186px] rounded-2xl border border-[#5C7CFA] bg-[rgba(92,124,250,0.05)] p-6">
-      <h3 className="text-base font-[var(--font-space-grotesk)] font-bold text-[#0f172a] dark:text-[#F1F3F5]">
+    <div className="relative min-h-[186px] rounded-2xl border border-[#59627a] bg-[rgba(92,124,250,0.05)] p-6">
+      <h3 className="text-base font-[var(--font-space-grotesk)] font-bold text-[#11100d] dark:text-[#f2eee8]">
         {address.label}
       </h3>
 
-      <div className="mt-2 space-y-0.5 text-sm leading-[1.625] font-[var(--font-arimo)] text-[#64748b] dark:text-[#99A1AF]">
+      <div className="mt-2 space-y-0.5 text-sm leading-[1.625] font-[var(--font-arimo)] text-[#655a4e] dark:text-[#b8ad9f]">
         <p>{lineOne}</p>
         <p>{lineTwo}</p>
         <p>{lineThree}</p>
@@ -231,7 +231,7 @@ function AddressCard({
           type="button"
           onClick={onEdit}
           disabled={isRemoving}
-          className="text-[#5C7CFA] transition-colors hover:text-[#7991ff] disabled:cursor-not-allowed disabled:opacity-60"
+          className="text-[#59627a] transition-colors hover:text-[#7991ff] disabled:cursor-not-allowed disabled:opacity-60"
         >
           Edit
         </button>
@@ -246,7 +246,7 @@ function AddressCard({
       </div>
 
       {address.isDefault && (
-        <span className="absolute top-4 right-4 rounded bg-[rgba(92,124,250,0.1)] px-2 py-1 text-xs font-[var(--font-arimo)] font-bold tracking-[0.04em] text-[#5C7CFA]">
+        <span className="absolute top-4 right-4 rounded bg-[rgba(92,124,250,0.1)] px-2 py-1 text-xs font-[var(--font-arimo)] font-bold tracking-[0.04em] text-[#59627a]">
           DEFAULT
         </span>
       )}
@@ -259,12 +259,12 @@ function AddAddressCard({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[186px] w-full flex-col items-center justify-center gap-3 rounded-2xl border border-[#dbe4ff] bg-[#f8faff] transition-colors hover:bg-[#eef4ff] dark:border-white/[0.1] dark:bg-[#12151A] dark:hover:bg-[#181d24]"
+      className="flex min-h-[186px] w-full flex-col items-center justify-center gap-3 rounded-2xl border border-[#d8cfbf] bg-[#f8f4ec] transition-colors hover:bg-[#eef4ff] dark:border-white/[0.1] dark:bg-[#17140f] dark:hover:bg-[#181d24]"
     >
-      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#e8efff] text-[#5C7CFA] dark:bg-white/[0.05] dark:text-[#99A1AF]">
+      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#f4efe5] text-[#59627a] dark:bg-white/[0.05] dark:text-[#b8ad9f]">
         <Plus className="h-5 w-5" />
       </span>
-      <span className="text-sm font-[var(--font-arimo)] font-medium text-[#475569] dark:text-[#99A1AF]">
+      <span className="text-sm font-[var(--font-arimo)] font-medium text-[#4f463c] dark:text-[#b8ad9f]">
         Add New Address
       </span>
     </button>
@@ -504,8 +504,8 @@ export function ProfilePageContent({
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[50vh] w-full items-center justify-center bg-[#f4f8ff] dark:bg-[#0B0D10]">
-        <LoaderCircle className="h-10 w-10 animate-spin text-[#5C7CFA]" />
+      <div className="flex min-h-[50vh] w-full items-center justify-center bg-[#f4f8ff] dark:bg-[#11100d]">
+        <LoaderCircle className="h-10 w-10 animate-spin text-[#59627a]" />
       </div>
     );
   }
@@ -516,9 +516,9 @@ export function ProfilePageContent({
 
   const [firstName, lastName] = splitName(user.name);
   return (
-    <div className="w-full bg-[#f8faff] text-[#0f172a] dark:bg-[#0B0D10] dark:text-[#F1F3F5]">
+    <div className="w-full bg-[#f8f4ec] text-[#11100d] dark:bg-[#11100d] dark:text-[#f2eee8]">
       <div className="mx-auto w-full max-w-[1536px] px-4 pt-12 pb-16 sm:px-6 lg:px-8">
-        <h1 className="text-[36px] leading-[40px] font-[var(--font-space-grotesk)] font-bold text-[#0f172a] dark:text-[#F1F3F5]">
+        <h1 className="text-[36px] leading-[40px] font-[var(--font-space-grotesk)] font-bold text-[#11100d] dark:text-[#f2eee8]">
           My Profile
         </h1>
 
@@ -553,7 +553,7 @@ export function ProfilePageContent({
 
                 <Link
                   href={ROUTE_PATHS.orders}
-                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm text-[#64748b] transition-colors hover:bg-[#edf2ff] hover:text-[#0f172a] dark:text-[#99A1AF] dark:hover:bg-white/5 dark:hover:text-[#F1F3F5]"
+                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm text-[#655a4e] transition-colors hover:bg-[#f4efe5] hover:text-[#11100d] dark:text-[#b8ad9f] dark:hover:bg-white/5 dark:hover:text-[#f2eee8]"
                 >
                   <Package className="h-5 w-5" />
                   <span className="text-sm font-[var(--font-arimo)]">
@@ -564,7 +564,7 @@ export function ProfilePageContent({
                 {isAdmin ? (
                   <Link
                     href={ROUTE_PATHS.admin}
-                    className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm text-[#64748b] transition-colors hover:bg-[#edf2ff] hover:text-[#0f172a] dark:text-[#99A1AF] dark:hover:bg-white/5 dark:hover:text-[#F1F3F5]"
+                    className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm text-[#655a4e] transition-colors hover:bg-[#f4efe5] hover:text-[#11100d] dark:text-[#b8ad9f] dark:hover:bg-white/5 dark:hover:text-[#f2eee8]"
                   >
                     <LayoutDashboard className="h-5 w-5" />
                     <span className="text-sm font-[var(--font-arimo)]">
@@ -574,7 +574,7 @@ export function ProfilePageContent({
                 ) : null}
               </nav>
 
-              <div className="border-t border-[#dbe4ff] pt-8 dark:border-white/[0.05]">
+              <div className="border-t border-[#d8cfbf] pt-8 dark:border-white/[0.05]">
                 <button
                   type="button"
                   onClick={() => {
@@ -594,23 +594,23 @@ export function ProfilePageContent({
             </div>
           </aside>
 
-          <section className="min-h-[500px] flex-1 rounded-2xl border border-[#dbe4ff] bg-white px-6 py-8 sm:px-8 dark:border-white/[0.06] dark:bg-[#171A21]">
+          <section className="min-h-[500px] flex-1 rounded-2xl border border-[#d8cfbf] bg-white px-6 py-8 sm:px-8 dark:border-white/[0.06] dark:bg-[#1b1712]">
             {activeSection === "addresses" ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-2xl leading-8 font-[var(--font-space-grotesk)] font-bold text-[#0f172a] dark:text-[#F1F3F5]">
+                <h2 className="text-2xl leading-8 font-[var(--font-space-grotesk)] font-bold text-[#11100d] dark:text-[#f2eee8]">
                   {headingBySection[activeSection]}
                 </h2>
                 <button
                   type="button"
                   onClick={openCreateAddressModal}
-                  className="inline-flex h-9 items-center rounded-2xl border border-[#dbe4ff] bg-white px-3.5 text-sm font-[var(--font-arimo)] font-medium text-[#0f172a] transition-colors hover:bg-[#f3f7ff] dark:border-white/[0.1] dark:bg-[#171A21] dark:text-[#F1F3F5] dark:hover:bg-[#1f2430]"
+                  className="inline-flex h-9 items-center rounded-2xl border border-[#d8cfbf] bg-white px-3.5 text-sm font-[var(--font-arimo)] font-medium text-[#11100d] transition-colors hover:bg-[#f4efe5] dark:border-white/[0.1] dark:bg-[#1b1712] dark:text-[#f2eee8] dark:hover:bg-[#1f2430]"
                 >
                   <Plus className="mr-1.5 h-4 w-4" />
                   Add New
                 </button>
               </div>
             ) : (
-              <h2 className="text-2xl leading-8 font-[var(--font-space-grotesk)] font-bold text-[#0f172a] dark:text-[#F1F3F5]">
+              <h2 className="text-2xl leading-8 font-[var(--font-space-grotesk)] font-bold text-[#11100d] dark:text-[#f2eee8]">
                 {headingBySection[activeSection]}
               </h2>
             )}
@@ -645,7 +645,7 @@ export function ProfilePageContent({
 
                 <button
                   type="submit"
-                  className="h-11 rounded-2xl bg-[#FF2E63] px-6 text-base font-[var(--font-arimo)] text-white transition-colors hover:bg-[#ff4a78]"
+                  className="h-11 rounded-2xl bg-[#916130] px-6 text-base font-[var(--font-arimo)] text-white transition-colors hover:bg-[#ff4a78]"
                 >
                   Save Changes
                 </button>
@@ -656,7 +656,7 @@ export function ProfilePageContent({
               <>
                 {isLoadingAddresses ? (
                   <div className="mt-8 flex h-[200px] items-center justify-center">
-                    <LoaderCircle className="h-8 w-8 animate-spin text-[#5C7CFA]" />
+                    <LoaderCircle className="h-8 w-8 animate-spin text-[#59627a]" />
                   </div>
                 ) : (
                   <div className="mt-6 grid gap-6 lg:grid-cols-2">
@@ -671,11 +671,11 @@ export function ProfilePageContent({
                         />
                       ))
                     ) : (
-                      <div className="flex min-h-[186px] flex-col justify-center rounded-2xl border border-[#dbe4ff] bg-[#f8faff] p-6 dark:border-white/[0.1] dark:bg-[#12151A]">
-                        <h3 className="text-base font-[var(--font-space-grotesk)] font-bold text-[#0f172a] dark:text-[#F1F3F5]">
+                      <div className="flex min-h-[186px] flex-col justify-center rounded-2xl border border-[#d8cfbf] bg-[#f8f4ec] p-6 dark:border-white/[0.1] dark:bg-[#17140f]">
+                        <h3 className="text-base font-[var(--font-space-grotesk)] font-bold text-[#11100d] dark:text-[#f2eee8]">
                           No saved addresses yet
                         </h3>
-                        <p className="mt-2 text-sm leading-relaxed font-[var(--font-arimo)] text-[#64748b] dark:text-[#99A1AF]">
+                        <p className="mt-2 text-sm leading-relaxed font-[var(--font-arimo)] text-[#655a4e] dark:text-[#b8ad9f]">
                           Add your first address to speed up checkout.
                         </p>
                       </div>
@@ -688,8 +688,8 @@ export function ProfilePageContent({
             )}
 
             {(activeSection === "payment" || activeSection === "security") && (
-              <div className="mt-8 max-w-[576px] rounded-2xl border border-[#dbe4ff] bg-[#f8faff] p-6 dark:border-white/[0.06] dark:bg-[#12151A]">
-                <p className="text-sm leading-relaxed font-[var(--font-arimo)] text-[#64748b] dark:text-[#99A1AF]">
+              <div className="mt-8 max-w-[576px] rounded-2xl border border-[#d8cfbf] bg-[#f8f4ec] p-6 dark:border-white/[0.06] dark:bg-[#17140f]">
+                <p className="text-sm leading-relaxed font-[var(--font-arimo)] text-[#655a4e] dark:text-[#b8ad9f]">
                   This section is under construction and will follow the same
                   style as the approved profile design.
                 </p>

@@ -32,7 +32,7 @@ export function ProductGallery({
 
   return (
     <div className="space-y-5">
-      <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-[#dbe4ff] bg-[#edf2ff] dark:border-white/10 dark:bg-[#080b10]">
+      <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-[#d8cfbf] bg-[#f4efe5] dark:border-white/10 dark:bg-[#080b10]">
         <div className="relative h-full w-full">
           <Image
             src={mainImage}
@@ -44,7 +44,7 @@ export function ProductGallery({
           />
         </div>
         {(isFeatured || isOnSale) && (
-          <div className="absolute top-4 left-4 rounded-[10px] bg-[#5c7cfa] px-3 py-1 [font-family:var(--font-arimo)] text-xs font-bold tracking-[0.05em] text-white uppercase">
+          <div className="absolute top-4 left-4 rounded-[10px] bg-[#59627a] px-3 py-1 [font-family:var(--font-arimo)] text-xs font-bold tracking-[0.05em] text-white uppercase">
             {isOnSale ? "Sale" : "New"}
           </div>
         )}
@@ -63,10 +63,10 @@ export function ProductGallery({
                 key={index}
                 type="button"
                 onClick={() => setSelectedImage(index)}
-                className={`overflow-hidden rounded-xl border bg-white p-0.5 transition-all dark:bg-[#12151a] ${
+                className={`overflow-hidden rounded-xl border bg-white p-0.5 transition-all dark:bg-[#17140f] ${
                   selectedImage === index
-                    ? "border-[#ff2e63]"
-                    : "border-[#dbe4ff] hover:border-[#bfcff7] dark:border-white/10 dark:hover:border-white/20"
+                    ? "border-[#916130]"
+                    : "border-[#d8cfbf] hover:border-[#c9bda8] dark:border-white/10 dark:hover:border-white/20"
                 }`}
               >
                 <div className="relative aspect-square w-full">

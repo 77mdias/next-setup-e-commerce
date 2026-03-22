@@ -180,7 +180,7 @@ export default function VerifyEmailContent() {
             <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.18em] text-[#98A2B3] uppercase">
               Endereço em verificação
             </p>
-            <p className="mt-2 [font-family:var(--font-arimo)] text-base break-all text-[#111827] dark:text-[#F1F3F5]">
+            <p className="mt-2 [font-family:var(--font-arimo)] text-base break-all text-[#111827] dark:text-[#f2eee8]">
               {email}
             </p>
           </div>
@@ -221,7 +221,7 @@ export default function VerifyEmailContent() {
             onClick={() => {
               router.push(getThankYouUrl(email));
             }}
-            className="h-12 flex-1 rounded-2xl bg-[#111827] [font-family:var(--font-arimo)] text-sm font-medium text-white hover:bg-[#1f2937] dark:bg-[#F1F3F5] dark:text-[#0B0D10] dark:hover:bg-white"
+            className="h-12 flex-1 rounded-2xl bg-[#111827] [font-family:var(--font-arimo)] text-sm font-medium text-white hover:bg-[#1f2937] dark:bg-[#f2eee8] dark:text-[#11100d] dark:hover:bg-white"
           >
             Continuar agora
             <ArrowRight className="h-4 w-4" />
@@ -230,7 +230,7 @@ export default function VerifyEmailContent() {
           <Button
             asChild
             variant="outline"
-            className="h-12 flex-1 rounded-2xl border-[#d0d5dd] bg-white/65 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:text-[#F1F3F5] dark:hover:bg-white/[0.06]"
+            className="h-12 flex-1 rounded-2xl border-[#d0d5dd] bg-white/65 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:text-[#f2eee8] dark:hover:bg-white/[0.06]"
           >
             <Link href={loginHref}>
               Ir para login
@@ -265,7 +265,7 @@ export default function VerifyEmailContent() {
             <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.18em] text-[#98A2B3] uppercase">
               Email da conta
             </p>
-            <p className="mt-2 [font-family:var(--font-arimo)] text-base break-all text-[#111827] dark:text-[#F1F3F5]">
+            <p className="mt-2 [font-family:var(--font-arimo)] text-base break-all text-[#111827] dark:text-[#f2eee8]">
               {email}
             </p>
           </div>
@@ -273,7 +273,7 @@ export default function VerifyEmailContent() {
           <div className="space-y-3">
             <label
               htmlFor="verification-email"
-              className="[font-family:var(--font-arimo)] text-sm font-medium text-[#111827] dark:text-[#F1F3F5]"
+              className="[font-family:var(--font-arimo)] text-sm font-medium text-[#111827] dark:text-[#f2eee8]"
             >
               Email da conta
             </label>
@@ -287,7 +287,7 @@ export default function VerifyEmailContent() {
                 setEmail(event.target.value);
                 setHasResent(false);
               }}
-              className="h-12 rounded-2xl border border-[#d0d5dd] bg-white/80 text-base text-[#111827] placeholder:text-[#667085] focus-visible:border-[#94A3B8]/40 focus-visible:ring-[#94A3B8]/20 dark:border-white/10 dark:bg-[rgba(18,21,26,0.55)] dark:text-[#F1F3F5] dark:placeholder:text-[#98A2B3]"
+              className="h-12 rounded-2xl border border-[#d0d5dd] bg-white/80 text-base text-[#111827] placeholder:text-[#667085] focus-visible:border-[#94A3B8]/40 focus-visible:ring-[#94A3B8]/20 dark:border-white/10 dark:bg-[rgba(18,21,26,0.55)] dark:text-[#f2eee8] dark:placeholder:text-[#98A2B3]"
             />
           </div>
         )}
@@ -296,7 +296,7 @@ export default function VerifyEmailContent() {
           <Button
             onClick={resendVerificationEmail}
             disabled={isResending}
-            className="h-12 flex-1 rounded-2xl bg-[#111827] [font-family:var(--font-arimo)] text-sm font-medium text-white hover:bg-[#1f2937] dark:bg-[#F1F3F5] dark:text-[#0B0D10] dark:hover:bg-white"
+            className="h-12 flex-1 rounded-2xl bg-[#111827] [font-family:var(--font-arimo)] text-sm font-medium text-white hover:bg-[#1f2937] dark:bg-[#f2eee8] dark:text-[#11100d] dark:hover:bg-white"
           >
             {isResending ? "Reenviando..." : "Enviar novo link"}
             <RefreshCcw className="h-4 w-4" />
@@ -305,7 +305,7 @@ export default function VerifyEmailContent() {
           <Button
             asChild
             variant="outline"
-            className="h-12 flex-1 rounded-2xl border-[#d0d5dd] bg-white/65 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:text-[#F1F3F5] dark:hover:bg-white/[0.06]"
+            className="h-12 flex-1 rounded-2xl border-[#d0d5dd] bg-white/65 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:text-[#f2eee8] dark:hover:bg-white/[0.06]"
           >
             <Link href={loginHref}>
               Voltar ao login
@@ -333,7 +333,7 @@ export default function VerifyEmailContent() {
 
           <Link
             href={loginHref}
-            className="inline-flex items-center gap-2 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] transition-colors hover:text-[#475467] dark:text-[#F1F3F5] dark:hover:text-white"
+            className="inline-flex items-center gap-2 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] transition-colors hover:text-[#475467] dark:text-[#f2eee8] dark:hover:text-white"
           >
             Fazer login
             <ArrowRight className="h-4 w-4" />
@@ -355,7 +355,7 @@ export default function VerifyEmailContent() {
           <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.18em] text-[#98A2B3] uppercase">
             Email da conta
           </p>
-          <p className="mt-2 [font-family:var(--font-arimo)] text-base break-all text-[#111827] dark:text-[#F1F3F5]">
+          <p className="mt-2 [font-family:var(--font-arimo)] text-base break-all text-[#111827] dark:text-[#f2eee8]">
             {email}
           </p>
         </div>
@@ -363,7 +363,7 @@ export default function VerifyEmailContent() {
         <div className="space-y-3">
           <label
             htmlFor="resend-email"
-            className="[font-family:var(--font-arimo)] text-sm font-medium text-[#111827] dark:text-[#F1F3F5]"
+            className="[font-family:var(--font-arimo)] text-sm font-medium text-[#111827] dark:text-[#f2eee8]"
           >
             Email da conta
           </label>
@@ -377,7 +377,7 @@ export default function VerifyEmailContent() {
               setEmail(event.target.value);
               setHasResent(false);
             }}
-            className="h-12 rounded-2xl border border-[#d0d5dd] bg-white/80 text-base text-[#111827] placeholder:text-[#667085] focus-visible:border-[#94A3B8]/40 focus-visible:ring-[#94A3B8]/20 dark:border-white/10 dark:bg-[rgba(18,21,26,0.55)] dark:text-[#F1F3F5] dark:placeholder:text-[#98A2B3]"
+            className="h-12 rounded-2xl border border-[#d0d5dd] bg-white/80 text-base text-[#111827] placeholder:text-[#667085] focus-visible:border-[#94A3B8]/40 focus-visible:ring-[#94A3B8]/20 dark:border-white/10 dark:bg-[rgba(18,21,26,0.55)] dark:text-[#f2eee8] dark:placeholder:text-[#98A2B3]"
           />
         </div>
       )}
@@ -386,7 +386,7 @@ export default function VerifyEmailContent() {
         <Button
           onClick={resendVerificationEmail}
           disabled={isResending}
-          className="h-12 flex-1 rounded-2xl bg-[#111827] [font-family:var(--font-arimo)] text-sm font-medium text-white hover:bg-[#1f2937] dark:bg-[#F1F3F5] dark:text-[#0B0D10] dark:hover:bg-white"
+          className="h-12 flex-1 rounded-2xl bg-[#111827] [font-family:var(--font-arimo)] text-sm font-medium text-white hover:bg-[#1f2937] dark:bg-[#f2eee8] dark:text-[#11100d] dark:hover:bg-white"
         >
           {isResending ? "Reenviando..." : "Reenviar verificação"}
           <RefreshCcw className="h-4 w-4" />
@@ -395,7 +395,7 @@ export default function VerifyEmailContent() {
         <Button
           asChild
           variant="outline"
-          className="h-12 flex-1 rounded-2xl border-[#d0d5dd] bg-white/65 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:text-[#F1F3F5] dark:hover:bg-white/[0.06]"
+          className="h-12 flex-1 rounded-2xl border-[#d0d5dd] bg-white/65 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:text-[#f2eee8] dark:hover:bg-white/[0.06]"
         >
           <Link href={loginHref}>
             Voltar ao login
@@ -410,7 +410,7 @@ export default function VerifyEmailContent() {
             key={tip.title}
             className="rounded-3xl border border-[#e4e7ec] bg-white/55 p-4 dark:border-white/10 dark:bg-white/[0.02]"
           >
-            <p className="[font-family:var(--font-arimo)] text-sm font-medium text-[#111827] dark:text-[#F1F3F5]">
+            <p className="[font-family:var(--font-arimo)] text-sm font-medium text-[#111827] dark:text-[#f2eee8]">
               {tip.title}
             </p>
             <p className="mt-2 [font-family:var(--font-arimo)] text-sm leading-6 text-[#667085] dark:text-[#98A2B3]">

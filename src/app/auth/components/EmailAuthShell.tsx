@@ -25,7 +25,7 @@ export function EmailAuthShell({
   contentClassName,
 }: EmailAuthShellProps) {
   return (
-    <main className="relative isolate flex min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-[#f6f3f4] px-4 py-12 text-[#0f172a] transition-colors sm:px-6 lg:px-8 dark:bg-[#0B0D10] dark:text-[#F1F3F5]">
+    <main className="relative isolate flex min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-[#f6f3f4] px-4 py-12 text-[#11100d] transition-colors sm:px-6 lg:px-8 dark:bg-[#11100d] dark:text-[#f2eee8]">
       <Image
         src="/images/auth/signin-bg.png"
         alt=""
@@ -51,11 +51,11 @@ export function EmailAuthShell({
               {badge}
             </span>
 
-            <div className="mx-auto mt-5 flex h-14 w-14 items-center justify-center rounded-[20px] border border-[#d8dee9] bg-white/70 text-[#0f172a] shadow-[0_12px_30px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#F1F3F5] dark:shadow-none">
+            <div className="mx-auto mt-5 flex h-14 w-14 items-center justify-center rounded-[20px] border border-[#d8dee9] bg-white/70 text-[#11100d] shadow-[0_12px_30px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#f2eee8] dark:shadow-none">
               {icon}
             </div>
 
-            <h1 className="mt-5 [font-family:var(--font-space-grotesk)] text-[30px] leading-[1.15] font-bold tracking-[-0.02em] text-[#111827] sm:text-[34px] dark:text-[#F1F3F5]">
+            <h1 className="mt-5 [font-family:var(--font-space-grotesk)] text-[30px] leading-[1.15] font-bold tracking-[-0.02em] text-[#111827] sm:text-[34px] dark:text-[#f2eee8]">
               {title}
             </h1>
 

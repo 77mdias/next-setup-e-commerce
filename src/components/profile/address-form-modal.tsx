@@ -36,7 +36,7 @@ type AddressFormModalProps = {
 const ZIP_CODE_REGEX = /^\d{5}-?\d{3}$/;
 
 const inputClassName =
-  "h-10 w-full rounded-xl border border-[#dbe4ff] bg-[#f8faff] px-3 text-sm text-[#0f172a] outline-none transition-colors focus:border-[#5C7CFA] dark:border-white/[0.08] dark:bg-[#12151A] dark:text-[#F1F3F5]";
+  "h-10 w-full rounded-xl border border-[#d8cfbf] bg-[#f8f4ec] px-3 text-sm text-[#11100d] outline-none transition-colors focus:border-[#59627a] dark:border-white/[0.08] dark:bg-[#17140f] dark:text-[#f2eee8]";
 
 export const EMPTY_ADDRESS_FORM_VALUES: AddressFormValues = {
   city: "",
@@ -181,16 +181,16 @@ export function AddressFormModal({
         aria-label="Fechar modal"
       />
 
-      <div className="relative z-10 w-full max-w-2xl rounded-2xl border border-[#dbe4ff] bg-white p-6 shadow-2xl dark:border-white/[0.08] dark:bg-[#171A21]">
+      <div className="relative z-10 w-full max-w-2xl rounded-2xl border border-[#d8cfbf] bg-white p-6 shadow-2xl dark:border-white/[0.08] dark:bg-[#1b1712]">
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-[var(--font-space-grotesk)] font-bold text-[#0f172a] dark:text-[#F1F3F5]">
+          <h3 className="text-xl font-[var(--font-space-grotesk)] font-bold text-[#11100d] dark:text-[#f2eee8]">
             {mode === "create" ? "Adicionar endereço" : "Editar endereço"}
           </h3>
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="rounded-full p-2 text-[#64748b] transition-colors hover:bg-[#edf2ff] hover:text-[#0f172a] disabled:cursor-not-allowed disabled:opacity-60 dark:text-[#99A1AF] dark:hover:bg-white/10 dark:hover:text-[#F1F3F5]"
+            className="rounded-full p-2 text-[#655a4e] transition-colors hover:bg-[#f4efe5] hover:text-[#11100d] disabled:cursor-not-allowed disabled:opacity-60 dark:text-[#b8ad9f] dark:hover:bg-white/10 dark:hover:text-[#f2eee8]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -198,7 +198,7 @@ export function AddressFormModal({
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#334155] dark:text-[#CBD5E1]">
+            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#403930] dark:text-[#CBD5E1]">
               Rótulo
               <input
                 type="text"
@@ -213,7 +213,7 @@ export function AddressFormModal({
               ) : null}
             </label>
 
-            <label className="mt-1 flex items-center gap-2 text-sm font-[var(--font-arimo)] text-[#334155] dark:text-[#CBD5E1]">
+            <label className="mt-1 flex items-center gap-2 text-sm font-[var(--font-arimo)] text-[#403930] dark:text-[#CBD5E1]">
               <input
                 type="checkbox"
                 checked={formValues.isDefault}
@@ -228,7 +228,7 @@ export function AddressFormModal({
           </div>
 
           <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#334155] dark:text-[#CBD5E1]">
+            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#403930] dark:text-[#CBD5E1]">
               Rua
               <input
                 type="text"
@@ -242,7 +242,7 @@ export function AddressFormModal({
               ) : null}
             </label>
 
-            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#334155] dark:text-[#CBD5E1]">
+            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#403930] dark:text-[#CBD5E1]">
               Número
               <input
                 type="text"
@@ -257,7 +257,7 @@ export function AddressFormModal({
             </label>
           </div>
 
-          <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#334155] dark:text-[#CBD5E1]">
+          <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#403930] dark:text-[#CBD5E1]">
             Complemento (opcional)
             <input
               type="text"
@@ -270,7 +270,7 @@ export function AddressFormModal({
             />
           </label>
 
-          <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#334155] dark:text-[#CBD5E1]">
+          <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#403930] dark:text-[#CBD5E1]">
             Bairro
             <input
               type="text"
@@ -289,7 +289,7 @@ export function AddressFormModal({
           </label>
 
           <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#334155] dark:text-[#CBD5E1]">
+            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#403930] dark:text-[#CBD5E1]">
               Cidade
               <input
                 type="text"
@@ -303,7 +303,7 @@ export function AddressFormModal({
               ) : null}
             </label>
 
-            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#334155] dark:text-[#CBD5E1]">
+            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#403930] dark:text-[#CBD5E1]">
               Estado
               <input
                 type="text"
@@ -322,7 +322,7 @@ export function AddressFormModal({
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#334155] dark:text-[#CBD5E1]">
+            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#403930] dark:text-[#CBD5E1]">
               CEP
               <input
                 type="text"
@@ -339,7 +339,7 @@ export function AddressFormModal({
               ) : null}
             </label>
 
-            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#334155] dark:text-[#CBD5E1]">
+            <label className="flex flex-col gap-1.5 text-sm font-[var(--font-arimo)] text-[#403930] dark:text-[#CBD5E1]">
               País
               <input
                 type="text"
@@ -365,14 +365,14 @@ export function AddressFormModal({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="inline-flex h-10 items-center rounded-xl border border-[#dbe4ff] px-4 text-sm font-[var(--font-arimo)] text-[#334155] transition-colors hover:bg-[#f3f7ff] disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/[0.1] dark:text-[#CBD5E1] dark:hover:bg-white/10"
+              className="inline-flex h-10 items-center rounded-xl border border-[#d8cfbf] px-4 text-sm font-[var(--font-arimo)] text-[#403930] transition-colors hover:bg-[#f4efe5] disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/[0.1] dark:text-[#CBD5E1] dark:hover:bg-white/10"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex h-10 items-center rounded-xl bg-[#5C7CFA] px-4 text-sm font-[var(--font-arimo)] font-medium text-white transition-colors hover:bg-[#4b6cf7] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center rounded-xl bg-[#59627a] px-4 text-sm font-[var(--font-arimo)] font-medium text-white transition-colors hover:bg-[#4b6cf7] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 <>

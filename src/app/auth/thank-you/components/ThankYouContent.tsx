@@ -127,7 +127,7 @@ export default function ThankYouContent() {
 
           <Link
             href="/"
-            className="inline-flex items-center gap-2 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] transition-colors hover:text-[#475467] dark:text-[#F1F3F5] dark:hover:text-white"
+            className="inline-flex items-center gap-2 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] transition-colors hover:text-[#475467] dark:text-[#f2eee8] dark:hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar ao início
@@ -146,7 +146,7 @@ export default function ThankYouContent() {
           <div className="flex items-start gap-3">
             <Mail className="mt-0.5 h-5 w-5 text-[#667085] dark:text-[#98A2B3]" />
             <div>
-              <p className="[font-family:var(--font-arimo)] text-sm font-medium text-[#111827] dark:text-[#F1F3F5]">
+              <p className="[font-family:var(--font-arimo)] text-sm font-medium text-[#111827] dark:text-[#f2eee8]">
                 {verified
                   ? "Sua conta está ativa"
                   : "Email de confirmação enviado"}
@@ -166,7 +166,7 @@ export default function ThankYouContent() {
           <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.18em] text-[#98A2B3] uppercase">
             Email da conta
           </p>
-          <p className="mt-2 [font-family:var(--font-arimo)] text-base break-all text-[#111827] dark:text-[#F1F3F5]">
+          <p className="mt-2 [font-family:var(--font-arimo)] text-base break-all text-[#111827] dark:text-[#f2eee8]">
             {email}
           </p>
         </div>
@@ -178,7 +178,7 @@ export default function ThankYouContent() {
             key={card.title}
             className="rounded-3xl border border-[#e4e7ec] bg-white/55 p-4 dark:border-white/10 dark:bg-white/[0.02]"
           >
-            <p className="[font-family:var(--font-arimo)] text-sm font-medium text-[#111827] dark:text-[#F1F3F5]">
+            <p className="[font-family:var(--font-arimo)] text-sm font-medium text-[#111827] dark:text-[#f2eee8]">
               {card.title}
             </p>
             <p className="mt-2 [font-family:var(--font-arimo)] text-sm leading-6 text-[#667085] dark:text-[#98A2B3]">
@@ -192,7 +192,7 @@ export default function ThankYouContent() {
         {verified ? (
           <Button
             onClick={() => router.push(loginHref)}
-            className="h-12 flex-1 rounded-2xl bg-[#111827] [font-family:var(--font-arimo)] text-sm font-medium text-white hover:bg-[#1f2937] dark:bg-[#F1F3F5] dark:text-[#0B0D10] dark:hover:bg-white"
+            className="h-12 flex-1 rounded-2xl bg-[#111827] [font-family:var(--font-arimo)] text-sm font-medium text-white hover:bg-[#1f2937] dark:bg-[#f2eee8] dark:text-[#11100d] dark:hover:bg-white"
           >
             Fazer login
             <ArrowRight className="h-4 w-4" />
@@ -201,7 +201,7 @@ export default function ThankYouContent() {
           <Button
             onClick={resendVerificationEmail}
             disabled={isResending || !canResendEmail}
-            className="h-12 flex-1 rounded-2xl bg-[#111827] [font-family:var(--font-arimo)] text-sm font-medium text-white hover:bg-[#1f2937] dark:bg-[#F1F3F5] dark:text-[#0B0D10] dark:hover:bg-white"
+            className="h-12 flex-1 rounded-2xl bg-[#111827] [font-family:var(--font-arimo)] text-sm font-medium text-white hover:bg-[#1f2937] dark:bg-[#f2eee8] dark:text-[#11100d] dark:hover:bg-white"
           >
             {isResending ? "Reenviando..." : "Reenviar email"}
             <RefreshCcw className="h-4 w-4" />
@@ -211,7 +211,7 @@ export default function ThankYouContent() {
         <Button
           asChild
           variant="outline"
-          className="h-12 flex-1 rounded-2xl border-[#d0d5dd] bg-white/65 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:text-[#F1F3F5] dark:hover:bg-white/[0.06]"
+          className="h-12 flex-1 rounded-2xl border-[#d0d5dd] bg-white/65 [font-family:var(--font-arimo)] text-sm font-medium text-[#111827] hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:text-[#f2eee8] dark:hover:bg-white/[0.06]"
         >
           <Link href={verified ? "/" : loginHref}>
             {verified ? "Ir para a home" : "Voltar ao login"}

@@ -24,17 +24,17 @@ export function QuantitySelector({
   };
 
   return (
-    <div className="inline-flex w-fit items-center rounded-2xl border border-[#dbe4ff] bg-white p-1 dark:border-white/10 dark:bg-[#12151a]">
+    <div className="inline-flex w-fit items-center rounded-2xl border border-[#d8cfbf] bg-white p-1 dark:border-white/10 dark:bg-[#17140f]">
       <button
         type="button"
         onClick={handleDecrease}
         disabled={quantity <= 1}
-        className="flex h-11 w-11 items-center justify-center rounded-xl text-[#64748b] transition-colors hover:bg-[#edf2ff] hover:text-[#0f172a] disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#99a1af] dark:hover:bg-white/5 dark:hover:text-white"
+        className="flex h-11 w-11 items-center justify-center rounded-xl text-[#655a4e] transition-colors hover:bg-[#f4efe5] hover:text-[#11100d] disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#b8ad9f] dark:hover:bg-white/5 dark:hover:text-white"
       >
         <Minus className="h-4 w-4" />
       </button>
 
-      <span className="w-14 text-center text-lg font-semibold text-[#0f172a] dark:text-white">
+      <span className="w-14 text-center text-lg font-semibold text-[#11100d] dark:text-white">
         {quantity}
       </span>
 
@@ -42,7 +42,7 @@ export function QuantitySelector({
         type="button"
         onClick={handleIncrease}
         disabled={quantity >= 99}
-        className="flex h-11 w-11 items-center justify-center rounded-xl text-[#64748b] transition-colors hover:bg-[#edf2ff] hover:text-[#0f172a] disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#99a1af] dark:hover:bg-white/5 dark:hover:text-white"
+        className="flex h-11 w-11 items-center justify-center rounded-xl text-[#655a4e] transition-colors hover:bg-[#f4efe5] hover:text-[#11100d] disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#b8ad9f] dark:hover:bg-white/5 dark:hover:text-white"
       >
         <Plus className="h-4 w-4" />
       </button>

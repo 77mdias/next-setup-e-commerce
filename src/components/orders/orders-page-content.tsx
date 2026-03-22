@@ -102,7 +102,7 @@ const orderStatusConfig: Record<OrderStatus, StatusVisualConfig> = {
       "border-amber-400/35 bg-amber-500/20 text-amber-300 dark:border-amber-400/35 dark:bg-amber-500/20 dark:text-amber-300",
     filterActiveClassName: "border-amber-400/40 bg-amber-500/20 text-amber-300",
     filterIdleClassName:
-      "border-white/10 bg-[#12151a] text-[#99a1af] hover:border-amber-400/40 hover:bg-amber-500/15 hover:text-amber-300",
+      "border-white/10 bg-[#17140f] text-[#b8ad9f] hover:border-amber-400/40 hover:bg-amber-500/15 hover:text-amber-300",
   },
   PAYMENT_PENDING: {
     label: "Payment Pending",
@@ -111,7 +111,7 @@ const orderStatusConfig: Record<OrderStatus, StatusVisualConfig> = {
     filterActiveClassName:
       "border-orange-400/40 bg-orange-500/20 text-orange-300",
     filterIdleClassName:
-      "border-white/10 bg-[#12151a] text-[#99a1af] hover:border-orange-400/40 hover:bg-orange-500/15 hover:text-orange-300",
+      "border-white/10 bg-[#17140f] text-[#b8ad9f] hover:border-orange-400/40 hover:bg-orange-500/15 hover:text-orange-300",
   },
   PAID: {
     label: "Paid",
@@ -119,7 +119,7 @@ const orderStatusConfig: Record<OrderStatus, StatusVisualConfig> = {
       "border-sky-400/35 bg-sky-500/20 text-sky-300 dark:border-sky-400/35 dark:bg-sky-500/20 dark:text-sky-300",
     filterActiveClassName: "border-sky-400/40 bg-sky-500/20 text-sky-300",
     filterIdleClassName:
-      "border-white/10 bg-[#12151a] text-[#99a1af] hover:border-sky-400/40 hover:bg-sky-500/15 hover:text-sky-300",
+      "border-white/10 bg-[#17140f] text-[#b8ad9f] hover:border-sky-400/40 hover:bg-sky-500/15 hover:text-sky-300",
   },
   PROCESSING: {
     label: "Processing",
@@ -127,7 +127,7 @@ const orderStatusConfig: Record<OrderStatus, StatusVisualConfig> = {
       "border-blue-400/35 bg-blue-500/20 text-blue-300 dark:border-blue-400/35 dark:bg-blue-500/20 dark:text-blue-300",
     filterActiveClassName: "border-blue-400/40 bg-blue-500/20 text-blue-300",
     filterIdleClassName:
-      "border-white/10 bg-[#12151a] text-[#99a1af] hover:border-blue-400/40 hover:bg-blue-500/15 hover:text-blue-300",
+      "border-white/10 bg-[#17140f] text-[#b8ad9f] hover:border-blue-400/40 hover:bg-blue-500/15 hover:text-blue-300",
   },
   SHIPPED: {
     label: "In Transit",
@@ -136,7 +136,7 @@ const orderStatusConfig: Record<OrderStatus, StatusVisualConfig> = {
     filterActiveClassName:
       "border-indigo-400/40 bg-indigo-500/20 text-indigo-300",
     filterIdleClassName:
-      "border-white/10 bg-[#12151a] text-[#99a1af] hover:border-indigo-400/40 hover:bg-indigo-500/15 hover:text-indigo-300",
+      "border-white/10 bg-[#17140f] text-[#b8ad9f] hover:border-indigo-400/40 hover:bg-indigo-500/15 hover:text-indigo-300",
   },
   DELIVERED: {
     label: "Delivered",
@@ -145,7 +145,7 @@ const orderStatusConfig: Record<OrderStatus, StatusVisualConfig> = {
     filterActiveClassName:
       "border-emerald-400/40 bg-emerald-500/20 text-emerald-300",
     filterIdleClassName:
-      "border-white/10 bg-[#12151a] text-[#99a1af] hover:border-emerald-400/40 hover:bg-emerald-500/15 hover:text-emerald-300",
+      "border-white/10 bg-[#17140f] text-[#b8ad9f] hover:border-emerald-400/40 hover:bg-emerald-500/15 hover:text-emerald-300",
   },
   CANCELLED: {
     label: "Cancelled",
@@ -153,7 +153,7 @@ const orderStatusConfig: Record<OrderStatus, StatusVisualConfig> = {
       "border-rose-400/35 bg-rose-500/20 text-rose-300 dark:border-rose-400/35 dark:bg-rose-500/20 dark:text-rose-300",
     filterActiveClassName: "border-rose-400/40 bg-rose-500/20 text-rose-300",
     filterIdleClassName:
-      "border-white/10 bg-[#12151a] text-[#99a1af] hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-300",
+      "border-white/10 bg-[#17140f] text-[#b8ad9f] hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-300",
   },
   REFUNDED: {
     label: "Refunded",
@@ -161,7 +161,7 @@ const orderStatusConfig: Record<OrderStatus, StatusVisualConfig> = {
       "border-slate-400/35 bg-slate-500/20 text-slate-300 dark:border-slate-400/35 dark:bg-slate-500/20 dark:text-slate-300",
     filterActiveClassName: "border-slate-400/40 bg-slate-500/20 text-slate-300",
     filterIdleClassName:
-      "border-white/10 bg-[#12151a] text-[#99a1af] hover:border-slate-400/40 hover:bg-slate-500/15 hover:text-slate-300",
+      "border-white/10 bg-[#17140f] text-[#b8ad9f] hover:border-slate-400/40 hover:bg-slate-500/15 hover:text-slate-300",
   },
 };
 
@@ -259,10 +259,10 @@ function DeliveryProgress({ status }: { status: OrderStatus }) {
   const progress = stage < 0 ? 0 : (stage / (deliverySteps.length - 1)) * 100;
 
   return (
-    <div className="rounded-xl border border-white/6 bg-[#12151a] p-4">
-      <div className="relative h-1 rounded-full bg-[#0b0d10]">
+    <div className="rounded-xl border border-white/6 bg-[#17140f] p-4">
+      <div className="relative h-1 rounded-full bg-[#11100d]">
         <div
-          className="absolute top-0 left-0 h-full rounded-full bg-[#5c7cfa] transition-all duration-300"
+          className="absolute top-0 left-0 h-full rounded-full bg-[#59627a] transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -278,8 +278,8 @@ function DeliveryProgress({ status }: { status: OrderStatus }) {
                 className={cn(
                   "flex h-7 w-7 items-center justify-center rounded-full border transition-colors",
                   isReached
-                    ? "border-[#5c7cfa] bg-[#5c7cfa]/20 text-[#5c7cfa]"
-                    : "border-white/10 bg-[#0b0d10] text-[#6a7282]",
+                    ? "border-[#59627a] bg-[#59627a]/20 text-[#59627a]"
+                    : "border-white/10 bg-[#11100d] text-[#9f9383]",
                 )}
               >
                 {isReached ? (
@@ -291,9 +291,9 @@ function DeliveryProgress({ status }: { status: OrderStatus }) {
 
               <span
                 className={cn(
-                  "[font-family:var(--font-arimo)] text-[11px] leading-none text-[#6a7282]",
-                  isReached && "text-[#f1f3f5]",
-                  isCurrent && "text-[#5c7cfa]",
+                  "[font-family:var(--font-arimo)] text-[11px] leading-none text-[#9f9383]",
+                  isReached && "text-[#f2eee8]",
+                  isCurrent && "text-[#59627a]",
                 )}
               >
                 {step}
@@ -545,8 +545,8 @@ export function OrdersPageContent() {
 
   if (isLoading || !isAuthenticated) {
     return (
-      <main className="min-h-screen bg-[#0b0d10] px-4 py-10 text-[#f1f3f5] sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-[1536px] rounded-2xl border border-white/6 bg-[#171a21] p-8 [font-family:var(--font-arimo)] text-sm text-[#99a1af]">
+      <main className="min-h-screen bg-[#11100d] px-4 py-10 text-[#f2eee8] sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1536px] rounded-2xl border border-white/6 bg-[#1b1712] p-8 [font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
           Checking session...
         </div>
       </main>
@@ -554,14 +554,14 @@ export function OrdersPageContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0b0d10] px-4 py-10 text-[#f1f3f5] sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#11100d] px-4 py-10 text-[#f2eee8] sm:px-6 lg:px-8">
       <section className="mx-auto flex w-full max-w-[1536px] flex-col gap-6">
         <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
-            <h1 className="[font-family:var(--font-space-grotesk)] text-3xl font-bold tracking-[-0.02em] text-[#f1f3f5]">
+            <h1 className="[font-family:var(--font-space-grotesk)] text-3xl font-bold tracking-[-0.02em] text-[#f2eee8]">
               My Orders
             </h1>
-            <p className="[font-family:var(--font-arimo)] text-base text-[#6a7282]">
+            <p className="[font-family:var(--font-arimo)] text-base text-[#9f9383]">
               Track and manage your recent purchases
             </p>
           </div>
@@ -570,7 +570,7 @@ export function OrdersPageContent() {
             className="relative block w-full max-w-[256px]"
             htmlFor="orders-search"
           >
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#6a7282]" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#9f9383]" />
             <input
               id="orders-search"
               type="text"
@@ -580,12 +580,12 @@ export function OrdersPageContent() {
                 setCurrentPage(1);
               }}
               placeholder="Search Order ID..."
-              className="h-[38px] w-full rounded-2xl border border-white/6 bg-[#12151a] pr-4 pl-10 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5] transition-colors outline-none placeholder:text-[#6a7282] focus:border-[#5c7cfa]/65"
+              className="h-[38px] w-full rounded-2xl border border-white/6 bg-[#17140f] pr-4 pl-10 [font-family:var(--font-arimo)] text-sm text-[#f2eee8] transition-colors outline-none placeholder:text-[#9f9383] focus:border-[#59627a]/65"
             />
           </label>
         </header>
 
-        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-4">
+        <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-4">
           <div className="flex flex-wrap items-center gap-2">
             {filterOptions.map((option) => {
               const isActive = statusFilter === option.value;
@@ -593,8 +593,8 @@ export function OrdersPageContent() {
                 option.value === "ALL"
                   ? {
                       active:
-                        "border-[#5c7cfa]/50 bg-[#5c7cfa]/20 text-[#b9c7ff]",
-                      idle: "border-white/10 bg-[#12151a] text-[#99a1af] hover:border-[#5c7cfa]/50 hover:bg-[#5c7cfa]/15 hover:text-[#b9c7ff]",
+                        "border-[#59627a]/50 bg-[#59627a]/20 text-[#c9bda8]",
+                      idle: "border-white/10 bg-[#17140f] text-[#b8ad9f] hover:border-[#59627a]/50 hover:bg-[#59627a]/15 hover:text-[#c9bda8]",
                     }
                   : {
                       active: resolveOrderVisual(option.value)
@@ -623,7 +623,7 @@ export function OrdersPageContent() {
               );
             })}
 
-            <span className="ml-auto [font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+            <span className="ml-auto [font-family:var(--font-arimo)] text-xs text-[#9f9383]">
               {isFetching
                 ? "Updating orders..."
                 : `${pagination?.total ?? orders.length} total orders`}
@@ -658,23 +658,23 @@ export function OrdersPageContent() {
             {Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={index}
-                className="h-56 animate-pulse rounded-2xl border border-white/6 bg-[#171a21]"
+                className="h-56 animate-pulse rounded-2xl border border-white/6 bg-[#1b1712]"
               />
             ))}
           </div>
         ) : orders.length === 0 ? (
-          <div className="rounded-2xl border border-white/6 bg-[#171a21] px-6 py-14 text-center">
-            <SearchX className="mx-auto mb-4 h-10 w-10 text-[#6a7282]" />
-            <h2 className="[font-family:var(--font-space-grotesk)] text-2xl text-[#f1f3f5]">
+          <div className="rounded-2xl border border-white/6 bg-[#1b1712] px-6 py-14 text-center">
+            <SearchX className="mx-auto mb-4 h-10 w-10 text-[#9f9383]" />
+            <h2 className="[font-family:var(--font-space-grotesk)] text-2xl text-[#f2eee8]">
               No orders found
             </h2>
-            <p className="mx-auto mt-2 max-w-[420px] [font-family:var(--font-arimo)] text-sm text-[#6a7282]">
+            <p className="mx-auto mt-2 max-w-[420px] [font-family:var(--font-arimo)] text-sm text-[#9f9383]">
               No orders matched your current filters. Explore products and place
               a new order.
             </p>
             <Button
               asChild
-              className="mt-6 h-9 rounded-2xl border border-transparent bg-[#ff2e63] [font-family:var(--font-arimo)] text-sm text-white hover:bg-[#e52858]"
+              className="mt-6 h-9 rounded-2xl border border-transparent bg-[#916130] [font-family:var(--font-arimo)] text-sm text-white hover:bg-[#7b5429]"
             >
               <Link href="/products">
                 Browse products
@@ -700,12 +700,12 @@ export function OrdersPageContent() {
               return (
                 <article
                   key={order.id}
-                  className="rounded-2xl border border-white/6 bg-[#171a21] p-6"
+                  className="rounded-2xl border border-white/6 bg-[#1b1712] p-6"
                 >
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="[font-family:var(--font-space-grotesk)] text-[28px] leading-none font-bold text-[#f1f3f5]">
+                        <h3 className="[font-family:var(--font-space-grotesk)] text-[28px] leading-none font-bold text-[#f2eee8]">
                           {formatOrderCode(order.id)}
                         </h3>
                         <span
@@ -718,22 +718,22 @@ export function OrdersPageContent() {
                         </span>
                       </div>
 
-                      <p className="inline-flex items-center gap-2 [font-family:var(--font-arimo)] text-sm text-[#6a7282]">
+                      <p className="inline-flex items-center gap-2 [font-family:var(--font-arimo)] text-sm text-[#9f9383]">
                         <Clock3 className="h-4 w-4" />
                         Placed on {formatPlacedDate(order.createdAt)}
                       </p>
 
-                      <p className="[font-family:var(--font-arimo)] text-xs text-[#99a1af]">
+                      <p className="[font-family:var(--font-arimo)] text-xs text-[#b8ad9f]">
                         {paymentLabel}
                       </p>
                     </div>
 
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                       <div className="text-left sm:text-right">
-                        <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.08em] text-[#6a7282] uppercase">
+                        <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.08em] text-[#9f9383] uppercase">
                           Total Amount
                         </p>
-                        <p className="[font-family:var(--font-arimo)] text-[28px] leading-none font-bold text-[#f1f3f5]">
+                        <p className="[font-family:var(--font-arimo)] text-[28px] leading-none font-bold text-[#f2eee8]">
                           {formatCurrency(order.total)}
                         </p>
                       </div>
@@ -741,7 +741,7 @@ export function OrdersPageContent() {
                       <Button
                         asChild
                         variant="outline"
-                        className="h-9 rounded-2xl border border-white/10 bg-transparent px-3 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5] hover:bg-white/5"
+                        className="h-9 rounded-2xl border border-white/10 bg-transparent px-3 [font-family:var(--font-arimo)] text-sm text-[#f2eee8] hover:bg-white/5"
                       >
                         <Link href={`/orders/${order.id}`}>
                           View Details
@@ -755,7 +755,7 @@ export function OrdersPageContent() {
                     <div className="mt-6">
                       <DeliveryProgress status={order.status} />
 
-                      <div className="mt-3 grid gap-2 rounded-xl border border-white/6 bg-[#12151a] p-3 [font-family:var(--font-arimo)] text-xs text-[#99a1af] sm:grid-cols-2">
+                      <div className="mt-3 grid gap-2 rounded-xl border border-white/6 bg-[#17140f] p-3 [font-family:var(--font-arimo)] text-xs text-[#b8ad9f] sm:grid-cols-2">
                         <p>
                           {order.status === "DELIVERED"
                             ? `Delivered on ${deliveredAtLabel ?? estimatedDeliveryLabel ?? "N/A"}`
@@ -777,7 +777,7 @@ export function OrdersPageContent() {
                   )}
 
                   <div className="mt-6 border-t border-white/5 pt-6">
-                    <p className="[font-family:var(--font-space-grotesk)] text-sm tracking-[0.05em] text-[#6a7282] uppercase">
+                    <p className="[font-family:var(--font-space-grotesk)] text-sm tracking-[0.05em] text-[#9f9383] uppercase">
                       Items in Order
                     </p>
 
@@ -794,7 +794,7 @@ export function OrdersPageContent() {
                             className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                           >
                             <div className="flex min-w-0 items-center gap-3">
-                              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-[#12151a]">
+                              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-[#17140f]">
                                 <Image
                                   src={imageSrc}
                                   alt={`Product image for ${item.productName}`}
@@ -808,10 +808,10 @@ export function OrdersPageContent() {
                               </div>
 
                               <div className="min-w-0">
-                                <p className="truncate [font-family:var(--font-arimo)] text-base text-[#f1f3f5]">
+                                <p className="truncate [font-family:var(--font-arimo)] text-base text-[#f2eee8]">
                                   {item.productName}
                                 </p>
-                                <p className="[font-family:var(--font-arimo)] text-sm text-[#6a7282]">
+                                <p className="[font-family:var(--font-arimo)] text-sm text-[#9f9383]">
                                   Qty: {item.quantity} x{" "}
                                   {formatCurrency(item.unitPrice)}
                                 </p>
@@ -819,7 +819,7 @@ export function OrdersPageContent() {
                             </div>
 
                             <div className="flex items-center justify-between gap-3 sm:justify-end">
-                              <p className="[font-family:var(--font-arimo)] text-sm font-bold text-[#f1f3f5]">
+                              <p className="[font-family:var(--font-arimo)] text-sm font-bold text-[#f2eee8]">
                                 {formatCurrency(item.totalPrice)}
                               </p>
                               <Button
@@ -828,7 +828,7 @@ export function OrdersPageContent() {
                                 size="sm"
                                 onClick={() => void handleBuyAgain(item)}
                                 disabled={buyingItemId === item.id}
-                                className="h-9 rounded-2xl border-0 bg-transparent px-3 [font-family:var(--font-arimo)] text-sm text-[#ff2e63] hover:bg-[#ff2e63]/10"
+                                className="h-9 rounded-2xl border-0 bg-transparent px-3 [font-family:var(--font-arimo)] text-sm text-[#916130] hover:bg-[#916130]/10"
                               >
                                 {buyingItemId === item.id
                                   ? "Adding..."
@@ -841,7 +841,7 @@ export function OrdersPageContent() {
                     </div>
 
                     {order.items.length > 2 && (
-                      <p className="mt-4 [font-family:var(--font-arimo)] text-sm text-[#6a7282]">
+                      <p className="mt-4 [font-family:var(--font-arimo)] text-sm text-[#9f9383]">
                         +{order.items.length - 2} additional item(s) in this
                         order.
                       </p>
@@ -860,8 +860,8 @@ export function OrdersPageContent() {
         )}
 
         {pagination && pagination.totalPages > 1 && (
-          <div className="flex flex-col gap-3 rounded-2xl border border-white/6 bg-[#171a21] p-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="[font-family:var(--font-arimo)] text-sm text-[#6a7282]">
+          <div className="flex flex-col gap-3 rounded-2xl border border-white/6 bg-[#1b1712] p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="[font-family:var(--font-arimo)] text-sm text-[#9f9383]">
               Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
               {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
               of {pagination.total}
@@ -874,7 +874,7 @@ export function OrdersPageContent() {
                 size="sm"
                 disabled={!pagination.hasPrev || isFetching}
                 onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                className="h-8 rounded-full border-white/10 bg-[#12151a] [font-family:var(--font-arimo)] text-xs text-[#f1f3f5] hover:bg-white/5"
+                className="h-8 rounded-full border-white/10 bg-[#17140f] [font-family:var(--font-arimo)] text-xs text-[#f2eee8] hover:bg-white/5"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Previous
@@ -890,8 +890,8 @@ export function OrdersPageContent() {
                   className={cn(
                     "h-8 min-w-8 rounded-full border px-2 [font-family:var(--font-arimo)] text-xs",
                     page === currentPage
-                      ? "border-[#5c7cfa] bg-[#5c7cfa] text-white hover:bg-[#4f6ee5]"
-                      : "border-white/10 bg-[#12151a] text-[#f1f3f5] hover:bg-white/5",
+                      ? "border-[#59627a] bg-[#59627a] text-white hover:bg-[#4f6ee5]"
+                      : "border-white/10 bg-[#17140f] text-[#f2eee8] hover:bg-white/5",
                   )}
                 >
                   {page}
@@ -904,7 +904,7 @@ export function OrdersPageContent() {
                 size="sm"
                 disabled={!pagination.hasNext || isFetching}
                 onClick={() => setCurrentPage((page) => page + 1)}
-                className="h-8 rounded-full border-white/10 bg-[#12151a] [font-family:var(--font-arimo)] text-xs text-[#f1f3f5] hover:bg-white/5"
+                className="h-8 rounded-full border-white/10 bg-[#17140f] [font-family:var(--font-arimo)] text-xs text-[#f2eee8] hover:bg-white/5"
               >
                 Next
                 <ChevronRight className="h-4 w-4" />
@@ -913,9 +913,9 @@ export function OrdersPageContent() {
           </div>
         )}
 
-        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-4">
-          <p className="inline-flex items-center gap-2 [font-family:var(--font-arimo)] text-sm text-[#6a7282]">
-            <Package className="h-4 w-4 text-[#5c7cfa]" />
+        <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-4">
+          <p className="inline-flex items-center gap-2 [font-family:var(--font-arimo)] text-sm text-[#9f9383]">
+            <Package className="h-4 w-4 text-[#59627a]" />
             Need more details? Open an order to view payment and customer info.
           </p>
         </div>

@@ -101,7 +101,7 @@ const DEFAULT_FILTERS: AdminCatalogProductsFilters = {
 };
 
 const fieldClassName =
-  "min-h-10 w-full rounded-2xl border border-white/6 bg-[#12151a] px-3 py-2 text-sm text-[#f1f3f5] shadow-sm outline-none transition focus:border-[#5c7cfa]/60 focus:ring-2 focus:ring-cyan-400/20";
+  "min-h-10 w-full rounded-2xl border border-white/6 bg-[#17140f] px-3 py-2 text-sm text-[#f2eee8] shadow-sm outline-none transition focus:border-[#59627a]/60 focus:ring-2 focus:ring-cyan-400/20";
 
 function createEmptyProductForm(
   defaults?: Partial<
@@ -298,7 +298,7 @@ function ProductImagePreview({ alt, src }: { alt: string; src: string }) {
   const normalizedSrc = normalizeProductImageSrc(src);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/6 bg-[#171a21]">
+    <div className="overflow-hidden rounded-2xl border border-white/6 bg-[#1b1712]">
       <Image
         alt={alt}
         className="h-28 w-full object-cover"
@@ -669,22 +669,24 @@ export default function AdminCatalogClient() {
   }
 
   return (
-    <div className="space-y-6 text-[#f1f3f5]">
+    <div className="space-y-6 text-[#f2eee8]">
       <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.05fr_1.45fr]">
-        <div className={`space-y-5 ${selectedProductId !== null || isCreatingProduct ? "hidden xl:block" : "block"}`}>
-          <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
+        <div
+          className={`space-y-5 ${selectedProductId !== null || isCreatingProduct ? "hidden xl:block" : "block"}`}
+        >
+          <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-5">
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#6a7282] uppercase">
+                  <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#9f9383] uppercase">
                     Fila operacional
                   </p>
-                  <h2 className="[font-family:var(--font-space-grotesk)] mt-2 text-xl font-semibold text-[#f1f3f5]">
+                  <h2 className="mt-2 [font-family:var(--font-space-grotesk)] text-xl font-semibold text-[#f2eee8]">
                     Produtos por loja
                   </h2>
                 </div>
                 <Button
-                  className="border-white/10 bg-[#12151a] hover:bg-white/15"
+                  className="border-white/10 bg-[#17140f] hover:bg-white/15"
                   type="button"
                   variant="outline"
                   onClick={resetForNewProduct}
@@ -696,9 +698,9 @@ export default function AdminCatalogClient() {
 
               <div className="grid gap-3 md:grid-cols-[1fr_auto]">
                 <label className="relative block">
-                  <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#6a7282]" />
+                  <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#9f9383]" />
                   <Input
-                    className="h-10 rounded-2xl border-white/6 bg-[#12151a] pl-9 text-[#f1f3f5]"
+                    className="h-10 rounded-2xl border-white/6 bg-[#17140f] pl-9 text-[#f2eee8]"
                     placeholder="Buscar por nome ou SKU"
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
@@ -750,7 +752,7 @@ export default function AdminCatalogClient() {
                 Array.from({ length: 4 }).map((_, index) => (
                   <div
                     key={`product-skeleton-${index}`}
-                    className="h-28 animate-pulse rounded-2xl border border-white/6 bg-[#12151a]"
+                    className="h-28 animate-pulse rounded-2xl border border-white/6 bg-[#17140f]"
                   />
                 ))
               ) : productsData?.products.length ? (
@@ -764,8 +766,8 @@ export default function AdminCatalogClient() {
                       className={cn(
                         "w-full rounded-2xl border px-4 py-4 text-left transition",
                         isSelected
-                          ? "border-[#5c7cfa]/25 bg-[#5c7cfa]/10"
-                          : "border-white/6 bg-[#12151a] hover:border-white/20 hover:bg-white/8",
+                          ? "border-[#59627a]/25 bg-[#59627a]/10"
+                          : "border-white/6 bg-[#17140f] hover:border-white/20 hover:bg-white/8",
                       )}
                       type="button"
                       onClick={() => {
@@ -785,25 +787,25 @@ export default function AdminCatalogClient() {
                               width={80}
                             />
                           ) : (
-                            <div className="flex h-full items-center justify-center text-[#6a7282]">
+                            <div className="flex h-full items-center justify-center text-[#9f9383]">
                               <Boxes className="h-5 w-5" />
                             </div>
                           )}
                         </div>
                         <div className="min-w-0 flex-1 space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="[font-family:var(--font-space-grotesk)] truncate text-base font-semibold text-[#f1f3f5]">
+                            <h3 className="truncate [font-family:var(--font-space-grotesk)] text-base font-semibold text-[#f2eee8]">
                               {product.name}
                             </h3>
-                            <span className="[font-family:var(--font-arimo)] rounded-full border border-white/6 bg-[#12151a] px-2 py-1 text-[11px] tracking-[0.2em] text-[#99a1af] uppercase">
+                            <span className="rounded-full border border-white/6 bg-[#17140f] px-2 py-1 [font-family:var(--font-arimo)] text-[11px] tracking-[0.2em] text-[#b8ad9f] uppercase">
                               {product.sku}
                             </span>
                           </div>
-                          <p className="[font-family:var(--font-arimo)] text-sm text-[#99a1af]">
+                          <p className="[font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
                             {product.store.name} · {product.category.name} ·{" "}
                             {product.brand.name}
                           </p>
-                          <div className="[font-family:var(--font-arimo)] flex flex-wrap gap-3 text-xs text-[#99a1af]">
+                          <div className="flex flex-wrap gap-3 [font-family:var(--font-arimo)] text-xs text-[#b8ad9f]">
                             <span>{formatCurrency(product.price)}</span>
                             <span>Disponível: {product.availableQuantity}</span>
                             <span>Mínimo: {product.inventory.minStock}</span>
@@ -814,26 +816,26 @@ export default function AdminCatalogClient() {
                   );
                 })
               ) : (
-                <div className="[font-family:var(--font-arimo)] rounded-2xl border border-dashed border-white/12 bg-[#12151a] px-4 py-8 text-center text-sm text-[#99a1af]">
+                <div className="rounded-2xl border border-dashed border-white/12 bg-[#17140f] px-4 py-8 text-center [font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
                   Nenhum produto encontrado para o escopo e filtros atuais.
                 </div>
               )}
             </div>
 
             {(productsErrorMessage || categoriesErrorMessage) && (
-              <div className="[font-family:var(--font-arimo)] mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-50">
+              <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 [font-family:var(--font-arimo)] text-sm text-amber-50">
                 {productsErrorMessage ?? categoriesErrorMessage}
               </div>
             )}
 
-            <div className="mt-5 flex items-center justify-between text-sm text-[#6a7282]">
+            <div className="mt-5 flex items-center justify-between text-sm text-[#9f9383]">
               <span className="[font-family:var(--font-arimo)]">
                 Página {productsData?.page ?? filters.page} de{" "}
                 {productsData?.totalPages ?? 1}
               </span>
               <div className="flex items-center gap-2">
                 <Button
-                  className="border-white/6 bg-transparent hover:bg-[#12151a]"
+                  className="border-white/6 bg-transparent hover:bg-[#17140f]"
                   disabled={(productsData?.page ?? filters.page) <= 1}
                   type="button"
                   variant="outline"
@@ -849,7 +851,7 @@ export default function AdminCatalogClient() {
                   Anterior
                 </Button>
                 <Button
-                  className="border-white/6 bg-transparent hover:bg-[#12151a]"
+                  className="border-white/6 bg-transparent hover:bg-[#17140f]"
                   disabled={
                     (productsData?.page ?? filters.page) >=
                     (productsData?.totalPages ?? 1)
@@ -870,12 +872,13 @@ export default function AdminCatalogClient() {
               </div>
             </div>
           </div>
-
         </div>
 
-        <div className={`space-y-5 ${selectedProductId !== null || isCreatingProduct ? "block" : "hidden xl:block"}`}>
+        <div
+          className={`space-y-5 ${selectedProductId !== null || isCreatingProduct ? "block" : "hidden xl:block"}`}
+        >
           <button
-            className="mb-4 flex items-center gap-2 rounded-full border border-white/6 bg-[#12151a] px-4 py-2 [font-family:var(--font-arimo)] text-sm text-[#f1f3f5] transition hover:border-white/10 xl:hidden"
+            className="mb-4 flex items-center gap-2 rounded-full border border-white/6 bg-[#17140f] px-4 py-2 [font-family:var(--font-arimo)] text-sm text-[#f2eee8] transition hover:border-white/10 xl:hidden"
             type="button"
             onClick={() => {
               setSelectedProductId(null);
@@ -884,20 +887,20 @@ export default function AdminCatalogClient() {
           >
             ← Voltar à lista
           </button>
-          <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
+          <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#6a7282] uppercase">
+                <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#9f9383] uppercase">
                   Editor de catálogo
                 </p>
-                <h2 className="[font-family:var(--font-space-grotesk)] mt-2 text-xl font-semibold text-[#f1f3f5]">
+                <h2 className="mt-2 [font-family:var(--font-space-grotesk)] text-xl font-semibold text-[#f2eee8]">
                   {isCreatingProduct
                     ? "Criar produto"
                     : selectedProduct
                       ? selectedProduct.name
                       : "Selecione um produto"}
                 </h2>
-                <p className="[font-family:var(--font-arimo)] mt-2 max-w-2xl text-sm leading-6 text-[#99a1af]">
+                <p className="mt-2 max-w-2xl [font-family:var(--font-arimo)] text-sm leading-6 text-[#b8ad9f]">
                   Produto, mídia e preços seguem o mesmo contrato validado do
                   backend. Mudanças inválidas retornam mensagem uniforme antes
                   de persistir qualquer alteração.
@@ -907,7 +910,7 @@ export default function AdminCatalogClient() {
               <div className="flex flex-wrap gap-3">
                 {!isCreatingProduct && selectedProduct ? (
                   <Button
-                    className="border-white/6 bg-transparent hover:bg-[#12151a]"
+                    className="border-white/6 bg-transparent hover:bg-[#17140f]"
                     type="button"
                     variant="outline"
                     onClick={() =>
@@ -939,18 +942,18 @@ export default function AdminCatalogClient() {
             </div>
 
             {detailErrorMessage && !isCreatingProduct ? (
-              <div className="[font-family:var(--font-arimo)] mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-50">
+              <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 [font-family:var(--font-arimo)] text-sm text-amber-50">
                 {detailErrorMessage}
               </div>
             ) : null}
 
             {isDetailLoading && !isCreatingProduct ? (
-              <div className="mt-5 h-72 animate-pulse rounded-2xl border border-white/6 bg-[#12151a]" />
+              <div className="mt-5 h-72 animate-pulse rounded-2xl border border-white/6 bg-[#17140f]" />
             ) : (
               <div className="mt-5 space-y-5">
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Nome
                     </label>
                     <Input
@@ -965,7 +968,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       SKU
                     </label>
                     <Input
@@ -983,7 +986,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-3">
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Loja
                     </label>
                     <select
@@ -1006,7 +1009,7 @@ export default function AdminCatalogClient() {
                     </select>
                   </div>
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Marca
                     </label>
                     <select
@@ -1028,7 +1031,7 @@ export default function AdminCatalogClient() {
                     </select>
                   </div>
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Categoria
                     </label>
                     <select
@@ -1053,7 +1056,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-4">
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Preço
                     </label>
                     <Input
@@ -1068,7 +1071,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Preço original
                     </label>
                     <Input
@@ -1083,7 +1086,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Custo
                     </label>
                     <Input
@@ -1098,7 +1101,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Peso
                     </label>
                     <Input
@@ -1116,7 +1119,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Descrição curta
                     </label>
                     <Input
@@ -1131,7 +1134,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Garantia
                     </label>
                     <Input
@@ -1148,7 +1151,7 @@ export default function AdminCatalogClient() {
                 </div>
 
                 <div>
-                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                  <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Descrição
                   </label>
                   <textarea
@@ -1165,7 +1168,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Especificações JSON
                     </label>
                     <textarea
@@ -1183,7 +1186,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Dimensões JSON
                     </label>
                     <textarea
@@ -1203,10 +1206,10 @@ export default function AdminCatalogClient() {
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-3">
-                  <label className="[font-family:var(--font-arimo)] flex items-center gap-3 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 text-sm text-[#f1f3f5]">
+                  <label className="flex items-center gap-3 rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f2eee8]">
                     <input
                       checked={productForm.isActive}
-                      className="h-4 w-4 rounded border-white/20 bg-[#171a21]"
+                      className="h-4 w-4 rounded border-white/20 bg-[#1b1712]"
                       type="checkbox"
                       onChange={(event) =>
                         setProductForm((currentValue) => ({
@@ -1217,10 +1220,10 @@ export default function AdminCatalogClient() {
                     />
                     Produto ativo
                   </label>
-                  <label className="[font-family:var(--font-arimo)] flex items-center gap-3 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 text-sm text-[#f1f3f5]">
+                  <label className="flex items-center gap-3 rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f2eee8]">
                     <input
                       checked={productForm.isFeatured}
-                      className="h-4 w-4 rounded border-white/20 bg-[#171a21]"
+                      className="h-4 w-4 rounded border-white/20 bg-[#1b1712]"
                       type="checkbox"
                       onChange={(event) =>
                         setProductForm((currentValue) => ({
@@ -1231,10 +1234,10 @@ export default function AdminCatalogClient() {
                     />
                     Destaque
                   </label>
-                  <label className="[font-family:var(--font-arimo)] flex items-center gap-3 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 text-sm text-[#f1f3f5]">
+                  <label className="flex items-center gap-3 rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#f2eee8]">
                     <input
                       checked={productForm.isOnSale}
-                      className="h-4 w-4 rounded border-white/20 bg-[#171a21]"
+                      className="h-4 w-4 rounded border-white/20 bg-[#1b1712]"
                       type="checkbox"
                       onChange={(event) =>
                         setProductForm((currentValue) => ({
@@ -1249,7 +1252,7 @@ export default function AdminCatalogClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Promoção a partir de
                     </label>
                     <Input
@@ -1265,7 +1268,7 @@ export default function AdminCatalogClient() {
                     />
                   </div>
                   <div>
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Promoção até
                     </label>
                     <Input
@@ -1282,19 +1285,19 @@ export default function AdminCatalogClient() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-white/6 bg-[#12151a] p-4">
+                <div className="rounded-2xl border border-white/6 bg-[#17140f] p-4">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                      <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                      <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                         Imagens
                       </p>
-                      <h3 className="[font-family:var(--font-space-grotesk)] mt-2 text-lg font-semibold text-[#f1f3f5]">
+                      <h3 className="mt-2 [font-family:var(--font-space-grotesk)] text-lg font-semibold text-[#f2eee8]">
                         Lista validada e processamento seguro
                       </h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Button
-                        className="border-white/6 bg-transparent hover:bg-[#12151a]"
+                        className="border-white/6 bg-transparent hover:bg-[#17140f]"
                         disabled={
                           isCreatingProduct ||
                           !selectedProduct ||
@@ -1315,7 +1318,7 @@ export default function AdminCatalogClient() {
                       </Button>
                       <Button
                         asChild
-                        className="border-white/6 bg-transparent hover:bg-[#12151a]"
+                        className="border-white/6 bg-transparent hover:bg-[#17140f]"
                         type="button"
                         variant="outline"
                       >
@@ -1328,14 +1331,14 @@ export default function AdminCatalogClient() {
                   </div>
 
                   {isRemovingBackground ? (
-                    <div className="[font-family:var(--font-arimo)] mt-4 rounded-2xl border border-[#5c7cfa]/25 bg-[#5c7cfa]/10 px-4 py-3 text-sm text-[#5c7cfa]">
+                    <div className="mt-4 rounded-2xl border border-[#59627a]/25 bg-[#59627a]/10 px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#59627a]">
                       Processando imagens com Remove.bg...{" "}
                       {Math.round(removeBgProgress)}%
                     </div>
                   ) : null}
 
                   <div className="mt-4">
-                    <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                    <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                       Uma imagem por linha
                     </label>
                     <textarea
@@ -1385,7 +1388,7 @@ export default function AdminCatalogClient() {
                   </Button>
                   {!isCreatingProduct && selectedProduct ? (
                     <Button
-                      className="border-white/6 bg-transparent hover:bg-[#12151a]"
+                      className="border-white/6 bg-transparent hover:bg-[#17140f]"
                       type="button"
                       variant="outline"
                       onClick={() =>
@@ -1399,23 +1402,22 @@ export default function AdminCatalogClient() {
               </div>
             )}
           </div>
-
         </div>
       </section>
 
       <section className="grid grid-cols-1 gap-5 xl:grid-cols-[2.8fr_1fr]">
-        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
+        <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#6a7282] uppercase">
+              <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#9f9383] uppercase">
                 Categorias
               </p>
-              <h2 className="[font-family:var(--font-space-grotesk)] mt-2 text-xl font-semibold text-[#f1f3f5]">
+              <h2 className="mt-2 [font-family:var(--font-space-grotesk)] text-xl font-semibold text-[#f2eee8]">
                 CRUD administrativo
               </h2>
             </div>
             <Button
-              className="border-white/10 bg-[#12151a] hover:bg-white/15"
+              className="border-white/10 bg-[#17140f] hover:bg-white/15"
               disabled={!meta?.canManageCategories}
               type="button"
               variant="outline"
@@ -1430,10 +1432,10 @@ export default function AdminCatalogClient() {
           </div>
 
           {!meta?.canManageCategories ? (
-            <div className="[font-family:var(--font-arimo)] mt-4 rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3 text-sm text-[#99a1af]">
-              Admin de loja pode consultar categorias, mas a mutação global
-              foi restrita a perfis administrativos centrais para evitar
-              impacto cruzado entre lojas.
+            <div className="mt-4 rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
+              Admin de loja pode consultar categorias, mas a mutação global foi
+              restrita a perfis administrativos centrais para evitar impacto
+              cruzado entre lojas.
             </div>
           ) : null}
 
@@ -1443,7 +1445,7 @@ export default function AdminCatalogClient() {
                 ? Array.from({ length: 4 }).map((_, index) => (
                     <div
                       key={`category-skeleton-${index}`}
-                      className="h-16 animate-pulse rounded-2xl border border-white/6 bg-[#12151a]"
+                      className="h-16 animate-pulse rounded-2xl border border-white/6 bg-[#17140f]"
                     />
                   ))
                 : categoriesData?.categories.map((category) => (
@@ -1452,8 +1454,8 @@ export default function AdminCatalogClient() {
                       className={cn(
                         "w-full rounded-2xl border px-4 py-3 text-left transition",
                         selectedCategoryId === category.id
-                          ? "border-[#5c7cfa]/25 bg-[#5c7cfa]/10"
-                          : "border-white/6 bg-[#12151a] hover:bg-white/8",
+                          ? "border-[#59627a]/25 bg-[#59627a]/10"
+                          : "border-white/6 bg-[#17140f] hover:bg-white/8",
                       )}
                       type="button"
                       onClick={() => {
@@ -1463,14 +1465,14 @@ export default function AdminCatalogClient() {
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="[font-family:var(--font-arimo)] font-medium text-[#f1f3f5]">
+                          <p className="[font-family:var(--font-arimo)] font-medium text-[#f2eee8]">
                             {category.name}
                           </p>
-                          <p className="[font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+                          <p className="[font-family:var(--font-arimo)] text-xs text-[#9f9383]">
                             {category.slug}
                           </p>
                         </div>
-                        <div className="[font-family:var(--font-arimo)] text-right text-xs text-[#99a1af]">
+                        <div className="text-right [font-family:var(--font-arimo)] text-xs text-[#b8ad9f]">
                           <p>{category.productCount} produto(s)</p>
                           <p>{category.childrenCount} filho(s)</p>
                         </div>
@@ -1479,10 +1481,10 @@ export default function AdminCatalogClient() {
                   ))}
             </div>
 
-            <div className="space-y-4 rounded-2xl border border-white/6 bg-[#12151a] p-4">
+            <div className="space-y-4 rounded-2xl border border-white/6 bg-[#17140f] p-4">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                  <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Nome
                   </label>
                   <Input
@@ -1498,7 +1500,7 @@ export default function AdminCatalogClient() {
                   />
                 </div>
                 <div>
-                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                  <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Slug
                   </label>
                   <Input
@@ -1514,7 +1516,7 @@ export default function AdminCatalogClient() {
                   />
                 </div>
                 <div>
-                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                  <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Ordem
                   </label>
                   <Input
@@ -1530,7 +1532,7 @@ export default function AdminCatalogClient() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                  <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Categoria pai
                   </label>
                   <select
@@ -1546,9 +1548,7 @@ export default function AdminCatalogClient() {
                   >
                     <option value="">Sem categoria pai</option>
                     {categoriesData?.categories
-                      .filter(
-                        (category) => category.id !== selectedCategoryId,
-                      )
+                      .filter((category) => category.id !== selectedCategoryId)
                       .map((category) => (
                         <option key={category.id} value={category.id}>
                           {category.name}
@@ -1558,10 +1558,10 @@ export default function AdminCatalogClient() {
                 </div>
               </div>
 
-              <div className="[font-family:var(--font-arimo)] flex items-center gap-3 text-sm text-[#f1f3f5]">
+              <div className="flex items-center gap-3 [font-family:var(--font-arimo)] text-sm text-[#f2eee8]">
                 <input
                   checked={categoryForm.isActive}
-                  className="h-4 w-4 rounded border-white/20 bg-[#171a21]"
+                  className="h-4 w-4 rounded border-white/20 bg-[#1b1712]"
                   disabled={!meta?.canManageCategories}
                   type="checkbox"
                   onChange={(event) =>
@@ -1575,7 +1575,7 @@ export default function AdminCatalogClient() {
               </div>
 
               <div>
-                <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                   Descrição
                 </label>
                 <textarea
@@ -1606,7 +1606,7 @@ export default function AdminCatalogClient() {
                   Salvar categoria
                 </Button>
                 <Button
-                  className="border-white/6 bg-transparent hover:bg-[#12151a]"
+                  className="border-white/6 bg-transparent hover:bg-[#17140f]"
                   disabled={!selectedCategoryId || isDeletingCategory}
                   type="button"
                   variant="outline"
@@ -1616,7 +1616,7 @@ export default function AdminCatalogClient() {
                   Remover
                 </Button>
                 <Button
-                  className="border-white/6 bg-transparent hover:bg-[#12151a]"
+                  className="border-white/6 bg-transparent hover:bg-[#17140f]"
                   type="button"
                   variant="outline"
                   onClick={retryCategories}
@@ -1634,17 +1634,17 @@ export default function AdminCatalogClient() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
+        <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#6a7282] uppercase">
+              <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#9f9383] uppercase">
                 Histórico
               </p>
-              <h2 className="[font-family:var(--font-space-grotesk)] mt-2 text-xl font-semibold text-[#f1f3f5]">
+              <h2 className="mt-2 [font-family:var(--font-space-grotesk)] text-xl font-semibold text-[#f2eee8]">
                 Trilha operacional
               </h2>
             </div>
-            <History className="h-5 w-5 text-[#6a7282]" />
+            <History className="h-5 w-5 text-[#9f9383]" />
           </div>
 
           <div className="mt-5 space-y-3">
@@ -1652,49 +1652,49 @@ export default function AdminCatalogClient() {
               selectedProduct.inventoryHistory.map((movement) => (
                 <div
                   key={movement.id}
-                  className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3"
+                  className="rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="[font-family:var(--font-arimo)] font-medium text-[#f1f3f5]">
+                      <p className="[font-family:var(--font-arimo)] font-medium text-[#f2eee8]">
                         {movement.reason}
                       </p>
-                      <p className="[font-family:var(--font-arimo)] text-xs text-[#6a7282]">
+                      <p className="[font-family:var(--font-arimo)] text-xs text-[#9f9383]">
                         {movement.userLabel} ·{" "}
                         {formatDateTime(movement.createdAt)}
                       </p>
                     </div>
-                    <span className="[font-family:var(--font-arimo)] rounded-full border border-white/6 bg-[#171a21] px-2 py-1 text-xs text-[#f1f3f5]">
+                    <span className="rounded-full border border-white/6 bg-[#1b1712] px-2 py-1 [font-family:var(--font-arimo)] text-xs text-[#f2eee8]">
                       {movement.quantity > 0 ? "+" : ""}
                       {movement.quantity}
                     </span>
                   </div>
                   {movement.reference ? (
-                    <p className="[font-family:var(--font-arimo)] mt-2 text-xs text-[#6a7282]">
+                    <p className="mt-2 [font-family:var(--font-arimo)] text-xs text-[#9f9383]">
                       Referência: {movement.reference}
                     </p>
                   ) : null}
                 </div>
               ))
             ) : (
-              <div className="[font-family:var(--font-arimo)] rounded-2xl border border-dashed border-white/12 bg-[#12151a] px-4 py-8 text-center text-sm text-[#99a1af]">
+              <div className="rounded-2xl border border-dashed border-white/12 bg-[#17140f] px-4 py-8 text-center [font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
                 Nenhum ajuste registrado para este produto ainda.
               </div>
             )}
           </div>
         </div>
 
-        <div className="xl:col-span-2 rounded-2xl border border-white/6 bg-[#171a21] p-5">
+        <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-5 xl:col-span-2">
           <div className="flex items-center justify-between">
             <div>
-              <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#6a7282] uppercase">
+              <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.2em] text-[#9f9383] uppercase">
                 Estoque
               </p>
-              <h2 className="[font-family:var(--font-space-grotesk)] mt-2 text-xl font-semibold text-[#f1f3f5]">
+              <h2 className="mt-2 [font-family:var(--font-space-grotesk)] text-xl font-semibold text-[#f2eee8]">
                 Ajuste com trilha
               </h2>
             </div>
-            <div className="rounded-full border border-[#5c7cfa]/25 bg-[#5c7cfa]/10 px-3 py-1 text-xs font-semibold text-[#5c7cfa]">
+            <div className="rounded-full border border-[#59627a]/25 bg-[#59627a]/10 px-3 py-1 text-xs font-semibold text-[#59627a]">
               {selectedProduct
                 ? `${selectedProduct.availableQuantity} disponível`
                 : "Sem produto"}
@@ -1704,27 +1704,27 @@ export default function AdminCatalogClient() {
           {selectedProduct ? (
             <div className="mt-5 space-y-4">
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3">
-                  <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                <div className="rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3">
+                  <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Quantidade
                   </p>
-                  <p className="[font-family:var(--font-space-grotesk)] mt-2 text-2xl font-semibold text-[#f1f3f5]">
+                  <p className="mt-2 [font-family:var(--font-space-grotesk)] text-2xl font-semibold text-[#f2eee8]">
                     {selectedProduct.inventory.quantity}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3">
-                  <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                <div className="rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3">
+                  <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Reservado
                   </p>
-                  <p className="[font-family:var(--font-space-grotesk)] mt-2 text-2xl font-semibold text-[#f1f3f5]">
+                  <p className="mt-2 [font-family:var(--font-space-grotesk)] text-2xl font-semibold text-[#f2eee8]">
                     {selectedProduct.inventory.reserved}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-white/6 bg-[#12151a] px-4 py-3">
-                  <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                <div className="rounded-2xl border border-white/6 bg-[#17140f] px-4 py-3">
+                  <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Estoque mínimo
                   </p>
-                  <p className="[font-family:var(--font-space-grotesk)] mt-2 text-2xl font-semibold text-[#f1f3f5]">
+                  <p className="mt-2 [font-family:var(--font-space-grotesk)] text-2xl font-semibold text-[#f2eee8]">
                     {selectedProduct.inventory.minStock}
                   </p>
                 </div>
@@ -1732,7 +1732,7 @@ export default function AdminCatalogClient() {
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <div>
-                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                  <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Alvo do ajuste
                   </label>
                   <select
@@ -1761,7 +1761,7 @@ export default function AdminCatalogClient() {
                   </select>
                 </div>
                 <div>
-                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                  <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Delta
                   </label>
                   <Input
@@ -1777,7 +1777,7 @@ export default function AdminCatalogClient() {
                   />
                 </div>
                 <div>
-                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                  <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Estoque mínimo alvo
                   </label>
                   <Input
@@ -1792,7 +1792,7 @@ export default function AdminCatalogClient() {
                   />
                 </div>
                 <div>
-                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                  <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Estoque máximo alvo
                   </label>
                   <Input
@@ -1810,7 +1810,7 @@ export default function AdminCatalogClient() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                  <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Motivo
                   </label>
                   <Input
@@ -1825,7 +1825,7 @@ export default function AdminCatalogClient() {
                   />
                 </div>
                 <div>
-                  <label className="[font-family:var(--font-arimo)] mb-2 block text-xs tracking-[0.16em] text-[#6a7282] uppercase">
+                  <label className="mb-2 block [font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#9f9383] uppercase">
                     Referência
                   </label>
                   <Input
@@ -1856,7 +1856,7 @@ export default function AdminCatalogClient() {
               </Button>
             </div>
           ) : (
-            <div className="[font-family:var(--font-arimo)] mt-4 rounded-2xl border border-dashed border-white/12 bg-[#12151a] px-4 py-8 text-center text-sm text-[#99a1af]">
+            <div className="mt-4 rounded-2xl border border-dashed border-white/12 bg-[#17140f] px-4 py-8 text-center [font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
               Selecione um produto para ajustar estoque.
             </div>
           )}

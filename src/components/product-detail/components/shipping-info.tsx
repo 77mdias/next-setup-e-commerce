@@ -4,23 +4,23 @@ import { Truck, Shield, RotateCcw } from "lucide-react";
 
 export function ShippingInfo() {
   return (
-    <div className="border-t border-[#dbe4ff] pt-6 dark:border-white/10">
+    <div className="border-t border-[#d8cfbf] pt-6 dark:border-white/10">
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="flex items-center gap-3 rounded-xl border border-[#dbe4ff] bg-white p-4 dark:border-white/10 dark:bg-[#12151a]">
-          <Truck className="h-5 w-5 text-[#64748b] dark:text-[#99a1af]" />
-          <span className="text-sm text-[#475569] dark:text-[#c7ced9]">
+        <div className="flex items-center gap-3 rounded-xl border border-[#d8cfbf] bg-white p-4 dark:border-white/10 dark:bg-[#17140f]">
+          <Truck className="h-5 w-5 text-[#655a4e] dark:text-[#b8ad9f]" />
+          <span className="text-sm text-[#4f463c] dark:text-[#c7ced9]">
             Free Shipping
           </span>
         </div>
-        <div className="flex items-center gap-3 rounded-xl border border-[#dbe4ff] bg-white p-4 dark:border-white/10 dark:bg-[#12151a]">
-          <Shield className="h-5 w-5 text-[#64748b] dark:text-[#99a1af]" />
-          <span className="text-sm text-[#475569] dark:text-[#c7ced9]">
+        <div className="flex items-center gap-3 rounded-xl border border-[#d8cfbf] bg-white p-4 dark:border-white/10 dark:bg-[#17140f]">
+          <Shield className="h-5 w-5 text-[#655a4e] dark:text-[#b8ad9f]" />
+          <span className="text-sm text-[#4f463c] dark:text-[#c7ced9]">
             2 Year Warranty
           </span>
         </div>
-        <div className="flex items-center gap-3 rounded-xl border border-[#dbe4ff] bg-white p-4 dark:border-white/10 dark:bg-[#12151a]">
-          <RotateCcw className="h-5 w-5 text-[#64748b] dark:text-[#99a1af]" />
-          <span className="text-sm text-[#475569] dark:text-[#c7ced9]">
+        <div className="flex items-center gap-3 rounded-xl border border-[#d8cfbf] bg-white p-4 dark:border-white/10 dark:bg-[#17140f]">
+          <RotateCcw className="h-5 w-5 text-[#655a4e] dark:text-[#b8ad9f]" />
+          <span className="text-sm text-[#4f463c] dark:text-[#c7ced9]">
             30 Day Returns
           </span>
         </div>

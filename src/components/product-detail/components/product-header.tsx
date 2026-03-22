@@ -27,10 +27,10 @@ export function ProductHeader({
   return (
     <div className="space-y-5">
       <div className="space-y-3">
-        <span className="[font-family:var(--font-arimo)] text-xs tracking-[0.05em] text-[#64748b] uppercase dark:text-[#99a1af]">
+        <span className="[font-family:var(--font-arimo)] text-xs tracking-[0.05em] text-[#655a4e] uppercase dark:text-[#b8ad9f]">
           {effectiveCategory}
         </span>
-        <h1 className="[font-family:var(--font-space-grotesk)] text-3xl leading-tight font-bold text-[#0f172a] md:text-4xl dark:text-white">
+        <h1 className="[font-family:var(--font-space-grotesk)] text-3xl leading-tight font-bold text-[#11100d] md:text-4xl dark:text-white">
           {name}
         </h1>
       </div>
@@ -49,10 +49,10 @@ export function ProductHeader({
           ))}
         </div>
 
-        <span className="text-sm font-semibold text-[#0f172a] dark:text-white">
+        <span className="text-sm font-semibold text-[#11100d] dark:text-white">
           {normalizedRating.toFixed(1)}
         </span>
-        <span className="text-sm text-[#64748b] dark:text-[#99a1af]">
+        <span className="text-sm text-[#655a4e] dark:text-[#b8ad9f]">
           ({reviewCount} reviews)
         </span>
 
@@ -61,12 +61,12 @@ export function ProductHeader({
         </span>
       </div>
 
-      <p className="leading-relaxed text-[#475569] dark:text-[#99a1af]">
+      <p className="leading-relaxed text-[#4f463c] dark:text-[#b8ad9f]">
         {shortDesc?.trim() ||
           "Built for long sessions and precise movements. Premium ergonomics and responsive tracking for daily use and competitive play."}
       </p>
 
-      <p className="text-xs text-[#64748b] dark:text-[#6a7282]">
+      <p className="text-xs text-[#655a4e] dark:text-[#9f9383]">
         Product details and long-form content are being updated continuously.
       </p>
     </div>

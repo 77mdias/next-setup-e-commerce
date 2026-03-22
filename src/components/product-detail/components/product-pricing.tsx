@@ -14,11 +14,11 @@ export function ProductPricing({ price, originalPrice }: ProductPricingProps) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-end gap-3">
-        <span className="[font-family:var(--font-arimo)] text-4xl font-bold text-[#0f172a] dark:text-white">
+        <span className="[font-family:var(--font-arimo)] text-4xl font-bold text-[#11100d] dark:text-white">
           {formatCurrency(price)}
         </span>
         {hasDiscount && (
-          <span className="[font-family:var(--font-arimo)] text-lg text-[#64748b] line-through dark:text-[#6a7282]">
+          <span className="[font-family:var(--font-arimo)] text-lg text-[#655a4e] line-through dark:text-[#9f9383]">
             {formatCurrency(originalPrice as number)}
           </span>
         )}

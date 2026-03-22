@@ -338,17 +338,17 @@ export function ProductsCatalog() {
     <section className="mx-auto w-full max-w-[1536px]">
       <header className="mb-10 flex flex-col gap-5 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="[font-family:var(--font-space-grotesk)] text-3xl font-bold text-[#0f172a] sm:text-[30px] dark:text-[#f1f3f5]">
+          <h1 className="[font-family:var(--font-space-grotesk)] text-3xl font-bold text-[#11100d] sm:text-[30px] dark:text-[#f2eee8]">
             All Products
           </h1>
-          <p className="mt-2 [font-family:var(--font-arimo)] text-base text-[#64748b] dark:text-[#6a7282]">
+          <p className="mt-2 [font-family:var(--font-arimo)] text-base text-[#655a4e] dark:text-[#9f9383]">
             {typeof data?.total === "number"
               ? `${data.total} items found`
               : `${data?.products.length ?? 0} items loaded`}
           </p>
         </div>
 
-        <div className="inline-flex h-[38px] items-center rounded-2xl border border-[#cdd9ff] bg-[#edf2ff] px-3 dark:border-white/10 dark:bg-[#12151a]">
+        <div className="inline-flex h-[38px] items-center rounded-2xl border border-[#d8cfbf] bg-[#f4efe5] px-3 dark:border-white/10 dark:bg-[#17140f]">
           <select
             value={selectedSort}
             onChange={(event) =>
@@ -358,13 +358,13 @@ export function ProductsCatalog() {
                 page: null,
               })
             }
-            className="h-full bg-transparent pr-4 [font-family:var(--font-arimo)] text-sm text-[#334155] outline-none dark:text-[#99a1af]"
+            className="h-full bg-transparent pr-4 [font-family:var(--font-arimo)] text-sm text-[#403930] outline-none dark:text-[#b8ad9f]"
           >
             {SORT_OPTIONS.map((option) => (
               <option
                 key={option.value}
                 value={option.value}
-                className="bg-[#edf2ff] text-[#334155] dark:bg-[#12151a] dark:text-[#99a1af]"
+                className="bg-[#f4efe5] text-[#403930] dark:bg-[#17140f] dark:text-[#b8ad9f]"
               >
                 {option.label}
               </option>
@@ -377,7 +377,7 @@ export function ProductsCatalog() {
         <aside className="w-full lg:w-[256px] lg:flex-shrink-0">
           <div className="space-y-10">
             <section>
-              <h2 className="mb-4 [font-family:var(--font-space-grotesk)] text-base font-bold text-[#0f172a] dark:text-[#f1f3f5]">
+              <h2 className="mb-4 [font-family:var(--font-space-grotesk)] text-base font-bold text-[#11100d] dark:text-[#f2eee8]">
                 Categories
               </h2>
               <div className="space-y-2">
@@ -386,16 +386,16 @@ export function ProductsCatalog() {
                   onClick={() => updateQuery({ category: null, page: null })}
                   className="flex w-full items-center gap-3 text-left"
                 >
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#ff2e63]">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#916130]">
                     {selectedCategory === "all" && (
-                      <span className="h-2 w-2 rounded-full bg-[#ff2e63]" />
+                      <span className="h-2 w-2 rounded-full bg-[#916130]" />
                     )}
                   </span>
                   <span
                     className={`[font-family:var(--font-arimo)] text-sm ${
                       selectedCategory === "all"
-                        ? "text-[#0f172a] dark:text-[#f1f3f5]"
-                        : "text-[#64748b] dark:text-[#6a7282]"
+                        ? "text-[#11100d] dark:text-[#f2eee8]"
+                        : "text-[#655a4e] dark:text-[#9f9383]"
                     }`}
                   >
                     All Products
@@ -416,16 +416,16 @@ export function ProductsCatalog() {
                       }
                       className="flex w-full items-center gap-3 text-left"
                     >
-                      <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#94a3b8] dark:border-[#6a7282]">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#94a3b8] dark:border-[#9f9383]">
                         {isActive && (
-                          <span className="h-2 w-2 rounded-full bg-[#5c7cfa]" />
+                          <span className="h-2 w-2 rounded-full bg-[#59627a]" />
                         )}
                       </span>
                       <span
                         className={`[font-family:var(--font-arimo)] text-sm ${
                           isActive
-                            ? "text-[#0f172a] dark:text-[#f1f3f5]"
-                            : "text-[#64748b] dark:text-[#6a7282]"
+                            ? "text-[#11100d] dark:text-[#f2eee8]"
+                            : "text-[#655a4e] dark:text-[#9f9383]"
                         }`}
                       >
                         {category.name} ({category.count})
@@ -437,10 +437,10 @@ export function ProductsCatalog() {
             </section>
 
             <section>
-              <h2 className="mb-4 [font-family:var(--font-space-grotesk)] text-base font-bold text-[#0f172a] dark:text-[#f1f3f5]">
+              <h2 className="mb-4 [font-family:var(--font-space-grotesk)] text-base font-bold text-[#11100d] dark:text-[#f2eee8]">
                 Price Range
               </h2>
-              <div className="rounded-xl border border-[#dbe4ff] bg-[#edf2ff] px-3 py-3 dark:border-white/10 dark:bg-[#12151a]">
+              <div className="rounded-xl border border-[#d8cfbf] bg-[#f4efe5] px-3 py-3 dark:border-white/10 dark:bg-[#17140f]">
                 <div className="space-y-3">
                   <input
                     type="range"
@@ -450,7 +450,7 @@ export function ProductsCatalog() {
                     onChange={(event) =>
                       setMinDraft(Number(event.target.value))
                     }
-                    className="w-full accent-[#5c7cfa]"
+                    className="w-full accent-[#59627a]"
                   />
                   <input
                     type="range"
@@ -460,10 +460,10 @@ export function ProductsCatalog() {
                     onChange={(event) =>
                       setMaxDraft(Number(event.target.value))
                     }
-                    className="w-full accent-[#ff2e63]"
+                    className="w-full accent-[#916130]"
                   />
 
-                  <div className="flex items-center justify-between [font-family:var(--font-arimo)] text-xs text-[#64748b] dark:text-[#6a7282]">
+                  <div className="flex items-center justify-between [font-family:var(--font-arimo)] text-xs text-[#655a4e] dark:text-[#9f9383]">
                     <span>{formatCurrency(minDraft ?? priceBounds.min)}</span>
                     <span>{formatCurrency(maxDraft ?? priceBounds.max)}</span>
                   </div>
@@ -472,7 +472,7 @@ export function ProductsCatalog() {
                 <button
                   type="button"
                   onClick={applyPriceFilter}
-                  className="mt-3 w-full rounded-xl bg-[#5c7cfa] px-3 py-2 [font-family:var(--font-arimo)] text-sm font-bold text-white transition-colors hover:bg-[#4a6ff0] dark:hover:bg-[#8fa3ff]"
+                  className="mt-3 w-full rounded-xl bg-[#59627a] px-3 py-2 [font-family:var(--font-arimo)] text-sm font-bold text-white transition-colors hover:bg-[#50586c] dark:hover:bg-[#9ca4ba]"
                 >
                   Apply
                 </button>
@@ -481,7 +481,7 @@ export function ProductsCatalog() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="mt-3 [font-family:var(--font-arimo)] text-sm text-[#475569] hover:text-[#0f172a] dark:text-[#99a1af] dark:hover:text-[#f1f3f5]"
+                className="mt-3 [font-family:var(--font-arimo)] text-sm text-[#4f463c] hover:text-[#11100d] dark:text-[#b8ad9f] dark:hover:text-[#f2eee8]"
               >
                 Clear filters
               </button>
@@ -495,7 +495,7 @@ export function ProductsCatalog() {
               {Array.from({ length: 6 }).map((_, index) => (
                 <div
                   key={`product-skeleton-${index}`}
-                  className="h-[420px] animate-pulse rounded-2xl border border-[#dbe4ff] bg-[#edf2ff] dark:border-white/10 dark:bg-[#171a21]"
+                  className="h-[420px] animate-pulse rounded-2xl border border-[#d8cfbf] bg-[#f4efe5] dark:border-white/10 dark:bg-[#1b1712]"
                 />
               ))}
             </div>
@@ -504,8 +504,8 @@ export function ProductsCatalog() {
               {error}
             </div>
           ) : mappedProducts.length === 0 ? (
-            <div className="rounded-2xl border border-[#dbe4ff] bg-[#edf2ff] p-8 text-center dark:border-white/10 dark:bg-[#171a21]">
-              <p className="[font-family:var(--font-arimo)] text-[#475569] dark:text-[#99a1af]">
+            <div className="rounded-2xl border border-[#d8cfbf] bg-[#f4efe5] p-8 text-center dark:border-white/10 dark:bg-[#1b1712]">
+              <p className="[font-family:var(--font-arimo)] text-[#4f463c] dark:text-[#b8ad9f]">
                 Nenhum produto encontrado com os filtros selecionados.
               </p>
             </div>
@@ -530,11 +530,11 @@ export function ProductsCatalog() {
                             : String(Math.max(1, currentPage - 1)),
                       })
                     }
-                    className="rounded-xl border border-[#cdd9ff] bg-[#edf2ff] px-3 py-2 [font-family:var(--font-arimo)] text-sm text-[#334155] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-[#12151a] dark:text-[#99a1af]"
+                    className="rounded-xl border border-[#d8cfbf] bg-[#f4efe5] px-3 py-2 [font-family:var(--font-arimo)] text-sm text-[#403930] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-[#17140f] dark:text-[#b8ad9f]"
                   >
                     Previous
                   </button>
-                  <span className="[font-family:var(--font-arimo)] text-sm text-[#64748b] dark:text-[#6a7282]">
+                  <span className="[font-family:var(--font-arimo)] text-sm text-[#655a4e] dark:text-[#9f9383]">
                     {typeof data?.totalPages === "number"
                       ? `Page ${data.page} of ${data.totalPages}`
                       : `Page ${data?.page ?? 1}`}
@@ -557,7 +557,7 @@ export function ProductsCatalog() {
                             : String(currentPage + 1),
                       })
                     }
-                    className="rounded-xl border border-[#cdd9ff] bg-[#edf2ff] px-3 py-2 [font-family:var(--font-arimo)] text-sm text-[#334155] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-[#12151a] dark:text-[#99a1af]"
+                    className="rounded-xl border border-[#d8cfbf] bg-[#f4efe5] px-3 py-2 [font-family:var(--font-arimo)] text-sm text-[#403930] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-[#17140f] dark:text-[#b8ad9f]"
                   >
                     Next
                   </button>

@@ -23,7 +23,7 @@ export function ActionButtons({
       <Button
         onClick={onAddToCart}
         disabled={loadingCart}
-        className="h-12 flex-1 rounded-2xl bg-[#ff2e63] [font-family:var(--font-arimo)] text-sm font-bold tracking-[0.02em] text-white uppercase hover:bg-[#ff4c7a] dark:text-[#0b0d10]"
+        className="h-12 flex-1 rounded-2xl bg-[#916130] [font-family:var(--font-arimo)] text-sm font-bold tracking-[0.02em] text-white uppercase hover:bg-[#a4753f] dark:text-[#11100d]"
         size="lg"
       >
         {loadingCart ? (
@@ -41,8 +41,8 @@ export function ActionButtons({
         variant="outline"
         className={`h-12 w-12 rounded-2xl p-0 ${
           isInWishlist
-            ? "bg-[#ff2e63] text-white hover:bg-[#ff4c7a]"
-            : "border-[#dbe4ff] bg-white text-[#64748b] hover:border-[#bfcff7] hover:bg-[#edf2ff] hover:text-[#0f172a] dark:border-white/10 dark:bg-[#12151a] dark:text-[#99a1af] dark:hover:border-white/20 dark:hover:bg-[#1a1f27] dark:hover:text-white"
+            ? "bg-[#916130] text-white hover:bg-[#a4753f]"
+            : "border-[#d8cfbf] bg-white text-[#655a4e] hover:border-[#c9bda8] hover:bg-[#f4efe5] hover:text-[#11100d] dark:border-white/10 dark:bg-[#17140f] dark:text-[#b8ad9f] dark:hover:border-white/20 dark:hover:bg-[#1a1f27] dark:hover:text-white"
         }`}
       >
         {loadingWishlist ? (

@@ -43,7 +43,7 @@ export default async function HomePage() {
 
   if (!store) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#0b0d10] text-white">
+      <main className="flex min-h-screen items-center justify-center bg-[#11100d] text-white">
         Loja não encontrada
       </main>
     );

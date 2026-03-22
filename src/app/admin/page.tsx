@@ -56,17 +56,17 @@ export default function AdminDashboardPage() {
       <AdminDashboardClient />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)]">
-        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#5c7cfa]/25 bg-[#5c7cfa]/10 px-3 py-1 text-xs font-semibold tracking-[0.2em] text-[#5c7cfa] uppercase">
+        <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#59627a]/25 bg-[#59627a]/10 px-3 py-1 text-xs font-semibold tracking-[0.2em] text-[#59627a] uppercase">
             <ShieldCheck className="h-3.5 w-3.5" />
             Sprint 06
           </div>
 
           <div className="mt-4 max-w-3xl space-y-3">
-            <h2 className="[font-family:var(--font-space-grotesk)] text-2xl font-bold tracking-tight text-[#f1f3f5]">
+            <h2 className="[font-family:var(--font-space-grotesk)] text-2xl font-bold tracking-tight text-[#f2eee8]">
               Entrada operacional única para o painel administrativo
             </h2>
-            <p className="[font-family:var(--font-arimo)] text-sm leading-7 text-[#99a1af] sm:text-base">
+            <p className="[font-family:var(--font-arimo)] text-sm leading-7 text-[#b8ad9f] sm:text-base">
               O shell do painel agora concentra navegação, contexto de escopo e
               acesso direto aos módulos previstos da fase 06. Os KPIs mínimos da
               sprint ficam disponíveis no topo da rota e mantêm fallback seguro
@@ -79,7 +79,7 @@ export default function AdminDashboardPage() {
             {shellGuarantees.map((item) => (
               <div
                 key={item}
-                className="rounded-xl border border-white/6 bg-[#12151a] p-4 [font-family:var(--font-arimo)] text-sm leading-6 text-[#f1f3f5]"
+                className="rounded-xl border border-white/6 bg-[#17140f] p-4 [font-family:var(--font-arimo)] text-sm leading-6 text-[#f2eee8]"
               >
                 {item}
               </div>
@@ -87,25 +87,25 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/6 bg-[#171a21] p-6">
-          <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.2em] text-[#5c7cfa] uppercase">
+        <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-6">
+          <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.2em] text-[#59627a] uppercase">
             KPI ativo
           </p>
-          <h3 className="mt-4 [font-family:var(--font-space-grotesk)] text-xl font-semibold text-[#f1f3f5]">
+          <h3 className="mt-4 [font-family:var(--font-space-grotesk)] text-xl font-semibold text-[#f2eee8]">
             Dashboard administrativo
           </h3>
-          <p className="mt-3 [font-family:var(--font-arimo)] text-sm leading-7 text-[#99a1af]">
-            <code className="rounded-md border border-white/6 bg-[#12151a] px-1.5 py-0.5 font-mono text-xs text-[#5c7cfa]">
+          <p className="mt-3 [font-family:var(--font-arimo)] text-sm leading-7 text-[#b8ad9f]">
+            <code className="rounded-md border border-white/6 bg-[#17140f] px-1.5 py-0.5 font-mono text-xs text-[#59627a]">
               S06-DSH-003
             </code>{" "}
             integra o endpoint consolidado de métricas para preencher cards,
             comparativos por janela e fallback de erro sem duplicar regra de
             cálculo no frontend.
           </p>
-          <div className="mt-6 rounded-xl border border-white/6 bg-[#12151a] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#99a1af]">
-            <div className="flex items-center gap-2 text-[#5c7cfa]">
+          <div className="mt-6 rounded-xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm text-[#b8ad9f]">
+            <div className="flex items-center gap-2 text-[#59627a]">
               <LayoutDashboard className="h-4 w-4" />
-              <span className="text-[#f1f3f5]">
+              <span className="text-[#f2eee8]">
                 Janela padrão de 7 dias com atualização on-demand e preservação
                 da última leitura válida em falha de refresh.
               </span>
@@ -121,21 +121,21 @@ export default function AdminDashboardPage() {
           return (
             <Link
               key={item.href}
-              className="group rounded-2xl border border-white/6 bg-[#171a21] p-6 transition hover:border-[#5c7cfa]/30 hover:bg-[#5c7cfa]/5"
+              className="group rounded-2xl border border-white/6 bg-[#1b1712] p-6 transition hover:border-[#59627a]/30 hover:bg-[#59627a]/5"
               href={item.href}
             >
               <div className="flex items-start justify-between gap-4">
-                <span className="rounded-2xl border border-white/6 bg-[#12151a] p-3 text-[#5c7cfa] transition group-hover:border-[#5c7cfa]/30 group-hover:bg-[#5c7cfa]/10">
+                <span className="rounded-2xl border border-white/6 bg-[#17140f] p-3 text-[#59627a] transition group-hover:border-[#59627a]/30 group-hover:bg-[#59627a]/10">
                   <Icon className="h-5 w-5" />
                 </span>
-                <ArrowRight className="h-5 w-5 text-[#6a7282] transition group-hover:text-[#5c7cfa]" />
+                <ArrowRight className="h-5 w-5 text-[#9f9383] transition group-hover:text-[#59627a]" />
               </div>
 
               <div className="mt-6 space-y-2">
-                <h3 className="[font-family:var(--font-space-grotesk)] text-xl font-semibold text-[#f1f3f5]">
+                <h3 className="[font-family:var(--font-space-grotesk)] text-xl font-semibold text-[#f2eee8]">
                   {item.title}
                 </h3>
-                <p className="[font-family:var(--font-arimo)] text-sm leading-6 text-[#99a1af]">
+                <p className="[font-family:var(--font-arimo)] text-sm leading-6 text-[#b8ad9f]">
                   {item.description}
                 </p>
               </div>
@@ -144,8 +144,8 @@ export default function AdminDashboardPage() {
         })}
       </div>
 
-      <div className="rounded-2xl border border-white/6 bg-[#171a21] p-5">
-        <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.2em] text-[#6a7282] uppercase">
+      <div className="rounded-2xl border border-white/6 bg-[#1b1712] p-5">
+        <p className="[font-family:var(--font-arimo)] text-xs font-semibold tracking-[0.2em] text-[#9f9383] uppercase">
           Rotas previstas no shell
         </p>
 
@@ -153,7 +153,7 @@ export default function AdminDashboardPage() {
           {ADMIN_NAV_ITEMS.map((item) => (
             <Link
               key={item.href}
-              className="rounded-xl border border-white/6 bg-[#12151a] px-4 py-3 [font-family:var(--font-arimo)] text-sm font-medium text-[#99a1af] transition hover:border-[#5c7cfa]/30 hover:text-[#f1f3f5]"
+              className="rounded-xl border border-white/6 bg-[#17140f] px-4 py-3 [font-family:var(--font-arimo)] text-sm font-medium text-[#b8ad9f] transition hover:border-[#59627a]/30 hover:text-[#f2eee8]"
               href={item.href}
             >
               {item.label}

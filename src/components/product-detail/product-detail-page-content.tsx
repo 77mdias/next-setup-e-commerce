@@ -41,12 +41,12 @@ export function ProductDetailPageContent() {
   }
 
   return (
-    <main className="min-h-screen w-full bg-[#f6f8ff] text-[#0f172a] dark:bg-[#0b0d10] dark:text-[#f1f3f5]">
+    <main className="min-h-screen w-full bg-[#efebe3] text-[#11100d] dark:bg-[#11100d] dark:text-[#f2eee8]">
       <div className="mx-auto w-full max-w-[1280px] px-4 pb-14 md:px-6">
         <div className="py-6">
           <Link
             href={categoriesPath}
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#64748b] transition-colors hover:text-[#0f172a] dark:text-[#99a1af] dark:hover:text-white"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#655a4e] transition-colors hover:text-[#11100d] dark:text-[#b8ad9f] dark:hover:text-white"
           >
             <ChevronLeft className="h-4 w-4" />
             Back to Results
@@ -93,7 +93,7 @@ export function ProductDetailPageContent() {
           </div>
         </div>
 
-        <div className="mt-12 rounded-2xl border border-[#dbe4ff] bg-white p-6 md:p-8 dark:border-white/10 dark:bg-[#12151a]">
+        <div className="mt-12 rounded-2xl border border-[#d8cfbf] bg-white p-6 md:p-8 dark:border-white/10 dark:bg-[#17140f]">
           <ProductTabs description={product.description} />
         </div>
 
