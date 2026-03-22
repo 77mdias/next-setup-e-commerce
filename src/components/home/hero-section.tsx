@@ -23,51 +23,63 @@ export function HeroSection({
   className,
 }: HeroSectionProps) {
   return (
-    <section className={cn("relative overflow-hidden", className)}>
-      <Image
-        src="/images/home/hero-scene-node.png"
-        alt="Dark gaming setup with RGB lighting"
-        fill
-        priority
-        className="object-cover object-center opacity-65"
-      />
-
-      <div className="absolute inset-0 bg-gradient-to-b from-[#f8faff]/90 via-[#f8faff]/45 to-[#f8faff]/90 dark:from-[#0b0d10] dark:via-[#0b0d10]/30 dark:to-[#0b0d10]" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#f8faff]/88 via-transparent to-[#f8faff]/88 dark:from-[#0b0d10]/85 dark:to-[#0b0d10]/85" />
-
-      <div className="relative flex min-h-[680px] w-full items-center justify-center px-4 pt-28 pb-16 text-center sm:px-6 lg:min-h-[786px] lg:px-8">
-        <div className="w-full max-w-[864px]">
-          <span className="inline-flex items-center rounded-full border border-[#d6ddf5] bg-white/70 px-6 py-2 [font-family:var(--font-arimo)] text-sm text-[#ff2e63] dark:border-white/10 dark:bg-white/5">
+    <section
+      className={cn(
+        "relative border-b border-[#11100d]/14 pt-12 pb-14 sm:pt-16 dark:border-[#f2eee8]/12",
+        className,
+      )}
+    >
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:items-end lg:gap-12">
+        <div>
+          <span className="inline-flex items-center rounded-full border border-[#11100d]/20 bg-[#f8f5ef] px-5 py-2 [font-family:var(--font-arimo)] text-xs tracking-[0.18em] uppercase dark:border-[#f2eee8]/18 dark:bg-[#191611]">
             {badge}
           </span>
 
-          <h1 className="mt-6 [font-family:var(--font-space-grotesk)] text-4xl font-bold tracking-[-0.02em] text-balance text-[#0f172a] sm:text-5xl md:text-6xl lg:text-7xl dark:text-white">
-            {title.lineOne}
-            <span className="mt-2 block bg-gradient-to-b from-[#ff2e63] to-[#5c7cfa] bg-clip-text text-transparent">
+          <h1 className="mt-7 [font-family:var(--font-space-grotesk)] text-4xl leading-[0.96] font-black tracking-[-0.03em] text-balance sm:text-6xl lg:text-7xl xl:text-[5.3rem] dark:text-[#f8f4ee]">
+            <span className="block">{title.lineOne}</span>
+            <span className="mt-1 block text-[#9a6831] dark:text-[#d6a56f]">
               {title.lineTwo}
             </span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-[700px] [font-family:var(--font-arimo)] text-lg leading-relaxed text-balance text-[#4b5563] sm:text-xl dark:text-[#99a1af]">
+          <p className="mt-8 max-w-[640px] [font-family:var(--font-arimo)] text-lg leading-relaxed text-[#403b34] dark:text-[#bcb4a7]">
             {description}
           </p>
 
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="mt-9 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
             {actions.map((action) => (
               <Link
                 key={action.label}
                 href={action.href}
                 className={cn(
-                  "inline-flex min-w-[180px] items-center justify-center rounded-2xl px-8 py-3.5 [font-family:var(--font-arimo)] text-lg transition-colors",
+                  "inline-flex min-w-[180px] items-center justify-center rounded-full border px-7 py-3 [font-family:var(--font-arimo)] text-sm tracking-[0.12em] uppercase transition-colors",
                   action.variant === "primary"
-                    ? "bg-[#ff2e63] text-white hover:bg-[#e42859] dark:text-[#0b0d10] dark:hover:bg-[#ff4f7d]"
-                    : "border border-[#ccd7f8] bg-white/65 text-[#0f172a] hover:bg-white dark:border-white/10 dark:bg-transparent dark:text-[#f1f3f5] dark:hover:border-white/25 dark:hover:bg-white/5",
+                    ? "border-[#11100d] bg-[#11100d] text-[#efebe3] hover:bg-[#2b2721] dark:border-[#f2eee8] dark:bg-[#f2eee8] dark:text-[#11100d] dark:hover:bg-[#dcd4c7]"
+                    : "border-[#11100d]/25 bg-transparent text-[#11100d] hover:bg-[#11100d]/6 dark:border-[#f2eee8]/26 dark:text-[#f2eee8] dark:hover:bg-[#f2eee8]/10",
                 )}
               >
                 {action.label}
               </Link>
             ))}
           </div>
+        </div>
+
+        <div className="space-y-5 lg:pb-1">
+          <div className="relative min-h-[360px] overflow-hidden rounded-[30px] border border-[#11100d]/14 bg-[#060606] sm:min-h-[430px] dark:border-[#f2eee8]/12 dark:bg-[#060606]">
+            <Image
+              src="/images/home/hero-scene-node.png"
+              alt="Dark gaming setup with RGB lighting"
+              fill
+              priority
+              className="object-cover object-center saturate-75"
+              sizes="(min-width: 1024px) 42vw, 100vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#11100d]/50 via-[#11100d]/5 to-transparent dark:from-black/55 dark:via-black/5" />
+          </div>
+
+          <p className="[font-family:var(--font-arimo)] text-xs tracking-[0.16em] text-[#5c5247] uppercase dark:text-[#9f9383]">
+            Curadoria semanal de setups, perifericos e audio.
+          </p>
         </div>
       </div>
     </section>

@@ -20,8 +20,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const fontVariablesStyle = {
-    "--font-arimo": '"Arimo", "Segoe UI", Arial, sans-serif',
-    "--font-space-grotesk": '"Space Grotesk", "Arial Black", sans-serif',
+    "--font-arimo": '"Arimo", "Segoe UI", "Noto Sans", sans-serif',
+    "--font-space-grotesk":
+      '"Space Grotesk", "Avenir Next Condensed", sans-serif',
   } as CSSProperties;
 
   return (

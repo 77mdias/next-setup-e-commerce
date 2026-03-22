@@ -11,8 +11,9 @@ import { cn } from "@/lib/utils";
 import styles from "./home-page-content.module.scss";
 
 const fontVariablesStyle = {
-  "--font-arimo": '"Arimo", "Segoe UI", Arial, sans-serif',
-  "--font-space-grotesk": '"Space Grotesk", "Arial Black", sans-serif',
+  "--font-arimo": '"Arimo", "Segoe UI", "Noto Sans", sans-serif',
+  "--font-space-grotesk":
+    '"Space Grotesk", "Avenir Next Condensed", sans-serif',
 } as CSSProperties;
 
 type HomePageContentProps = {
@@ -27,12 +28,12 @@ export function HomePageContent({ featuredProducts }: HomePageContentProps) {
       style={fontVariablesStyle}
       className={cn(
         styles.pageBackdrop,
-        "relative min-h-screen overflow-hidden bg-[#f6f8ff] text-[#0f172a] dark:bg-[#0b0d10] dark:text-[#f1f3f5]",
+        "relative min-h-screen overflow-hidden bg-[#efebe3] text-[#11100d] dark:bg-[#11100d] dark:text-[#f2eee8]",
       )}
     >
-      <div className={styles.mesh} aria-hidden />
+      <div className={styles.texture} aria-hidden />
 
-      <main className="relative z-10 flex flex-col gap-16 pb-14 sm:gap-20 sm:pb-16">
+      <main className="relative z-10 mx-auto flex w-full max-w-[1560px] flex-col gap-16 px-4 pb-14 sm:gap-20 sm:px-6 sm:pb-16 lg:px-10">
         <HeroSection
           badge={content.hero.badge}
           title={content.hero.title}
@@ -61,7 +62,7 @@ export function HomePageContent({ featuredProducts }: HomePageContentProps) {
           title={content.promo.title}
           description={content.promo.description}
           actions={content.promo.actions}
-          className={cn(styles.reveal, styles.delayThree)}
+          className={cn(styles.reveal, styles.delayThree, "pb-8")}
         />
       </main>
     </div>

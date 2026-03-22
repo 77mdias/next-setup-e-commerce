@@ -17,7 +17,6 @@ type StorySectionProps = {
     href: string;
   };
   className?: string;
-  glowClassName?: string;
 };
 
 export function StorySection({
@@ -26,38 +25,43 @@ export function StorySection({
   bullets,
   action,
   className,
-  glowClassName,
 }: StorySectionProps) {
   return (
     <section
       className={cn(
-        "relative overflow-hidden bg-gradient-to-br from-[#f7f9ff] via-[#eef2ff] to-[#f7f9ff] dark:from-[#0b0d10] dark:via-[#111723] dark:to-[#0b0d10]",
+        "relative overflow-hidden border-b border-[#11100d]/14 py-16 sm:py-20 dark:border-[#f2eee8]/12",
         className,
       )}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_84%_20%,rgba(255,46,99,0.06),transparent_34%)] dark:bg-[radial-gradient(circle_at_84%_20%,rgba(255,46,99,0.1),transparent_34%)]" />
-      <div className="relative mx-auto grid w-full max-w-[1504px] gap-12 px-4 py-16 sm:px-8 sm:py-20 lg:grid-cols-2 lg:items-start lg:gap-12 lg:px-10 xl:px-12 2xl:grid-cols-[720px_720px] 2xl:justify-between 2xl:gap-16 2xl:px-0">
-        <div className="relative z-10 max-w-[720px] lg:self-start">
-          <span className="mb-8 inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-[#dbe4ff] bg-white text-[#ff2e63] shadow-[0_20px_25px_-5px_rgba(255,46,99,0.14)] dark:border-white/10 dark:bg-[#1b1f2b] dark:shadow-[0_20px_25px_-5px_rgba(255,46,99,0.2)]">
-            <Flame size={30} />
+      <div className="relative mx-auto grid w-full max-w-[1520px] gap-12 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:items-start">
+        <div className="relative z-10 max-w-[760px] lg:self-start">
+          <span className="inline-flex items-center gap-3 [font-family:var(--font-arimo)] text-xs tracking-[0.18em] text-[#6f6254] uppercase dark:text-[#998d7f]">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#11100d]/22 bg-[#f8f4ec] text-[#7b5429] dark:border-[#f2eee8]/20 dark:bg-[#191611] dark:text-[#d6a56f]">
+              <Flame size={16} />
+            </span>
+            Brand Manifesto
           </span>
 
-          <h2 className="[font-family:var(--font-space-grotesk)] text-3xl leading-tight font-bold text-balance text-[#0f172a] sm:text-4xl dark:text-white">
-            <span className="block">{title.lineOne}</span>
+          <h2 className="mt-6 [font-family:var(--font-space-grotesk)] text-3xl leading-tight font-bold text-balance text-[#11100d] sm:text-4xl dark:text-[#f2eee8]">
+            <span className="block text-[#7b5429] dark:text-[#d6a56f]">
+              {title.lineOne}
+            </span>
             <span className="block">{title.lineTwo}</span>
           </h2>
 
-          <p className="mt-8 max-w-[684px] [font-family:var(--font-arimo)] text-lg leading-relaxed text-balance text-[#475569] dark:text-[#99a1af]">
+          <p className="mt-8 max-w-[684px] [font-family:var(--font-arimo)] text-lg leading-relaxed text-balance text-[#4f463c] dark:text-[#b8ad9f]">
             {description}
           </p>
 
           <ul className="mt-8 w-full space-y-4 [font-family:var(--font-arimo)]">
-            {bullets.map((bullet) => (
+            {bullets.map((bullet, index) => (
               <li
                 key={bullet.id}
-                className="flex min-h-6 items-start gap-3 text-base text-[#334155] dark:text-[#d1d5dc]"
+                className="flex min-h-6 items-start gap-4 text-base text-[#3b342d] dark:text-[#d3cabe]"
               >
-                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#5c7cfa]" />
+                <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#11100d]/22 text-[11px] tracking-[0.08em] dark:border-[#f2eee8]/20">
+                  {index + 1}
+                </span>
                 <span className="leading-6">{bullet.label}</span>
               </li>
             ))}
@@ -65,25 +69,19 @@ export function StorySection({
 
           <Link
             href={action.href}
-            className="mt-8 inline-flex h-14 min-w-[227px] items-center justify-center rounded-2xl bg-[#5c7cfa] px-9 [font-family:var(--font-arimo)] text-lg leading-7 text-white transition-colors hover:bg-[#4a6ff0] dark:text-[#0b0d10] dark:hover:bg-[#8098ff]"
+            className="mt-8 inline-flex h-12 min-w-[227px] items-center justify-center rounded-full border border-[#11100d] bg-[#11100d] px-9 [font-family:var(--font-arimo)] text-sm leading-7 tracking-[0.14em] text-[#efebe3] uppercase transition-colors hover:bg-[#2b2721] dark:border-[#f2eee8] dark:bg-[#f2eee8] dark:text-[#11100d] dark:hover:bg-[#d8d0c3]"
           >
             {action.label}
           </Link>
         </div>
 
-        <div className="relative z-10 lg:pt-8 2xl:pt-[82px]">
-          <div
-            className={cn(
-              "pointer-events-none absolute -inset-4 rounded-[24px] bg-gradient-to-b from-[#ff2e63] to-[#5c7cfa] opacity-15 blur-[80px] dark:opacity-20",
-              glowClassName,
-            )}
-          />
-          <div className="relative aspect-[720/406.2] w-full max-w-[720px] overflow-hidden rounded-[24px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]">
+        <div className="relative z-10 lg:pt-4">
+          <div className="relative aspect-[720/406.2] w-full max-w-[760px] overflow-hidden rounded-[28px] border border-[#11100d]/16 shadow-[0_26px_54px_-36px_rgba(17,16,13,0.95)] dark:border-[#f2eee8]/12">
             <Image
               src="/images/home/story-node-figma.jpg"
               alt="Premium peripherals showcase"
               fill
-              className="object-cover"
+              className="object-cover saturate-75"
               sizes="(min-width: 1536px) 720px, (min-width: 1024px) 48vw, 100vw"
             />
           </div>

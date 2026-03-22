@@ -1,7 +1,7 @@
 @keyframes reveal-up {
   from {
     opacity: 0;
-    transform: translateY(26px);
+    transform: translateY(18px);
   }
 
   to {
@@ -14,22 +14,45 @@
   isolation: isolate;
 }
 
-.mesh {
+.texture {
   pointer-events: none;
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 14% 12%, rgb(255 46 99 / 10%), transparent 34%),
-    radial-gradient(circle at 82% 8%, rgb(92 124 250 / 12%), transparent 33%),
-    radial-gradient(circle at 50% 74%, rgb(92 124 250 / 6%), transparent 40%);
+    repeating-linear-gradient(
+      90deg,
+      rgb(17 16 13 / 3.5%) 0,
+      rgb(17 16 13 / 3.5%) 1px,
+      transparent 1px,
+      transparent 22px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgb(17 16 13 / 3.2%) 0,
+      rgb(17 16 13 / 3.2%) 1px,
+      transparent 1px,
+      transparent 22px
+    );
   z-index: 0;
+  opacity: 0.28;
 }
 
-:global(.dark) .mesh {
+:global(.dark) .texture {
   background:
-    radial-gradient(circle at 14% 12%, rgb(255 46 99 / 16%), transparent 34%),
-    radial-gradient(circle at 82% 8%, rgb(92 124 250 / 18%), transparent 33%),
-    radial-gradient(circle at 50% 74%, rgb(92 124 250 / 8%), transparent 40%);
+    repeating-linear-gradient(
+      90deg,
+      rgb(242 238 232 / 4%) 0,
+      rgb(242 238 232 / 4%) 1px,
+      transparent 1px,
+      transparent 22px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgb(242 238 232 / 4%) 0,
+      rgb(242 238 232 / 4%) 1px,
+      transparent 1px,
+      transparent 22px
+    );
 }
 
 .reveal {

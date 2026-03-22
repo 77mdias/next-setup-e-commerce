@@ -29,7 +29,7 @@ type HomeNavigationProps = {
 };
 
 const iconBaseClass =
-  "relative flex h-8 w-8 items-center justify-center text-[#4b5563] transition-colors hover:text-[#0f172a] dark:text-[#d1d5dc] dark:hover:text-white";
+  "relative flex h-8 w-8 items-center justify-center text-[#4b4238] transition-colors hover:text-[#11100d] dark:text-[#d3c9bb] dark:hover:text-[#f2eee8]";
 
 export function HomeNavigation({
   homeHref,
@@ -96,7 +96,7 @@ export function HomeNavigation({
   const isDark = !mounted || theme !== "light";
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 bg-[#f8faff]/90 backdrop-blur-xl dark:bg-[#0b0d10]/90">
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-[#11100d]/22 bg-[#efebe3]/68 shadow-[0_6px_28px_-20px_rgba(17,16,13,0.8)] backdrop-blur-2xl supports-[backdrop-filter]:bg-[#efebe3]/58 dark:border-[#f2eee8]/14 dark:bg-[#11100d]/62 dark:shadow-[0_10px_30px_-22px_rgba(0,0,0,0.95)] dark:supports-[backdrop-filter]:bg-[#11100d]/52">
       <div className="relative mx-auto flex h-20 w-full max-w-[1587px] items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href={resolvedHomeHref} className="flex items-center gap-1">
           <Image
@@ -107,9 +107,9 @@ export function HomeNavigation({
             className="rounded-lg object-contain"
             priority
           />
-          <span className="[font-family:var(--font-space-grotesk)] text-lg font-extrabold text-[#0f172a] italic sm:text-xl dark:text-white">
+          <span className="[font-family:var(--font-space-grotesk)] text-lg font-black tracking-[-0.02em] text-[#11100d] italic sm:text-xl dark:text-[#f2eee8]">
             Ne
-            <span className="text-[#ff2e63]">XT</span>
+            <span className="text-[#916130] dark:text-[#d6a56f]">XT</span>
           </span>
         </Link>
 
@@ -119,10 +119,10 @@ export function HomeNavigation({
               key={link.label}
               href={link.href}
               className={cn(
-                "[font-family:var(--font-arimo)] text-sm transition-colors",
+                "border-b pb-1 [font-family:var(--font-arimo)] text-xs tracking-[0.16em] uppercase transition-colors",
                 link.isActive
-                  ? "text-[#ff2e63]"
-                  : "text-[#4b5563] hover:text-[#0f172a] dark:text-[#99a1af] dark:hover:text-white",
+                  ? "border-[#11100d]/42 text-[#11100d] dark:border-[#f2eee8]/45 dark:text-[#f2eee8]"
+                  : "border-transparent text-[#5f5549] hover:border-[#7b5429]/35 hover:text-[#7b5429] dark:text-[#9c9080] dark:hover:border-[#d6a56f]/35 dark:hover:text-[#d6a56f]",
               )}
             >
               {link.label}
@@ -153,7 +153,7 @@ export function HomeNavigation({
           >
             <Heart size={18} />
             {showWishlistDot && (
-              <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-[#ff2e63]" />
+              <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-[#916130] dark:bg-[#d6a56f]" />
             )}
           </Link>
 
@@ -164,7 +164,7 @@ export function HomeNavigation({
           >
             <ShoppingCart size={18} />
             {totalQuantity > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#5c7cfa] px-1 [font-family:var(--font-arimo)] text-[10px] text-[#0b0d10]">
+              <span className="absolute -top-1 -right-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#11100d] px-1 [font-family:var(--font-arimo)] text-[10px] text-[#efebe3] dark:bg-[#f2eee8] dark:text-[#11100d]">
                 {totalQuantity > 99 ? "99+" : totalQuantity}
               </span>
             )}
@@ -189,12 +189,12 @@ export function HomeNavigation({
           <button
             type="button"
             onClick={() => setTheme(isDark ? "light" : "dark")}
-            className="relative inline-flex h-7 w-[44px] items-center rounded-full bg-[#dbe4ff] px-1 transition-colors hover:bg-[#c9d7ff] dark:bg-white/12 dark:hover:bg-white/20"
+            className="relative inline-flex h-7 w-[44px] items-center rounded-full bg-[#d9d0c2] px-1 transition-colors hover:bg-[#c9bdac] dark:bg-white/12 dark:hover:bg-white/20"
             aria-label="Alternar tema"
           >
             <span
               className={cn(
-                "absolute left-1 h-5 w-5 rounded-full bg-[#0f172a] transition-transform duration-300 dark:bg-[#f1f3f5]",
+                "absolute left-1 h-5 w-5 rounded-full bg-[#11100d] transition-transform duration-300 dark:bg-[#f2eee8]",
                 isDark ? "translate-x-4" : "translate-x-0",
               )}
             />
