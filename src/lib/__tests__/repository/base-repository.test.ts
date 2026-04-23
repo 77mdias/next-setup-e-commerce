@@ -11,6 +11,7 @@ const mockCreate = vi.fn();
 const mockUpdate = vi.fn();
 const mockDelete = vi.fn();
 const mockCount = vi.fn();
+const mockTransaction = vi.fn((operations) => Promise.all(operations));
 
 vi.mock("@/lib/prisma", () => ({
   db: {
@@ -22,6 +23,7 @@ vi.mock("@/lib/prisma", () => ({
       delete: mockDelete,
       count: mockCount,
     },
+    $transaction: mockTransaction,
   },
 }));
 
@@ -40,7 +42,7 @@ describe("IRepository<T, TId> Contract", () => {
       mockFindUnique.mockResolvedValue(null);
 
       // When: we call findById with a non-existent ID
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.findById("non-existent-id");
 
@@ -64,10 +66,10 @@ describe("IRepository<T, TId> Contract", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      mockFindUnique.mockResolvedValue(mockProduct);
+      mockFindUnique.mockResolvedValue(mockProduct as any);
 
       // When: we call findById with existing ID
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.findById("prod-123");
 
@@ -90,7 +92,7 @@ describe("IRepository<T, TId> Contract", () => {
       mockFindMany.mockResolvedValue([]);
 
       // When: we call findMany
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.findMany({});
 
@@ -107,7 +109,7 @@ describe("IRepository<T, TId> Contract", () => {
       mockFindMany.mockResolvedValue(mockProducts);
 
       // When: we call findMany with pagination
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.findMany({ page: 1, limit: 10 });
 
@@ -124,7 +126,7 @@ describe("IRepository<T, TId> Contract", () => {
     it("should return 0 when no entities exist", async () => {
       mockCount.mockResolvedValue(0);
 
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.count({});
 
@@ -134,7 +136,7 @@ describe("IRepository<T, TId> Contract", () => {
     it("should return correct count", async () => {
       mockCount.mockResolvedValue(5);
 
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.count({});
 

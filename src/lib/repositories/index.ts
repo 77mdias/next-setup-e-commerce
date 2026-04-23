@@ -14,3 +14,6 @@ export {
 
 // Product Repository
 export { type IProductRepository, type ProductFilter, ProductRepository } from "./product.repository";
+
+// Order Repository
+export { type IOrderRepository, type OrderFilter, OrderRepository } from "./order.repository";

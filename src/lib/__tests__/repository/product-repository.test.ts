@@ -9,7 +9,7 @@ const mockUpdate = vi.fn();
 const mockDelete = vi.fn();
 const mockCount = vi.fn();
 
-vi.mock("@/lib/prisma", () => ({
+vi.mock("../../prisma", () => ({
   db: {
     product: {
       findUnique: mockFindUnique,
@@ -35,12 +35,41 @@ describe("ProductRepository", () => {
     it("should apply category filter correctly", async () => {
       // Given: products exist in category
       const mockProducts = [
-        { id: "1", name: "Product 1", slug: "product-1", categoryId: "cat-1" },
+        {
+          id: "1",
+          storeId: "store-1",
+          brandId: "brand-1",
+          categoryId: "cat-1",
+          sku: "SKU-1",
+          name: "Product 1",
+          slug: "product-1",
+          description: "Description",
+          shortDesc: null,
+          price: 99,
+          originalPrice: null,
+          costPrice: null,
+          images: [],
+          specifications: {},
+          warranty: null,
+          weight: null,
+          dimensions: null,
+          isActive: true,
+          isFeatured: false,
+          isOnSale: false,
+          saleStartsAt: null,
+          saleEndsAt: null,
+          rating: 0,
+          reviewCount: 0,
+          soldCount: 0,
+          viewCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ];
-      mockFindMany.mockResolvedValue(mockProducts);
+      mockFindMany.mockResolvedValue(mockProducts as any);
 
       // When: we filter by category
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.findMany({ categoryId: "cat-1" });
 
@@ -56,12 +85,41 @@ describe("ProductRepository", () => {
     it("should apply search filter correctly", async () => {
       // Given: products match search
       const mockProducts = [
-        { id: "1", name: "Blue T-Shirt", slug: "blue-t-shirt" },
+        {
+          id: "1",
+          storeId: "store-1",
+          brandId: "brand-1",
+          categoryId: "cat-1",
+          sku: "SKU-1",
+          name: "Blue T-Shirt",
+          slug: "blue-t-shirt",
+          description: "A blue shirt",
+          shortDesc: null,
+          price: 99,
+          originalPrice: null,
+          costPrice: null,
+          images: [],
+          specifications: {},
+          warranty: null,
+          weight: null,
+          dimensions: null,
+          isActive: true,
+          isFeatured: false,
+          isOnSale: false,
+          saleStartsAt: null,
+          saleEndsAt: null,
+          rating: 0,
+          reviewCount: 0,
+          soldCount: 0,
+          viewCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ];
-      mockFindMany.mockResolvedValue(mockProducts);
+      mockFindMany.mockResolvedValue(mockProducts as any);
 
       // When: we search for "blue"
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.findMany({ search: "blue" });
 
@@ -79,12 +137,41 @@ describe("ProductRepository", () => {
     it("should apply store filter correctly", async () => {
       // Given: products exist for store
       const mockProducts = [
-        { id: "1", name: "Product 1", slug: "product-1", storeId: "store-1" },
+        {
+          id: "1",
+          storeId: "store-1",
+          brandId: "brand-1",
+          categoryId: "cat-1",
+          sku: "SKU-1",
+          name: "Product 1",
+          slug: "product-1",
+          description: "Description",
+          shortDesc: null,
+          price: 99,
+          originalPrice: null,
+          costPrice: null,
+          images: [],
+          specifications: {},
+          warranty: null,
+          weight: null,
+          dimensions: null,
+          isActive: true,
+          isFeatured: false,
+          isOnSale: false,
+          saleStartsAt: null,
+          saleEndsAt: null,
+          rating: 0,
+          reviewCount: 0,
+          soldCount: 0,
+          viewCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ];
-      mockFindMany.mockResolvedValue(mockProducts);
+      mockFindMany.mockResolvedValue(mockProducts as any);
 
       // When: we filter by storeId
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.findMany({ storeId: "store-1" });
 
@@ -106,14 +193,72 @@ describe("ProductRepository", () => {
     it("should return paginated results with correct structure", async () => {
       // Given: products exist
       const mockProducts = [
-        { id: "1", name: "Product 1" },
-        { id: "2", name: "Product 2" },
+        {
+          id: "1",
+          storeId: "store-1",
+          brandId: "brand-1",
+          categoryId: "cat-1",
+          sku: "SKU-1",
+          name: "Product 1",
+          slug: "product-1",
+          description: "Description",
+          shortDesc: null,
+          price: 99,
+          originalPrice: null,
+          costPrice: null,
+          images: [],
+          specifications: {},
+          warranty: null,
+          weight: null,
+          dimensions: null,
+          isActive: true,
+          isFeatured: false,
+          isOnSale: false,
+          saleStartsAt: null,
+          saleEndsAt: null,
+          rating: 0,
+          reviewCount: 0,
+          soldCount: 0,
+          viewCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "2",
+          storeId: "store-1",
+          brandId: "brand-1",
+          categoryId: "cat-1",
+          sku: "SKU-2",
+          name: "Product 2",
+          slug: "product-2",
+          description: "Description",
+          shortDesc: null,
+          price: 99,
+          originalPrice: null,
+          costPrice: null,
+          images: [],
+          specifications: {},
+          warranty: null,
+          weight: null,
+          dimensions: null,
+          isActive: true,
+          isFeatured: false,
+          isOnSale: false,
+          saleStartsAt: null,
+          saleEndsAt: null,
+          rating: 0,
+          reviewCount: 0,
+          soldCount: 0,
+          viewCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ];
-      mockFindMany.mockResolvedValue(mockProducts);
+      mockFindMany.mockResolvedValue(mockProducts as any);
       mockCount.mockResolvedValue(10);
 
       // When: we call findManyPaginated
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.findManyPaginated({ page: 2, limit: 2 });
 
@@ -131,7 +276,7 @@ describe("ProductRepository", () => {
       mockCount.mockResolvedValue(5);
 
       // When: page > total pages
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.findManyPaginated({ page: 10, limit: 10 });
 
@@ -150,12 +295,41 @@ describe("ProductRepository", () => {
     it("should return featured products for store", async () => {
       // Given: featured products exist
       const mockProducts = [
-        { id: "1", name: "Featured Product", slug: "featured-product", isFeatured: true },
+        {
+          id: "1",
+          storeId: "store-1",
+          brandId: "brand-1",
+          categoryId: "cat-1",
+          sku: "SKU-1",
+          name: "Featured Product",
+          slug: "featured-product",
+          description: "Description",
+          shortDesc: null,
+          price: 99,
+          originalPrice: null,
+          costPrice: null,
+          images: [],
+          specifications: {},
+          warranty: null,
+          weight: null,
+          dimensions: null,
+          isActive: true,
+          isFeatured: true,
+          isOnSale: false,
+          saleStartsAt: null,
+          saleEndsAt: null,
+          rating: 0,
+          reviewCount: 0,
+          soldCount: 0,
+          viewCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ];
-      mockFindMany.mockResolvedValue(mockProducts);
+      mockFindMany.mockResolvedValue(mockProducts as any);
 
       // When: we call findFeatured
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.findFeatured("store-1", 5);
 
@@ -180,13 +354,12 @@ describe("ProductRepository", () => {
 
   describe("create", () => {
     it("should create product with all fields", async () => {
-      // Given: input data with required fields (sku, specifications)
+      // Given: input data with required fields
       const input = {
         name: "New Product",
         slug: "new-product",
         description: "A new product",
         price: 149.99,
-        stock: 20,
         storeId: "store-1",
         categoryId: "cat-1",
         brandId: "brand-1",
@@ -196,15 +369,29 @@ describe("ProductRepository", () => {
       const createdProduct = {
         id: "prod-new",
         ...input,
+        shortDesc: null,
+        originalPrice: null,
+        costPrice: null,
+        images: [],
+        warranty: null,
+        weight: null,
+        dimensions: null,
         isActive: true,
         isFeatured: false,
+        isOnSale: false,
+        saleStartsAt: null,
+        saleEndsAt: null,
+        rating: 0,
+        reviewCount: 0,
+        soldCount: 0,
+        viewCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      mockCreate.mockResolvedValue(createdProduct);
+      mockCreate.mockResolvedValue(createdProduct as any);
 
       // When: we call create
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.create(input);
 
@@ -230,16 +417,40 @@ describe("ProductRepository", () => {
       // Given: existing product and update data
       const existingProduct = {
         id: "prod-123",
+        storeId: "store-1",
+        brandId: "brand-1",
+        categoryId: "cat-1",
+        sku: "SKU-123",
         name: "Old Name",
         slug: "old-name",
+        description: "Description",
+        shortDesc: null,
         price: 50,
+        originalPrice: null,
+        costPrice: null,
+        images: [],
+        specifications: {},
+        warranty: null,
+        weight: null,
+        dimensions: null,
+        isActive: true,
+        isFeatured: false,
+        isOnSale: false,
+        saleStartsAt: null,
+        saleEndsAt: null,
+        rating: 0,
+        reviewCount: 0,
+        soldCount: 0,
+        viewCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
       const updateData = { name: "New Name", price: 75 };
       const updatedProduct = { ...existingProduct, ...updateData };
-      mockUpdate.mockResolvedValue(updatedProduct);
+      mockUpdate.mockResolvedValue(updatedProduct as any);
 
       // When: we call update
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       const result = await repo.update("prod-123", updateData);
 
@@ -260,10 +471,10 @@ describe("ProductRepository", () => {
   describe("delete", () => {
     it("should delete product by id", async () => {
       // Given: product exists
-      mockDelete.mockResolvedValue({ id: "prod-123" });
+      mockDelete.mockResolvedValue({ id: "prod-123" } as any);
 
       // When: we call delete
-      const { ProductRepository } = await import("@/lib/repositories/product.repository");
+      const { ProductRepository } = await import("../../repositories/product.repository");
       const repo = new ProductRepository();
       await repo.delete("prod-123");
 
