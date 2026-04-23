@@ -7,6 +7,14 @@ import { authOptions } from "@/lib/auth";
 import { createRequestLogger } from "@/lib/logger";
 import { runDemoOrderAutomationForUser } from "@/lib/order-demo-automation";
 import { buildOrderStatusHistory } from "@/lib/order-status-history";
+import {
+  consumeRequestRateLimit,
+  createRateLimitResponse,
+} from "@/lib/rate-limit";
+
+const ORDERS_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const ORDERS_RATE_LIMIT_MESSAGE =
+  "Muitas consultas de pedidos. Tente novamente em instantes.";
 
 const validOrderStatuses = new Set<OrderStatus>(Object.values(OrderStatus));
 
@@ -17,6 +25,31 @@ export async function GET(request: NextRequest) {
   });
 
   try {
+    const rateLimitResult = consumeRequestRateLimit({
+      headers: request.headers,
+      scope: "api.orders",
+      now: new Date(),
+      ip: {
+        limit: 20,
+        windowMs: ORDERS_RATE_LIMIT_WINDOW_MS,
+      },
+    });
+
+    if (!rateLimitResult.allowed) {
+      logger.warn("orders.rate_limited", {
+        data: {
+          bucketKey: rateLimitResult.bucketKey,
+          limit: rateLimitResult.limit,
+          retryAfter: rateLimitResult.retryAfter,
+        },
+      });
+
+      return createRateLimitResponse({
+        message: ORDERS_RATE_LIMIT_MESSAGE,
+        retryAfter: rateLimitResult.retryAfter,
+      });
+    }
+
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {

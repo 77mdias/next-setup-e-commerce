@@ -16,12 +16,46 @@ import {
   authorizeAdminStoreScopeAccess,
   getAuthorizedAdminStoreIds,
 } from "@/lib/rbac";
+import {
+  consumeRequestRateLimit,
+  createRateLimitResponse,
+} from "@/lib/rate-limit";
+
+const ADMIN_ORDERS_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const ADMIN_ORDERS_RATE_LIMIT_MESSAGE =
+  "Muitas requisições no painel administrativo. Tente novamente em instantes.";
 
 export async function GET(request: NextRequest) {
   const requestLogger = createRequestLogger({
     headers: request.headers,
     route: "/api/admin/orders",
   });
+
+  const rateLimitResult = consumeRequestRateLimit({
+    headers: request.headers,
+    scope: "api.admin.orders",
+    now: new Date(),
+    ip: {
+      limit: 60,
+      windowMs: ADMIN_ORDERS_RATE_LIMIT_WINDOW_MS,
+    },
+  });
+
+  if (!rateLimitResult.allowed) {
+    requestLogger.warn("admin.orders.rate_limited", {
+      data: {
+        bucketKey: rateLimitResult.bucketKey,
+        limit: rateLimitResult.limit,
+        retryAfter: rateLimitResult.retryAfter,
+      },
+    });
+
+    return createRateLimitResponse({
+      message: ADMIN_ORDERS_RATE_LIMIT_MESSAGE,
+      retryAfter: rateLimitResult.retryAfter,
+    });
+  }
+
   const authorization = await authorizeAdminApiRequest({
     action: "read",
     logger: requestLogger,

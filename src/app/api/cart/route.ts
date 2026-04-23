@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import {
+  consumeRequestRateLimit,
+  createRateLimitResponse,
+} from "@/lib/rate-limit";
+
+const CART_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const CART_RATE_LIMIT_MESSAGE =
+  "Muitas operações no carrinho. Tente novamente em instantes.";
 
 // GET - Buscar carrinho do usuário
 export async function GET(request: NextRequest) {
@@ -52,6 +60,29 @@ export async function GET(request: NextRequest) {
 // POST - Adicionar produto ao carrinho ou atualizar quantidade
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitResult = consumeRequestRateLimit({
+      headers: request.headers,
+      scope: "api.cart",
+      now: new Date(),
+      ip: {
+        limit: 30,
+        windowMs: CART_RATE_LIMIT_WINDOW_MS,
+      },
+    });
+
+    if (!rateLimitResult.allowed) {
+      console.warn("cart.rate_limited", {
+        bucketKey: rateLimitResult.bucketKey,
+        limit: rateLimitResult.limit,
+        retryAfter: rateLimitResult.retryAfter,
+      });
+
+      return createRateLimitResponse({
+        message: CART_RATE_LIMIT_MESSAGE,
+        retryAfter: rateLimitResult.retryAfter,
+      });
+    }
+
     const user = await getCurrentUser();
 
     if (!user) {
@@ -149,6 +180,29 @@ export async function POST(request: NextRequest) {
 // PUT - Atualizar quantidade específica de um produto
 export async function PUT(request: NextRequest) {
   try {
+    const rateLimitResult = consumeRequestRateLimit({
+      headers: request.headers,
+      scope: "api.cart",
+      now: new Date(),
+      ip: {
+        limit: 30,
+        windowMs: CART_RATE_LIMIT_WINDOW_MS,
+      },
+    });
+
+    if (!rateLimitResult.allowed) {
+      console.warn("cart.rate_limited", {
+        bucketKey: rateLimitResult.bucketKey,
+        limit: rateLimitResult.limit,
+        retryAfter: rateLimitResult.retryAfter,
+      });
+
+      return createRateLimitResponse({
+        message: CART_RATE_LIMIT_MESSAGE,
+        retryAfter: rateLimitResult.retryAfter,
+      });
+    }
+
     const user = await getCurrentUser();
 
     if (!user) {
@@ -214,6 +268,29 @@ export async function PUT(request: NextRequest) {
 // DELETE - Remover produto específico do carrinho
 export async function DELETE(request: NextRequest) {
   try {
+    const rateLimitResult = consumeRequestRateLimit({
+      headers: request.headers,
+      scope: "api.cart",
+      now: new Date(),
+      ip: {
+        limit: 30,
+        windowMs: CART_RATE_LIMIT_WINDOW_MS,
+      },
+    });
+
+    if (!rateLimitResult.allowed) {
+      console.warn("cart.rate_limited", {
+        bucketKey: rateLimitResult.bucketKey,
+        limit: rateLimitResult.limit,
+        retryAfter: rateLimitResult.retryAfter,
+      });
+
+      return createRateLimitResponse({
+        message: CART_RATE_LIMIT_MESSAGE,
+        retryAfter: rateLimitResult.retryAfter,
+      });
+    }
+
     const user = await getCurrentUser();
 
     if (!user) {
