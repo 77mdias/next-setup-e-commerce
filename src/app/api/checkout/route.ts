@@ -11,10 +11,13 @@ import {
   consumeRequestRateLimit,
   createRateLimitResponse,
 } from "@/lib/rate-limit";
+import { createLogger } from "@/lib/logger";
 
 const CHECKOUT_RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const CHECKOUT_RATE_LIMIT_MESSAGE =
   "Muitas tentativas de checkout. Tente novamente em instantes.";
+
+const log = createLogger({ route: "/api/checkout" });
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,10 +32,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (!rateLimitResult.allowed) {
-      console.warn("checkout.rate_limited", {
-        bucketKey: rateLimitResult.bucketKey,
-        limit: rateLimitResult.limit,
-        retryAfter: rateLimitResult.retryAfter,
+      log.warn("checkout.rate_limited", {
+        data: {
+          bucketKey: rateLimitResult.bucketKey,
+          limit: rateLimitResult.limit,
+          retryAfter: rateLimitResult.retryAfter,
+        },
       });
 
       return createRateLimitResponse({
@@ -80,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Log and return generic error
-    console.error("checkout.internal_error", error);
+    log.error("checkout.internal_error", { error });
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 },

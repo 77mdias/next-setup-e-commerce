@@ -299,16 +299,22 @@ describe("OrderRepository", () => {
       items: [{ productId: "prod-1", quantity: 2, unitPrice: 50, totalPrice: 100 }],
     };
 
-    mockOrderCreate.mockResolvedValue({ id: 1, ...createData } as any);
-    mockTransaction.mockImplementation(async (operations: any[]) => {
-      const results = await Promise.all(operations);
-      return results;
-    });
+    const createdOrder = { id: 1, ...createData, createdAt: new Date(), updatedAt: new Date() };
+    mockOrderCreate.mockResolvedValue(createdOrder as any);
 
     const result = await repository.create(createData as any);
 
     expect(result).not.toBeNull();
-    expect(mockTransaction).toHaveBeenCalled();
+    expect(mockOrderCreate).toHaveBeenCalledWith({
+      data: createData,
+      include: {
+        items: true,
+        address: true,
+        payments: true,
+        store: true,
+        statusHistory: true,
+      },
+    });
   });
 
   // --- updateStatus tests ---
@@ -331,6 +337,13 @@ describe("OrderRepository", () => {
     expect(mockOrderUpdate).toHaveBeenCalledWith({
       where: { id: 1 },
       data: { status: OrderStatus.SHIPPED },
+      include: {
+        items: true,
+        address: true,
+        payments: true,
+        store: true,
+        statusHistory: true,
+      },
     });
   });
 

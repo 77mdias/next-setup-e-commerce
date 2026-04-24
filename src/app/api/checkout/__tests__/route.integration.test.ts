@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { resetRateLimitStore } from "@/lib/rate-limit";
 
 const {
   mockGetServerSession,
@@ -131,6 +132,7 @@ function createCheckoutRequest(
 describe("POST /api/checkout integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetRateLimitStore();
     delete process.env.E2E_CHECKOUT_MOCK_MODE;
 
     mockGetServerSession.mockResolvedValue({

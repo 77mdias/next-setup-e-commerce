@@ -15,6 +15,7 @@ export default defineConfig({
     globals: true,
     include: ["src/**/*.test.ts"],
     exclude: ["src/**/*.integration.test.ts"],
+    setupFiles: [path.resolve(rootDir, "src/vitest-setup.ts")],
     clearMocks: true,
     mockReset: true,
     restoreMocks: true,
